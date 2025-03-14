@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Gaming Closet Project</title>
+    <title>Gaming Closet Hideaway Project</title>
     <style>
         :root {
-            --primary-color: #3a86ff;
-            --secondary-color: #8338ec;
-            --background-color: #f8f9fa;
+            --primary-color: #4f46e5;
+            --secondary-color: #7c3aed;
+            --background-color: #f3f4f6;
             --card-color: #ffffff;
-            --text-color: #333333;
+            --text-color: #1f2937;
+            --accent-color: #ef4444;
         }
         
         * {
@@ -28,7 +29,7 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
         }
         
@@ -44,15 +45,44 @@
             color: var(--primary-color);
         }
         
-        .description {
-            font-size: 1.1rem;
-            margin-bottom: 30px;
+        .overview {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .overview-image {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .overview-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .overview-text {
+            flex: 1;
+            background: var(--card-color);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--secondary-color);
         }
         
         .items-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
         }
         
         .item-card {
@@ -61,11 +91,30 @@
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         
         .item-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .item-image {
+            height: 200px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+        
+        .item-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
         
         .item-title {
@@ -79,19 +128,48 @@
             margin-bottom: 15px;
         }
         
+        .item-description {
+            margin-bottom: 15px;
+            flex-grow: 1;
+        }
+        
         .item-link {
             display: inline-block;
             background-color: var(--primary-color);
             color: white;
-            padding: 8px 15px;
+            padding: 10px 15px;
             border-radius: 4px;
             text-decoration: none;
             font-weight: 500;
             transition: background-color 0.3s ease;
+            align-self: flex-start;
+            margin-top: auto;
         }
         
         .item-link:hover {
             background-color: var(--secondary-color);
+        }
+        
+        .section {
+            margin-bottom: 50px;
+        }
+        
+        .specs-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            list-style-type: none;
+        }
+        
+        .specs-list li {
+            background-color: var(--card-color);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .specs-list li strong {
+            color: var(--secondary-color);
         }
         
         footer {
@@ -101,13 +179,23 @@
             color: #666;
         }
         
+        @media (min-width: 768px) {
+            .overview {
+                flex-direction: row;
+            }
+        }
+        
         @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
             .items-container {
                 grid-template-columns: 1fr;
             }
             
-            h1 {
-                font-size: 2rem;
+            .specs-list {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -115,37 +203,180 @@
 <body>
     <div class="container">
         <header>
-            <h1>My Gaming Closet Project</h1>
-            <p class="description">Here's what I'm planning for my ultimate gaming closet setup. Any contributions toward these items would be greatly appreciated!</p>
+            <h1>Gaming Closet Hideaway Project</h1>
+            <p>Jon's custom gaming space project in a repurposed closet</p>
         </header>
         
-        <div class="items-container">
-            <!-- Example item - replace with your actual items -->
-            <div class="item-card">
-                <h3 class="item-title">Gaming Monitor</h3>
-                <p class="item-price">$299.99</p>
-                <a href="https://example.com/product1" class="item-link" target="_blank">View Product</a>
+        <section class="overview">
+            <div class="overview-image">
+                <img src="/api/placeholder/800/600" alt="Gaming Closet Floor Plan" />
             </div>
-            
-            <!-- Example item - replace with your actual items -->
-            <div class="item-card">
-                <h3 class="item-title">RGB LED Strips</h3>
-                <p class="item-price">$35.99</p>
-                <a href="https://example.com/product2" class="item-link" target="_blank">View Product</a>
+            <div class="overview-text">
+                <h2>Project Overview</h2>
+                <p>I'm converting a closet into a cozy gaming retreat while maintaining its storage functionality. This dual-purpose space will serve as both a comfortable gaming area and clothes storage.</p>
+                
+                <h3>Space Specifications</h3>
+                <ul>
+                    <li>Closet dimensions: 72" width x 40.75" depth with 10' ceilings</li>
+                    <li>Shelf height: 39" from floor</li>
+                    <li>Doorway: 30" wide, centered</li>
+                    <li>Existing ventilation (no fan needed)</li>
+                </ul>
+                
+                <h3>Key Features</h3>
+                <ul>
+                    <li>Space-efficient design that preserves closet functionality</li>
+                    <li>Ergonomic setup for comfortable gaming sessions</li>
+                    <li>Integrated lighting system with motion activation</li>
+                    <li>Quick transition between gaming and productivity modes</li>
+                    <li>Sound isolation to minimize noise transfer to adjacent rooms</li>
+                </ul>
             </div>
-            
-            <!-- Example item - replace with your actual items -->
-            <div class="item-card">
-                <h3 class="item-title">Adjustable Shelving</h3>
-                <p class="item-price">$89.99</p>
-                <a href="https://example.com/product3" class="item-link" target="_blank">View Product</a>
+        </section>
+        
+        <section class="section">
+            <h2>Equipment Wishlist</h2>
+            <div class="items-container">
+                <div class="item-card">
+                    <div class="item-image">
+                        <img src="/api/placeholder/300/200" alt="HUANUO Single Monitor Wall Mount" />
+                    </div>
+                    <h3 class="item-title">HUANUO Single Monitor Wall Mount</h3>
+                    <p class="item-price">$39.99</p>
+                    <p class="item-description">Wall mount for my 34" LG monitor, supports screens 13-32", holds up to 17.6lbs with height adjustment and full motion gas spring arm. VESA Mount 75x75, 100x100.</p>
+                    <a href="https://www.amazon.com/dp/B07Z7ZGHD5" class="item-link" target="_blank">View on Amazon</a>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-image">
+                        <img src="/api/placeholder/300/200" alt="Couchmaster CYBOT Lap Desk" />
+                    </div>
+                    <h3 class="item-title">Couchmaster CYBOT Lap Desk</h3>
+                    <p class="item-price">$119.00</p>
+                    <p class="item-description">Ergonomic lap desk for keyboard/mouse gaming, perfect for the limited space in the gaming closet while providing comfort during extended sessions.</p>
+                    <a href="https://www.amazon.com/dp/B08LMNS2X6" class="item-link" target="_blank">View on Amazon</a>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-image">
+                        <img src="/api/placeholder/300/200" alt="Levoit Floor Gaming Chair" />
+                    </div>
+                    <h3 class="item-title">Levoit Floor Gaming Chair</h3>
+                    <p class="item-price">$87.99</p>
+                    <p class="item-description">Low-profile gaming chair with back support, designed for comfort while sitting close to the ground, perfect for the limited vertical space.</p>
+                    <a href="https://www.amazon.com/dp/B096M6WWFS" class="item-link" target="_blank">View on Amazon</a>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-image">
+                        <img src="/api/placeholder/300/200" alt="Twelve South BookArc" />
+                    </div>
+                    <h3 class="item-title">Twelve South BookArc</h3>
+                    <p class="item-price">$59.99</p>
+                    <p class="item-description">Vertical MacBook stand to save desk space while connected to the external monitor, elegantly keeping my MacBook in closed-display mode.</p>
+                    <a href="https://www.amazon.com/dp/B07X1MTJJT" class="item-link" target="_blank">View on Amazon</a>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-image">
+                        <img src="/api/placeholder/300/200" alt="HDMI Switch 4K" />
+                    </div>
+                    <h3 class="item-title">HDMI Switch 4K</h3>
+                    <p class="item-price">$19.99</p>
+                    <p class="item-description">HDMI switch for toggling between PS5 and MacBook on a single monitor, supporting 4K resolution for both gaming and productivity.</p>
+                    <a href="https://www.amazon.com/dp/B079JQ9XXV" class="item-link" target="_blank">View on Amazon</a>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-image">
+                        <img src="/api/placeholder/300/200" alt="Philips Hue Lightstrip Plus" />
+                    </div>
+                    <h3 class="item-title">Philips Hue Lightstrip Plus</h3>
+                    <p class="item-price">$89.99</p>
+                    <p class="item-description">HomeKit compatible LED light strips to illuminate the gaming space with customizable colors and brightness, controlled via motion sensor.</p>
+                    <a href="https://www.amazon.com/dp/B08CKJWSFS" class="item-link" target="_blank">View on Amazon</a>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-image">
+                        <img src="/api/placeholder/300/200" alt="Eve Motion HomeKit Sensor" />
+                    </div>
+                    <h3 class="item-title">Eve Motion HomeKit Sensor</h3>
+                    <p class="item-price">$49.95</p>
+                    <p class="item-description">Motion sensor that works with HomeKit to automatically trigger the Philips Hue lights when entering the gaming closet.</p>
+                    <a href="https://www.amazon.com/dp/B07MJQ3TPQ" class="item-link" target="_blank">View on Amazon</a>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-image">
+                        <img src="/api/placeholder/300/200" alt="Cooluli Mini Fridge" />
+                    </div>
+                    <h3 class="item-title">Cooluli Mini Fridge (10L)</h3>
+                    <p class="item-price">$59.99</p>
+                    <p class="item-description">Compact 10L mini fridge for keeping drinks and snacks cool during gaming sessions, fits perfectly in the limited space.</p>
+                    <a href="https://www.amazon.com/dp/B07RV4KNBW" class="item-link" target="_blank">View on Amazon</a>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-image">
+                        <img src="/api/placeholder/300/200" alt="EAHUMM Floating Shelf with LED" />
+                    </div>
+                    <h3 class="item-title">EAHUMM Floating Shelf with LED</h3>
+                    <p class="item-price">$39.99</p>
+                    <p class="item-description">Illuminated floating shelf for storing gaming controllers, headsets and accessories with built-in LED lighting.</p>
+                    <a href="https://www.amazon.com/dp/B08DKX8MLV" class="item-link" target="_blank">View on Amazon</a>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-image">
+                        <img src="/api/placeholder/300/200" alt="Acoustic Foam Panels" />
+                    </div>
+                    <h3 class="item-title">Acoustic Foam Panels</h3>
+                    <p class="item-price">$29.99</p>
+                    <p class="item-description">Sound-absorbing foam panels to minimize noise transfer to adjacent rooms, important for late-night gaming sessions.</p>
+                    <a href="https://www.amazon.com/dp/B07VH6KDY8" class="item-link" target="_blank">View on Amazon</a>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-image">
+                        <img src="/api/placeholder/300/200" alt="D-Line Cable Raceway Kit" />
+                    </div>
+                    <h3 class="item-title">D-Line Cable Raceway Kit</h3>
+                    <p class="item-price">$24.99</p>
+                    <p class="item-description">Cable management system to keep power cords and HDMI cables neatly organized and out of the way in the limited space.</p>
+                    <a href="https://www.amazon.com/dp/B07GPFDL1K" class="item-link" target="_blank">View on Amazon</a>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-image">
+                        <img src="/api/placeholder/300/200" alt="Safavieh California Shag Rug" />
+                    </div>
+                    <h3 class="item-title">Safavieh California Shag Rug</h3>
+                    <p class="item-price">$54.99</p>
+                    <p class="item-description">Plush area rug to make the gaming closet more comfortable and cozy, while also helping with sound absorption.</p>
+                    <a href="https://www.amazon.com/dp/B00G4T1YAO" class="item-link" target="_blank">View on Amazon</a>
+                </div>
             </div>
-            
-            <!-- Add more items as needed -->
-        </div>
+        </section>
+        
+        <section class="section">
+            <h2>Setup Plan Details</h2>
+            <ul class="specs-list">
+                <li><strong>Monitor Setup:</strong> 34" LG monitor wall-mounted on left wall with adjustable mount</li>
+                <li><strong>Seating:</strong> Low-profile gaming chair facing left wall for maximum leg room (for 6' tall person)</li>
+                <li><strong>Input:</strong> Lap desk for comfortable keyboard/mouse use</li>
+                <li><strong>Tech Integration:</strong> MacBook dock at entrance for quick setup, HDMI switch to toggle between MacBook and PS5</li>
+                <li><strong>Storage:</strong> Mini fridge and snack cabinet in right corner</li>
+                <li><strong>Lighting:</strong> Philips Hue light strips with HomeKit motion sensor for automatic activation</li>
+                <li><strong>Organization:</strong> Illuminated floating shelf for controllers and headset</li>
+                <li><strong>Flooring:</strong> Plush area rug for comfort</li>
+                <li><strong>Access:</strong> Maintained central walkway to access hanging clothes</li>
+                <li><strong>Soundproofing:</strong> Acoustic solutions to minimize gaming chatter from disturbing sleeping family members</li>
+            </ul>
+        </section>
         
         <footer>
-            <p>© 2025 My Gaming Closet Project</p>
+            <p>© 2025 Gaming Closet Hideaway Project | Created by Jon</p>
         </footer>
     </div>
 </body>
