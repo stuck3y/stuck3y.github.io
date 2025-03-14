@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Gaming Closet Project</title>
+    <style>
+        :root {
+            --primary-color: #3a86ff;
+            --secondary-color: #8338ec;
+            --background-color: #f8f9fa;
+            --card-color: #ffffff;
+            --text-color: #333333;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+        
+        .items-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .item-card {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .item-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+        }
+        
+        .item-price {
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .item-link {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        
+        .item-link:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        @media (max-width: 600px) {
+            .items-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>My Gaming Closet Project</h1>
+            <p class="description">Here's what I'm planning for my ultimate gaming closet setup. Any contributions toward these items would be greatly appreciated!</p>
+        </header>
+        
+        <div class="items-container">
+            <!-- Example item - replace with your actual items -->
+            <div class="item-card">
+                <h3 class="item-title">Gaming Monitor</h3>
+                <p class="item-price">$299.99</p>
+                <a href="https://example.com/product1" class="item-link" target="_blank">View Product</a>
+            </div>
+            
+            <!-- Example item - replace with your actual items -->
+            <div class="item-card">
+                <h3 class="item-title">RGB LED Strips</h3>
+                <p class="item-price">$35.99</p>
+                <a href="https://example.com/product2" class="item-link" target="_blank">View Product</a>
+            </div>
+            
+            <!-- Example item - replace with your actual items -->
+            <div class="item-card">
+                <h3 class="item-title">Adjustable Shelving</h3>
+                <p class="item-price">$89.99</p>
+                <a href="https://example.com/product3" class="item-link" target="_blank">View Product</a>
+            </div>
+            
+            <!-- Add more items as needed -->
+        </div>
+        
+        <footer>
+            <p>© 2025 My Gaming Closet Project</p>
+        </footer>
+    </div>
+</body>
+</html>
