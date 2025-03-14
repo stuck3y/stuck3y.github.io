@@ -13,6 +13,9 @@ const searchResultsContent = document.getElementById('search-results-content');
 const overlay = document.getElementById('overlay');
 const closeSearchBtn = document.getElementById('close-search');
 
+// Edit mode tracker
+let editingComponentId = null;
+
 // Current component being searched for
 let currentSearchComponent = null;
 
@@ -27,11 +30,21 @@ addComponentBtn.addEventListener('click', addComponent);
 closeSearchBtn.addEventListener('click', closeSearch);
 overlay.addEventListener('click', closeSearch);
 
+// Cancel edit button
+const cancelEditBtn = document.getElementById('cancel-edit-btn');
+cancelEditBtn.addEventListener('click', () => {
+    editingComponentId = null;
+    componentNameInput.value = '';
+    componentNotesInput.value = '';
+    addComponentBtn.textContent = 'Add Component';
+    cancelEditBtn.style.display = 'none';
+});
+
 // Initial render
 renderComponents();
 
 /**
- * Add a new component to the project
+ * Add a new component or update an existing one
  */
 function addComponent() {
     const name = componentNameInput.value.trim();
@@ -42,15 +55,28 @@ function addComponent() {
         return;
     }
     
-    const newComponent = {
-        id: 'comp-' + Date.now(),
-        name,
-        notes,
-        products: [],
-        purchased: null
-    };
+    if (editingComponentId) {
+        // Update existing component
+        const component = projectData.components.find(c => c.id === editingComponentId);
+        if (component) {
+            component.name = name;
+            component.notes = notes;
+            editingComponentId = null;
+            addComponentBtn.textContent = 'Add Component';
+        }
+    } else {
+        // Add new component
+        const newComponent = {
+            id: 'comp-' + Date.now(),
+            name,
+            notes,
+            products: [],
+            purchased: null
+        };
+        
+        projectData.components.push(newComponent);
+    }
     
-    projectData.components.push(newComponent);
     saveData();
     renderComponents();
     
@@ -102,7 +128,10 @@ function renderComponents() {
             </div>
             <div class="component-actions">
                 <button class="sm-button search-btn" data-component-id="${component.id}">Search Products</button>
+                <button class="sm-button neutral-btn real-search-btn" data-component-id="${component.id}" data-component-name="${component.name}">Google It</button>
                 ${component.purchased ? `<button class="sm-button neutral-btn unmark-btn" data-component-id="${component.id}">Unmark Purchase</button>` : ''}
+                <button class="sm-button edit-btn" data-component-id="${component.id}">Edit</button>
+                <button class="sm-button delete-btn" data-component-id="${component.id}">Delete</button>
             </div>
         `;
         
@@ -120,6 +149,18 @@ function renderComponents() {
     
     document.querySelectorAll('.unmark-btn').forEach(btn => {
         btn.addEventListener('click', unmarkPurchased);
+    });
+    
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', editComponent);
+    });
+    
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', deleteComponent);
+    });
+    
+    document.querySelectorAll('.real-search-btn').forEach(btn => {
+        btn.addEventListener('click', openRealSearch);
     });
 }
 
@@ -159,6 +200,11 @@ function searchProducts(e) {
     // Display results
     searchResultsContent.innerHTML = `
         <h3>Search results for "${component.name}"</h3>
+        <div class="manual-add-section">
+            <p>Have a product URL from elsewhere? Add it manually:</p>
+            <button class="secondary-btn add-manual-btn" data-component-id="${component.id}">Add from URL</button>
+        </div>
+        <div class="search-divider"></div>
         ${results.map(product => `
             <div class="search-result-item">
                 <div class="product-title">${product.title}</div>
@@ -186,6 +232,14 @@ function searchProducts(e) {
     // Add event listeners to the "Add to Component" buttons
     document.querySelectorAll('.add-product-btn').forEach(btn => {
         btn.addEventListener('click', addProductToComponent);
+    });
+    
+    // Add event listener to the "Add from URL" button
+    document.querySelectorAll('.add-manual-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const componentId = e.target.dataset.componentId;
+            addProductManually(componentId);
+        });
     });
     
     // Show the overlay and search results
@@ -257,4 +311,89 @@ function unmarkPurchased(e) {
         saveData();
         renderComponents();
     }
+}
+
+/**
+ * Edit a component
+ */
+function editComponent(e) {
+    const componentId = e.target.dataset.componentId;
+    const component = projectData.components.find(c => c.id === componentId);
+    
+    if (component) {
+        // Set the form to edit mode
+        componentNameInput.value = component.name;
+        componentNotesInput.value = component.notes || '';
+        editingComponentId = component.id;
+        addComponentBtn.textContent = 'Update Component';
+        cancelEditBtn.style.display = 'inline-block';
+        
+        // Scroll to the form
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+/**
+ * Delete a component
+ */
+function deleteComponent(e) {
+    const componentId = e.target.dataset.componentId;
+    
+    if (confirm('Are you sure you want to delete this component?')) {
+        projectData.components = projectData.components.filter(c => c.id !== componentId);
+        saveData();
+        renderComponents();
+        
+        // If we're editing this component, cancel edit mode
+        if (editingComponentId === componentId) {
+            editingComponentId = null;
+            componentNameInput.value = '';
+            componentNotesInput.value = '';
+            addComponentBtn.textContent = 'Add Component';
+            cancelEditBtn.style.display = 'none';
+        }
+    }
+}
+
+/**
+ * Open a real search in a new tab
+ */
+function openRealSearch(e) {
+    const componentName = e.target.dataset.componentName;
+    const searchQuery = encodeURIComponent(componentName);
+    
+    // Open a new tab with a Google search for the component
+    window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
+}
+
+/**
+ * Add a product URL manually from clipboard
+ */
+function addProductManually(componentId) {
+    const component = projectData.components.find(c => c.id === componentId);
+    
+    if (!component) return;
+    
+    const url = prompt('Paste the product URL:');
+    if (!url) return;
+    
+    const title = prompt('Enter a title for this product:');
+    if (!title) return;
+    
+    const price = prompt('Enter the price (e.g. $19.99):');
+    const rating = parseFloat(prompt('Enter the rating (1-5):', '4.5')) || 4.5;
+    const source = prompt('Enter the source (e.g. Amazon, Best Buy):', 'Web');
+    
+    const newProduct = {
+        id: 'manual-' + Date.now(),
+        title,
+        price: price || 'N/A',
+        rating,
+        source,
+        url
+    };
+    
+    component.products.push(newProduct);
+    saveData();
+    renderComponents();
 }

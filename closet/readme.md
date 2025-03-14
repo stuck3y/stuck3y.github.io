@@ -9,8 +9,10 @@ A minimal SPA (Single Page Application) to help track components and products fo
 
 ## Features
 
-- **Component Management**: Add and track components you need
+- **Component Management**: Add, edit, and delete components you need
 - **Product Search**: Find products related to each component (simulated)
+- **Direct Google Search**: Quickly search for products on Google
+- **Manual URL Addition**: Add product links you find anywhere on the web
 - **Local Storage**: Your data persists between sessions
 - **Purchase Tracking**: Mark items as purchased and see what you've bought
 

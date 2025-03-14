@@ -250,6 +250,31 @@ button:hover {
     border-bottom: none;
 }
 
+.manual-add-section {
+    background-color: rgba(0,0,0,0.03);
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.search-divider {
+    height: 1px;
+    background-color: #eee;
+    margin: 15px 0;
+}
+
+.edit-btn, .delete-btn {
+    background-color: #757575;
+}
+
+.edit-btn:hover {
+    background-color: var(--primary-dark);
+}
+
+.delete-btn:hover {
+    background-color: #d32f2f;
+}
+
 .badge {
     display: inline-block;
     padding: 3px 8px;
