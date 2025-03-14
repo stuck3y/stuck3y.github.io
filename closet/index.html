@@ -269,7 +269,44 @@
                     selector: '.item-card:nth-child(11) .item-image img',
                     linkSelector: '.item-card:nth-child(11) .item-link'
                 },
-                
+                {
+                    id: 'B00G4T1YAO',
+                    title: 'Safavieh California Shag Rug',
+                    selector: '.item-card:nth-child(12) .item-image img',
+                    linkSelector: '.item-card:nth-child(12) .item-link'
+                }
+            ];
+
+            // Function to create Amazon search link by product name
+            function createSearchLink(title) {
+                const searchQuery = encodeURIComponent(title);
+                return `https://www.amazon.com/s?k=${searchQuery}`;
+            }
+
+            // Process each product
+            products.forEach(product => {
+                // Keep using placeholder images for simplicity
+                const imgElement = document.querySelector(product.selector);
+                if (imgElement) {
+                    imgElement.src = `/api/placeholder/300/200`;
+                    imgElement.alt = product.title;
+                }
+
+                // Update all links to use search by name instead of direct product links
+                const linkElement = document.querySelector(product.linkSelector);
+                if (linkElement) {
+                    // Create a search link for the product by name
+                    const searchLink = createSearchLink(product.title);
+                    linkElement.href = searchLink;
+                }
+            });
+
+            // Load floor plan image
+            document.querySelector('.overview-image img').src = 'https://i.imgur.com/UcTyIbW.jpg';
+        });
+    </script>
+</head>
+<body>
     <div class="container">
         <header>
             <h1>Gaming Closet Hideaway Project</h1>
