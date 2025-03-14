@@ -8,16 +8,18 @@ const componentsList = document.getElementById('components-list');
 const addComponentBtn = document.getElementById('add-component-btn');
 const componentNameInput = document.getElementById('component-name');
 const componentNotesInput = document.getElementById('component-notes');
-const searchResults = document.getElementById('search-results');
-const searchResultsContent = document.getElementById('search-results-content');
-const overlay = document.getElementById('overlay');
-const closeSearchBtn = document.getElementById('close-search');
+const cancelEditBtn = document.getElementById('cancel-edit-btn');
 
 // Edit mode tracker
 let editingComponentId = null;
 
-// Current component being searched for
-let currentSearchComponent = null;
+// Default components to start with
+const defaultComponents = [
+    { id: 'comp-1', name: 'Gaming Chair', notes: 'Need something comfortable for long sessions, preferably with lumbar support', products: [], purchased: null, searchResults: [] },
+    { id: 'comp-2', name: 'PS5', notes: 'Already have this', products: [], purchased: true, searchResults: [] },
+    { id: 'comp-3', name: 'Gaming Monitor', notes: 'Already have this - LG 27GL850', products: [], purchased: true, searchResults: [] },
+    { id: 'comp-4', name: 'HDMI Cable', notes: 'Need HDMI 2.1 for PS5', products: [], purchased: null, searchResults: [] }
+];
 
 // Initialize with default components if none exist
 if (projectData.components.length === 0) {
@@ -27,18 +29,7 @@ if (projectData.components.length === 0) {
 
 // Add event listeners
 addComponentBtn.addEventListener('click', addComponent);
-closeSearchBtn.addEventListener('click', closeSearch);
-overlay.addEventListener('click', closeSearch);
-
-// Cancel edit button
-const cancelEditBtn = document.getElementById('cancel-edit-btn');
-cancelEditBtn.addEventListener('click', () => {
-    editingComponentId = null;
-    componentNameInput.value = '';
-    componentNotesInput.value = '';
-    addComponentBtn.textContent = 'Add Component';
-    cancelEditBtn.style.display = 'none';
-});
+cancelEditBtn.addEventListener('click', cancelEdit);
 
 // Initial render
 renderComponents();
@@ -61,8 +52,11 @@ function addComponent() {
         if (component) {
             component.name = name;
             component.notes = notes;
-            editingComponentId = null;
-            addComponentBtn.textContent = 'Add Component';
+            
+            // Run a new search if name changed significantly
+            runSearch(component);
+            
+            exitEditMode();
         }
     } else {
         // Add new component
@@ -71,18 +65,42 @@ function addComponent() {
             name,
             notes,
             products: [],
-            purchased: null
+            purchased: null,
+            searchResults: [],
+            showResults: true  // Auto-expand search results for new components
         };
         
         projectData.components.push(newComponent);
+        
+        // Auto-run search for new component
+        runSearch(newComponent);
+        
+        // Clear inputs
+        componentNameInput.value = '';
+        componentNotesInput.value = '';
     }
     
     saveData();
     renderComponents();
-    
-    // Clear inputs
+}
+
+/**
+ * Cancel editing a component
+ */
+function cancelEdit() {
+    exitEditMode();
+    renderComponents();
+}
+
+/**
+ * Exit edit mode and reset the form
+ */
+function exitEditMode() {
+    editingComponentId = null;
     componentNameInput.value = '';
     componentNotesInput.value = '';
+    addComponentBtn.textContent = 'Add Component';
+    cancelEditBtn.style.display = 'none';
 }
 
 /**
@@ -96,42 +114,88 @@ function renderComponents() {
         card.className = `component-card ${component.purchased ? 'purchased' : ''}`;
         card.dataset.id = component.id;
         
+        // Generate product list HTML
         const productsList = component.products.map(product => {
-            const isPurchased = component.purchased === product.id;
+            const isPurchased = product.isPurchased;
             return `
                 <div class="product-item ${isPurchased ? 'purchased-item' : ''}" data-id="${product.id}">
                     <div class="product-title">${product.title}</div>
                     <div class="product-details">
-                        <span class="product-price">${product.price}</span>
+                        <span class="product-price">${product.price || 'N/A'}</span>
+                        ${product.rating ? `
                         <div class="product-rating">
                             <span class="stars">★★★★★</span>
                             <span>${product.rating}</span>
-                        </div>
+                        </div>` : ''}
                     </div>
-                    <div class="product-source"><small>Source: ${product.source}</small></div>
+                    ${product.source ? `<div class="product-source"><small>Source: ${product.source}</small></div>` : ''}
                     <div class="product-actions">
                         <a href="${product.url}" target="_blank" class="sm-button neutral-btn">View</a>
-                        ${!component.purchased ? `<button class="sm-button secondary-btn mark-purchased-btn" data-product-id="${product.id}">Mark Purchased</button>` : ''}
+                        ${!component.purchased ? 
+                            `<button class="sm-button secondary-btn mark-purchased-btn" data-component-id="${component.id}" data-product-id="${product.id}">Mark Purchased</button>` : 
+                            (product.isPurchased ? `<span class="badge">Purchased</span>` : '')}
                     </div>
                 </div>
             `;
         }).join('');
         
+        // Generate search results HTML
+        const searchResultsHtml = component.searchResults && component.searchResults.length > 0 ? `
+            <div class="search-results">
+                <div class="search-results-header">
+                    <h3>Product Options</h3>
+                    <button class="sm-button neutral-btn refresh-search-btn" data-component-id="${component.id}">Refresh</button>
+                </div>
+                <div class="manual-link-input">
+                    <input type="text" placeholder="Or paste a product URL here" class="manual-url-input" data-component-id="${component.id}">
+                    <button class="sm-button secondary-btn add-manual-btn" data-component-id="${component.id}">Add Link</button>
+                </div>
+                <div class="search-results-list">
+                    ${component.searchResults.map(result => `
+                        <div class="search-result-item">
+                            <div class="search-result-title">${result.title}</div>
+                            ${result.price ? `<div class="product-price">${result.price}</div>` : ''}
+                            <div class="product-actions">
+                                <a href="${result.url}" target="_blank" class="sm-button neutral-btn">View</a>
+                                <button class="sm-button secondary-btn save-product-btn" 
+                                        data-component-id="${component.id}"
+                                        data-result-id="${result.id}">
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        ` : `
+            <div class="search-results">
+                <p>No search results yet.</p>
+                <button class="sm-button secondary-btn refresh-search-btn" data-component-id="${component.id}">Find Products</button>
+                <div class="manual-link-input">
+                    <input type="text" placeholder="Or paste a product URL here" class="manual-url-input" data-component-id="${component.id}">
+                    <button class="sm-button secondary-btn add-manual-btn" data-component-id="${component.id}">Add Link</button>
+                </div>
+            </div>
+        `;
+        
+        // Build the component card HTML
         card.innerHTML = `
             <div class="component-header">
                 <span class="component-title">${component.name}</span>
                 ${component.purchased ? '<span class="badge">Purchased</span>' : ''}
             </div>
             ${component.notes ? `<p>${component.notes}</p>` : ''}
+            
             <div class="product-list">
-                ${component.products.length > 0 ? productsList : '<p>No products added yet</p>'}
+                ${component.products.length > 0 ? productsList : '<p>No products saved yet</p>'}
             </div>
+            
+            ${!component.purchased ? searchResultsHtml : ''}
+            
             <div class="component-actions">
-                <button class="sm-button search-btn" data-component-id="${component.id}">Search Products</button>
-                <button class="sm-button neutral-btn real-search-btn" data-component-id="${component.id}" data-component-name="${component.name}">Google It</button>
-                ${component.purchased ? `<button class="sm-button neutral-btn unmark-btn" data-component-id="${component.id}">Unmark Purchase</button>` : ''}
                 <button class="sm-button edit-btn" data-component-id="${component.id}">Edit</button>
-                <button class="sm-button delete-btn" data-component-id="${component.id}">Delete</button>
+                <button class="sm-button danger-btn delete-btn" data-component-id="${component.id}">Delete</button>
+                ${component.purchased ? `<button class="sm-button neutral-btn unmark-btn" data-component-id="${component.id}">Unmark Purchase</button>` : ''}
             </div>
         `;
         
@@ -139,28 +203,63 @@ function renderComponents() {
     });
     
     // Add event listeners to the new elements
-    document.querySelectorAll('.search-btn').forEach(btn => {
-        btn.addEventListener('click', searchProducts);
-    });
-    
-    document.querySelectorAll('.mark-purchased-btn').forEach(btn => {
-        btn.addEventListener('click', markPurchased);
-    });
-    
-    document.querySelectorAll('.unmark-btn').forEach(btn => {
-        btn.addEventListener('click', unmarkPurchased);
-    });
-    
+    addComponentEventListeners();
+}
+
+/**
+ * Add event listeners to component elements
+ */
+function addComponentEventListeners() {
+    // Edit buttons
     document.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', editComponent);
     });
     
+    // Delete buttons
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', deleteComponent);
     });
     
-    document.querySelectorAll('.real-search-btn').forEach(btn => {
-        btn.addEventListener('click', openRealSearch);
+    // Mark purchased buttons
+    document.querySelectorAll('.mark-purchased-btn').forEach(btn => {
+        btn.addEventListener('click', markPurchased);
+    });
+    
+    // Unmark purchased buttons
+    document.querySelectorAll('.unmark-btn').forEach(btn => {
+        btn.addEventListener('click', unmarkPurchased);
+    });
+    
+    // Refresh search buttons
+    document.querySelectorAll('.refresh-search-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const componentId = e.target.dataset.componentId;
+            const component = projectData.components.find(c => c.id === componentId);
+            if (component) {
+                runSearch(component);
+                saveData();
+                renderComponents();
+            }
+        });
+    });
+    
+    // Save product buttons
+    document.querySelectorAll('.save-product-btn').forEach(btn => {
+        btn.addEventListener('click', saveProductFromResults);
+    });
+    
+    // Add manual link buttons
+    document.querySelectorAll('.add-manual-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const componentId = e.target.dataset.componentId;
+            const inputField = document.querySelector(`.manual-url-input[data-component-id="${componentId}"]`);
+            const url = inputField.value.trim();
+            
+            if (url) {
+                addManualLink(componentId, url);
+                inputField.value = '';
+            }
+        });
     });
 }
 
@@ -169,148 +268,6 @@ function renderComponents() {
  */
 function saveData() {
     localStorage.setItem('gamingClosetProject', JSON.stringify(projectData));
-}
-
-/**
- * Search for products related to a component
- */
-function searchProducts(e) {
-    const componentId = e.target.dataset.componentId;
-    const component = projectData.components.find(c => c.id === componentId);
-    
-    currentSearchComponent = component;
-    
-    const searchTerm = component.name.toLowerCase();
-    let results = [];
-    
-    // Get products based on search term from our sample data
-    for (const [key, products] of Object.entries(sampleProducts)) {
-        if (searchTerm.includes(key) || key.includes(searchTerm)) {
-            results = products;
-            break;
-        }
-    }
-    
-    // If no direct match, get random products
-    if (results.length === 0) {
-        const allProducts = Object.values(sampleProducts).flat();
-        results = _.sampleSize(allProducts, 5);
-    }
-    
-    // Display results
-    searchResultsContent.innerHTML = `
-        <h3>Search results for "${component.name}"</h3>
-        <div class="manual-add-section">
-            <p>Have a product URL from elsewhere? Add it manually:</p>
-            <button class="secondary-btn add-manual-btn" data-component-id="${component.id}">Add from URL</button>
-        </div>
-        <div class="search-divider"></div>
-        ${results.map(product => `
-            <div class="search-result-item">
-                <div class="product-title">${product.title}</div>
-                <div class="product-details">
-                    <span class="product-price">${product.price}</span>
-                    <div class="product-rating">
-                        <span class="stars">★★★★★</span>
-                        <span>${product.rating}</span>
-                    </div>
-                </div>
-                <div class="product-source"><small>Source: ${product.source}</small></div>
-                <button class="sm-button secondary-btn add-product-btn" 
-                        data-product-id="${product.id}"
-                        data-product-title="${product.title}"
-                        data-product-price="${product.price}"
-                        data-product-rating="${product.rating}"
-                        data-product-source="${product.source}"
-                        data-product-url="${product.url}">
-                    Add to Component
-                </button>
-            </div>
-        `).join('')}
-    `;
-    
-    // Add event listeners to the "Add to Component" buttons
-    document.querySelectorAll('.add-product-btn').forEach(btn => {
-        btn.addEventListener('click', addProductToComponent);
-    });
-    
-    // Add event listener to the "Add from URL" button
-    document.querySelectorAll('.add-manual-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const componentId = e.target.dataset.componentId;
-            addProductManually(componentId);
-        });
-    });
-    
-    // Show the overlay and search results
-    overlay.style.display = 'block';
-    searchResults.style.display = 'block';
-}
-
-/**
- * Close the search results modal
- */
-function closeSearch() {
-    overlay.style.display = 'none';
-    searchResults.style.display = 'none';
-    currentSearchComponent = null;
-}
-
-/**
- * Add a product to a component
- */
-function addProductToComponent(e) {
-    if (!currentSearchComponent) return;
-    
-    const productData = e.target.dataset;
-    const newProduct = {
-        id: productData.productId,
-        title: productData.productTitle,
-        price: productData.productPrice,
-        rating: parseFloat(productData.productRating),
-        source: productData.productSource,
-        url: productData.productUrl
-    };
-    
-    // Check if product already exists in the component
-    const existingProductIndex = currentSearchComponent.products.findIndex(p => p.id === newProduct.id);
-    if (existingProductIndex === -1) {
-        currentSearchComponent.products.push(newProduct);
-    }
-    
-    saveData();
-    renderComponents();
-    closeSearch();
-}
-
-/**
- * Mark a product as purchased
- */
-function markPurchased(e) {
-    const productId = e.target.dataset.productId;
-    const componentCard = e.target.closest('.component-card');
-    const componentId = componentCard.dataset.id;
-    
-    const component = projectData.components.find(c => c.id === componentId);
-    if (component) {
-        component.purchased = productId;
-        saveData();
-        renderComponents();
-    }
-}
-
-/**
- * Unmark a component as purchased
- */
-function unmarkPurchased(e) {
-    const componentId = e.target.dataset.componentId;
-    const component = projectData.components.find(c => c.id === componentId);
-    
-    if (component) {
-        component.purchased = null;
-        saveData();
-        renderComponents();
-    }
 }
 
 /**
@@ -346,54 +303,233 @@ function deleteComponent(e) {
         
         // If we're editing this component, cancel edit mode
         if (editingComponentId === componentId) {
-            editingComponentId = null;
-            componentNameInput.value = '';
-            componentNotesInput.value = '';
-            addComponentBtn.textContent = 'Add Component';
-            cancelEditBtn.style.display = 'none';
+            exitEditMode();
         }
     }
 }
 
 /**
- * Open a real search in a new tab
+ * Mark a product as purchased
  */
-function openRealSearch(e) {
-    const componentName = e.target.dataset.componentName;
-    const searchQuery = encodeURIComponent(componentName);
+function markPurchased(e) {
+    const componentId = e.target.dataset.componentId;
+    const productId = e.target.dataset.productId;
     
-    // Open a new tab with a Google search for the component
-    window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
+    const component = projectData.components.find(c => c.id === componentId);
+    if (component) {
+        // Mark the product as purchased
+        const product = component.products.find(p => p.id === productId);
+        if (product) {
+            // Mark this product as purchased
+            product.isPurchased = true;
+            // Mark the component as purchased
+            component.purchased = true;
+            
+            saveData();
+            renderComponents();
+        }
+    }
 }
 
 /**
- * Add a product URL manually from clipboard
+ * Unmark a component as purchased
  */
-function addProductManually(componentId) {
+function unmarkPurchased(e) {
+    const componentId = e.target.dataset.componentId;
     const component = projectData.components.find(c => c.id === componentId);
     
-    if (!component) return;
+    if (component) {
+        component.purchased = false;
+        // Also unmark all products
+        component.products.forEach(product => {
+            product.isPurchased = false;
+        });
+        
+        saveData();
+        renderComponents();
+    }
+}
+
+/**
+ * Run a search for a component
+ */
+function runSearch(component) {
+    // In a real app, this would call an API
+    // For now, we'll simulate results based on the component name
     
-    const url = prompt('Paste the product URL:');
-    if (!url) return;
+    // Show loading state
+    component.searchResults = [{ id: 'loading', title: 'Loading...', url: '#' }];
+    renderComponents();
     
-    const title = prompt('Enter a title for this product:');
-    if (!title) return;
-    
-    const price = prompt('Enter the price (e.g. $19.99):');
-    const rating = parseFloat(prompt('Enter the rating (1-5):', '4.5')) || 4.5;
-    const source = prompt('Enter the source (e.g. Amazon, Best Buy):', 'Web');
-    
-    const newProduct = {
-        id: 'manual-' + Date.now(),
-        title,
-        price: price || 'N/A',
-        rating,
-        source,
-        url
+    // Simulate API delay
+    setTimeout(() => {
+        // Generate search results based on component name
+        const searchTerm = component.name.toLowerCase();
+        let results = [];
+        
+        // Generate some fake search results
+        results = generateFakeSearchResults(searchTerm);
+        
+        // Update the component with search results
+        component.searchResults = results;
+        component.showResults = true;
+        
+        saveData();
+        renderComponents();
+    }, 500);
+}
+
+/**
+ * Generate fake search results for demo purposes
+ */
+function generateFakeSearchResults(term) {
+    // Create some fake product results based on the search term
+    const results = [];
+    const brands = ['Amazon', 'Best Buy', 'Walmart', 'Target', 'Newegg'];
+    const priceRanges = {
+        'chair': { min: 89, max: 299 },
+        'monitor': { min: 149, max: 699 },
+        'cable': { min: 9, max: 49 },
+        'headset': { min: 49, max: 199 },
+        'controller': { min: 39, max: 179 },
+        'stand': { min: 19, max: 99 },
+        'default': { min: 29, max: 199 }
     };
     
-    component.products.push(newProduct);
-    saveData();
-    renderComponents();
+    // Find the appropriate price range
+    let range = priceRanges.default;
+    for (const key in priceRanges) {
+        if (term.includes(key)) {
+            range = priceRanges[key];
+            break;
+        }
+    }
+    
+    // Generate 4-6 random results
+    const count = Math.floor(Math.random() * 3) + 4;
+    for (let i = 0; i < count; i++) {
+        const brand = brands[Math.floor(Math.random() * brands.length)];
+        const price = (Math.random() * (range.max - range.min) + range.min).toFixed(2);
+        const rating = (Math.random() * 2 + 3).toFixed(1); // 3.0 to 5.0
+        
+        let title;
+        if (term.includes('chair')) {
+            const chairTypes = ['Gaming Chair', 'Racing Style Chair', 'Ergonomic Chair', 'Office Gaming Chair'];
+            const features = ['with Lumbar Support', 'with Footrest', 'with Massage', 'Reclining', 'High Back'];
+            title = `${brand} ${chairTypes[i % chairTypes.length]} ${features[i % features.length]}`;
+        } else if (term.includes('monitor')) {
+            const sizes = ['24"', '27"', '32"', '34"'];
+            const resolutions = ['1080p', '1440p', '4K', 'UltraWide QHD'];
+            title = `${brand} ${sizes[i % sizes.length]} ${resolutions[i % resolutions.length]} Gaming Monitor`;
+        } else if (term.includes('cable')) {
+            const lengths = ['6ft', '10ft', '15ft'];
+            const types = ['HDMI 2.1', 'DisplayPort 1.4', 'Ultra High Speed', 'Braided'];
+            title = `${brand} ${types[i % types.length]} ${lengths[i % lengths.length]} Cable`;
+        } else {
+            // Generic title
+            title = `${brand} ${term.charAt(0).toUpperCase() + term.slice(1)} Model ${String.fromCharCode(65 + i)}`;
+        }
+        
+        results.push({
+            id: `search-${Date.now()}-${i}`,
+            title,
+            price: `$${price}`,
+            rating,
+            source: brand,
+            url: `https://example.com/product?q=${encodeURIComponent(title)}`
+        });
+    }
+    
+    return results;
 }
+
+/**
+ * Save a product from search results to the component
+ */
+function saveProductFromResults(e) {
+    const componentId = e.target.dataset.componentId;
+    const resultId = e.target.dataset.resultId;
+    
+    const component = projectData.components.find(c => c.id === componentId);
+    if (component) {
+        const result = component.searchResults.find(r => r.id === resultId);
+        if (result) {
+            // Check if this product is already saved
+            const existingProductIndex = component.products.findIndex(p => 
+                p.title === result.title && p.url === result.url);
+            
+            if (existingProductIndex === -1) {
+                // Add to saved products
+                component.products.push({
+                    id: `product-${Date.now()}`,
+                    title: result.title,
+                    price: result.price,
+                    rating: result.rating,
+                    source: result.source,
+                    url: result.url,
+                    isPurchased: false
+                });
+                
+                saveData();
+                renderComponents();
+            } else {
+                alert('This product is already saved to this component.');
+            }
+        }
+    }
+}
+
+/**
+ * Add a manual product link to a component
+ */
+function addManualLink(componentId, url) {
+    // Validate URL format
+    if (!url.startsWith('http')) {
+        url = 'https://' + url;
+    }
+    
+    try {
+        new URL(url); // Will throw if invalid URL
+        
+        const component = projectData.components.find(c => c.id === componentId);
+        if (component) {
+            // Extract domain as source
+            const domain = new URL(url).hostname.replace('www.', '');
+            
+            // Create a simple product from the URL
+            const newProduct = {
+                id: `product-${Date.now()}`,
+                title: `Product from ${domain}`,
+                price: null,
+                rating: null,
+                source: domain,
+                url: url,
+                isPurchased: false
+            };
+            
+            // Check if URL already exists
+            const existingProduct = component.products.find(p => p.url === url);
+            if (!existingProduct) {
+                component.products.push(newProduct);
+                saveData();
+                renderComponents();
+            } else {
+                alert('This URL is already saved to this component.');
+            }
+        }
+    } catch (e) {
+        alert('Please enter a valid URL');
+    }
+}
+
+// Initialize the app
+document.addEventListener('DOMContentLoaded', () => {
+    // Auto-run searches for components that don't have results yet
+    projectData.components.forEach(component => {
+        if (!component.purchased && (!component.searchResults || component.searchResults.length === 0)) {
+            runSearch(component);
+        }
+    });
+    
+    saveData();
+});
