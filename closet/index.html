@@ -3,35 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gaming Closet Project</title>
+    <title>Product Wishlist</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <h1>Gaming Closet Project</h1>
-        <p class="description">Track components, search for products, and organize your gaming closet build.</p>
-    </header>
+    <h1>My Product Wishlist</h1>
     
-    <div class="add-component">
-        <div class="form-group">
-            <label for="component-name">Component Name</label>
-            <input type="text" id="component-name" placeholder="e.g., Gaming Chair, HDMI Cable, etc.">
-        </div>
-        <div class="form-group">
-            <label for="component-notes">Notes (Optional)</label>
-            <textarea id="component-notes" placeholder="Any specific requirements or details"></textarea>
-        </div>
-        <div>
-            <button id="add-component-btn">Add Component</button>
-            <button id="cancel-edit-btn" style="display:none;" class="neutral-btn">Cancel</button>
+    <div id="product-list">
+        <div id="product-template" class="product-item" style="display:none;">
+            <input type="text" class="product-name" placeholder="Product name" />
+            <select class="search-engine">
+                <option value="google">Google</option>
+                <option value="amazon">Amazon</option>
+            </select>
+            <button class="search-btn">Search</button>
+            <ul class="search-results"></ul>
+            <button class="add-links-btn">Add Selected Links</button>
+            <ul class="selected-links"></ul>
         </div>
     </div>
-    
-    <h2>Your Components</h2>
-    <div class="components-list" id="components-list">
-        <!-- Component cards will be generated here -->
-    </div>
-    
+
+    <button id="add-product-btn">Add Product</button>
+
     <script src="app.js"></script>
 </body>
 </html>
