@@ -199,12 +199,81 @@
             }
         }
     </style>
-</head>
-<body>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Product data with ASIN/product IDs
+            const products = [
+                {
+                    id: 'B07Z7ZGHD5',
+                    title: 'HUANUO Single Monitor Wall Mount',
+                    selector: '.item-card:nth-child(1) .item-image img',
+                    linkSelector: '.item-card:nth-child(1) .item-link'
+                },
+                {
+                    id: 'B08LMNS2X6',
+                    title: 'Couchmaster CYBOT Lap Desk',
+                    selector: '.item-card:nth-child(2) .item-image img',
+                    linkSelector: '.item-card:nth-child(2) .item-link'
+                },
+                {
+                    id: 'B096M6WWFS',
+                    title: 'Levoit Floor Gaming Chair',
+                    selector: '.item-card:nth-child(3) .item-image img',
+                    linkSelector: '.item-card:nth-child(3) .item-link'
+                },
+                {
+                    id: 'B07X1MTJJT',
+                    title: 'Twelve South BookArc',
+                    selector: '.item-card:nth-child(4) .item-image img',
+                    linkSelector: '.item-card:nth-child(4) .item-link'
+                },
+                {
+                    id: 'B079JQ9XXV',
+                    title: 'HDMI Switch 4K',
+                    selector: '.item-card:nth-child(5) .item-image img',
+                    linkSelector: '.item-card:nth-child(5) .item-link'
+                },
+                {
+                    id: 'B08CKJWSFS',
+                    title: 'Philips Hue Lightstrip Plus',
+                    selector: '.item-card:nth-child(6) .item-image img',
+                    linkSelector: '.item-card:nth-child(6) .item-link'
+                },
+                {
+                    id: 'B07MJQ3TPQ',
+                    title: 'Eve Motion HomeKit Sensor',
+                    selector: '.item-card:nth-child(7) .item-image img',
+                    linkSelector: '.item-card:nth-child(7) .item-link'
+                },
+                {
+                    id: 'B07RV4KNBW',
+                    title: 'Cooluli Mini Fridge',
+                    selector: '.item-card:nth-child(8) .item-image img',
+                    linkSelector: '.item-card:nth-child(8) .item-link'
+                },
+                {
+                    id: 'B08DKX8MLV',
+                    title: 'EAHUMM Floating Shelf with LED',
+                    selector: '.item-card:nth-child(9) .item-image img',
+                    linkSelector: '.item-card:nth-child(9) .item-link'
+                },
+                {
+                    id: 'B07VH6KDY8',
+                    title: 'Acoustic Foam Panels',
+                    selector: '.item-card:nth-child(10) .item-image img',
+                    linkSelector: '.item-card:nth-child(10) .item-link'
+                },
+                {
+                    id: 'B07GPFDL1K',
+                    title: 'D-Line Cable Raceway Kit',
+                    selector: '.item-card:nth-child(11) .item-image img',
+                    linkSelector: '.item-card:nth-child(11) .item-link'
+                },
+                
     <div class="container">
         <header>
             <h1>Gaming Closet Hideaway Project</h1>
-            <p>Jon's custom gaming space project in a repurposed closet</p>
+            <p>My custom gaming space project in a repurposed closet</p>
         </header>
         
         <section class="overview">
