@@ -12,8 +12,6 @@ document.addEventListener("DOMContentLoaded", function() {
         searchBtn.addEventListener("click", function() {
             const productName = productClone.querySelector(".product-name").value;
             const searchEngine = productClone.querySelector(".search-engine").value;
-            const iframeContainer = productClone.querySelector(".iframe-container");
-            const iframe = productClone.querySelector(".search-results-iframe");
 
             let queryURL = '';
             if (searchEngine === "google") {
@@ -22,18 +20,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 queryURL = `https://www.amazon.com/s?k=${encodeURIComponent(productName)}`;
             }
 
-            // Display the iframe with the search results
-            iframe.src = queryURL;
-            iframeContainer.style.display = 'block';
+            // Open the search results in a new tab
+            window.open(queryURL, '_blank');
         });
 
         const addLinksBtn = productClone.querySelector(".add-links-btn");
         addLinksBtn.addEventListener("click", function() {
-            const iframe = productClone.querySelector(".search-results-iframe");
             const selectedLinksList = productClone.querySelector(".selected-links");
 
-            // Allow the user to manually copy and add URLs
-            const url = iframe.src; // Assume the iframe will show search results
+            // Assume user manually copies and pastes URLs into the list
+            const url = productClone.querySelector(".product-name").value;
             if (url) {
                 const li = document.createElement("li");
                 li.textContent = url;
