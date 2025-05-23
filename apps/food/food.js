@@ -526,6 +526,181 @@ createTagsAndAdd("Chicken Strip Basket (DQ)", "hot", "familiar", "quick", "takeo
 createTagsAndAdd("FlameThrower GrillBurger (DQ)", "hot", "adventurous", "quick", "takeout", "easy", "hearty", "Meat/Fish");
 createTagsAndAdd("Blizzard® Treat (DQ)", "cold", "familiar", "quick", "takeout", "easy", "light", "Veggie/Vegan");
 
+// --- NEW ENTRIES: LOCAL RESTAURANTS (32563 AREA) & GOURMET OPTIONS ---
+
+// --- Local & Regional Restaurants (Takeout) ---
+createTagsAndAdd("Blackened Redfish (Broussard's)", "hot", "adventurous", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Shrimp & Grits (Broussard's)", "hot", "familiar", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Oysters Broussard", "hot", "adventurous", "take your time", "takeout", "fancy", "light", "Meat/Fish");
+createTagsAndAdd("Grouper Margarita (Cactus Flower Cafe)", "hot", "adventurous", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Puffy Tacos (Cactus Flower Cafe)", "hot", "adventurous", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("The Grand Marlin Praline Grouper", "hot", "adventurous", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Lobster Fingers (The Grand Marlin)", "hot", "adventurous", "take your time", "takeout", "fancy", "light", "Meat/Fish");
+createTagsAndAdd("Snapper Pontchartrain (The Grand Marlin)", "hot", "adventurous", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Grilled Amberjack Sandwich (Dewey Destin's)", "hot", "familiar", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Fried Crab Claws (Dewey Destin's)", "hot", "familiar", "quick", "takeout", "easy", "light", "Meat/Fish");
+createTagsAndAdd("Steamed Royal Red Shrimp (Dewey Destin's)", "hot", "familiar", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Reuben Eggrolls (McGuire's Irish Pub)", "hot", "adventurous", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Senate Bean Soup (McGuire's Irish Pub)", "hot", "familiar", "take your time", "takeout", "easy", "light", "Meat/Fish");
+createTagsAndAdd("Shepherd's Pie (McGuire's Irish Pub)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Wood-Fired Pizza (Pizza On The Bayou)", "hot", "familiar", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Tuna Poke Bowl (The Slippery Mermaid)", "cold", "adventurous", "quick", "takeout", "fancy", "light", "Meat/Fish");
+createTagsAndAdd("Dragon Roll Sushi (The Slippery Mermaid)", "cold", "adventurous", "quick", "takeout", "fancy", "light", "Meat/Fish");
+createTagsAndAdd("Seafood Gumbo (Stewby's Seafood Shanty)", "hot", "familiar", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Smoked Tuna Dip (Stewby's Seafood Shanty)", "cold", "familiar", "quick", "takeout", "easy", "light", "Meat/Fish");
+createTagsAndAdd("Beignets (Taste of New Orleans)", "hot", "adventurous", "quick", "takeout", "easy", "light", "Veggie/Vegan");
+createTagsAndAdd("Jambalaya (Taste of New Orleans)", "hot", "adventurous", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+
+// --- Adventurous, Fancy & Cold "At Home" Options ---
+
+// --- Fancy "At Home" - Hot Meals ---
+createTagsAndAdd("Homemade Beef Wellington", "hot", "adventurous", "take your time", "at home", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Pan-Seared Duck Breast with Berry Sauce", "hot", "adventurous", "take your time", "at home", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Homemade Lobster Thermidor", "hot", "adventurous", "take your time", "at home", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Seared Scallops with Risotto", "hot", "adventurous", "take your time", "at home", "fancy", "light", "Meat/Fish");
+createTagsAndAdd("Mushroom Bourguignon (Vegan)", "hot", "adventurous", "take your time", "at home", "fancy", "hearty", "Veggie/Vegan");
+createTagsAndAdd("Homemade Paella with Seafood", "hot", "adventurous", "take your time", "at home", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Vegan Paella", "hot", "adventurous", "take your time", "at home", "fancy", "hearty", "Veggie/Vegan");
+createTagsAndAdd("Braised Short Ribs", "hot", "familiar", "take your time", "at home", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Gourmet Mac & Cheese with Truffle Oil", "hot", "adventurous", "take your time", "at home", "fancy", "hearty", "Veggie/Vegan");
+createTagsAndAdd("Cacio e Pepe", "hot", "adventurous", "quick", "at home", "fancy", "light", "Veggie/Vegan");
+createTagsAndAdd("Homemade Potato Gnocchi with Sage Butter", "hot", "adventurous", "take your time", "at home", "fancy", "hearty", "Veggie/Vegan");
+createTagsAndAdd("Rack of Lamb with Herb Crust", "hot", "adventurous", "take your time", "at home", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Jackfruit 'Pulled Pork' Sandwiches", "hot", "adventurous", "take your time", "at home", "easy", "hearty", "Veggie/Vegan");
+createTagsAndAdd("Chicken Cordon Bleu", "hot", "familiar", "take your time", "at home", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Osso Buco", "hot", "adventurous", "take your time", "at home", "fancy", "hearty", "Meat/Fish");
+
+// --- Adventurous & Cold "At Home" Options ---
+createTagsAndAdd("Homemade Tuna Poke Bowl", "cold", "adventurous", "quick", "at home", "fancy", "light", "Meat/Fish");
+createTagsAndAdd("Steak Tartare", "cold", "adventurous", "quick", "at home", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Classic Ceviche", "cold", "adventurous", "take your time", "at home", "fancy", "light", "Meat/Fish");
+createTagsAndAdd("Prosciutto and Melon", "cold", "adventurous", "quick", "at home", "easy", "light", "Meat/Fish");
+createTagsAndAdd("Salade Niçoise", "cold", "adventurous", "take your time", "at home", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Thai Larb Gai (Chicken Salad)", "cold", "adventurous", "quick", "at home", "easy", "light", "Meat/Fish");
+createTagsAndAdd("Watermelon, Feta, and Mint Salad", "cold", "adventurous", "quick", "at home", "easy", "light", "Veggie/Vegan");
+createTagsAndAdd("Spanish White Gazpacho (Ajoblanco)", "cold", "adventurous", "quick", "at home", "fancy", "light", "Veggie/Vegan");
+createTagsAndAdd("Vietnamese Summer Rolls with Peanut Sauce", "cold", "adventurous", "take your time", "at home", "easy", "light", "Meat/Fish");
+createTagsAndAdd("Vegan Vietnamese Summer Rolls", "cold", "adventurous", "take your time", "at home", "easy", "light", "Veggie/Vegan");
+createTagsAndAdd("Cucumber and Avocado Cold Soup", "cold", "adventurous", "quick", "at home", "easy", "light", "Veggie/Vegan");
+createTagsAndAdd("Gourmet Cheese & Charcuterie Board", "cold", "adventurous", "take your time", "at home", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Gourmet Cheese Board", "cold", "adventurous", "take your time", "at home", "fancy", "hearty", "Veggie/Vegan");
+createTagsAndAdd("Beef Carpaccio", "cold", "adventurous", "quick", "at home", "fancy", "light", "Meat/Fish");
+createTagsAndAdd("Smoked Salmon Blinis with Dill Cream", "cold", "adventurous", "quick", "at home", "fancy", "light", "Meat/Fish");
+createTagsAndAdd("Tabbouleh Salad", "cold", "adventurous", "quick", "at home", "easy", "light", "Veggie/Vegan");
+
+// --- More Solid "At Home" Options ---
+createTagsAndAdd("Homemade Pizza on the Grill", "hot", "familiar", "take your time", "at home", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Cast Iron Skillet Steak", "hot", "familiar", "quick", "at home", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Beer Can Chicken", "hot", "adventurous", "take your time", "at home", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Sheet Pan Fajitas", "hot", "familiar", "quick", "at home", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Sheet Pan Veggie Fajitas", "hot", "familiar", "quick", "at home", "easy", "hearty", "Veggie/Vegan");
+createTagsAndAdd("Slow Cooker Pulled Pork", "hot", "familiar", "take your time", "at home", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Instant Pot Butter Chicken", "hot", "adventurous", "take your time", "at home", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Stuffed Bell Peppers", "hot", "familiar", "take your time", "at home", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Quinoa Stuffed Bell Peppers", "hot", "familiar", "take your time", "at home", "easy", "hearty", "Veggie/Vegan");
+createTagsAndAdd("Chicken and Dumplings", "hot", "familiar", "take your time", "at home", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Frittata with Goat Cheese and Spinach", "hot", "familiar", "quick", "at home", "easy", "light", "Veggie/Vegan");
+createTagsAndAdd("Shakshuka", "hot", "adventurous", "quick", "at home", "easy", "hearty", "Veggie/Vegan");
+createTagsAndAdd("Homemade Fish and Chips", "hot", "familiar", "take your time", "at home", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Classic Pot Roast", "hot", "familiar", "take your time", "at home", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Gourmet Grilled Cheese with Fig Jam", "hot", "adventurous", "quick", "at home", "fancy", "light", "Veggie/Vegan");
+
+// --- NEW ENTRIES: MORE GENERAL RESTAURANTS (GULF BREEZE, PENSACOLA, PACE, MILTON) ---
+
+// --- Pensacola & Gulf Breeze Area Restaurants ---
+createTagsAndAdd("Seville Quarter Steak (The District)", "hot", "familiar", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Chicken and Waffles (Five Sisters Blues Cafe)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Smothered Fried Pork Chops (Five Sisters Blues Cafe)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Drunken Shrimp (Global Grill)", "hot", "adventurous", "take your time", "takeout", "fancy", "light", "Meat/Fish");
+createTagsAndAdd("Tapas Platter (Global Grill)", "hot", "adventurous", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Palafox Street Tacos (Taco Rock)", "hot", "familiar", "quick", "takeout", "easy", "light", "Meat/Fish");
+createTagsAndAdd("The Pensacola Burger (The Tin Cow)", "hot", "adventurous", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Ahi Tuna Melt (The Tin Cow)", "hot", "adventurous", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Grits a Ya Ya (The Fish House)", "hot", "adventurous", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("World-Famous Fish Tacos (The Fish House)", "hot", "familiar", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("The Godfather Pizza (Georgio's Pizza)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Gyro Platter (Georgio's Pizza)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Chicken Shawarma Plate (Jordanian Cuisine)", "hot", "adventurous", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Falafel Sandwich (Jordanian Cuisine)", "hot", "adventurous", "quick", "takeout", "easy", "light", "Veggie/Vegan");
+createTagsAndAdd("Firecracker Shrimp (Shaggy's Harbor Bar)", "hot", "adventurous", "quick", "takeout", "easy", "light", "Meat/Fish");
+createTagsAndAdd("Beach Burger (Shaggy's Harbor Bar)", "hot", "familiar", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Pad Thai (Siam Thai)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Green Curry (Siam Thai)", "hot", "adventurous", "take your time", "takeout", "easy", "hearty", "Veggie/Vegan");
+
+// --- Milton & Pace Area Restaurants ---
+createTagsAndAdd("Smoked Pork Plate (Smokin' In The Square BBQ)", "hot", "familiar", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Brisket Sandwich (Smokin' In The Square BBQ)", "hot", "familiar", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("The Big Italy Pizza (The PizzaPlex)", "hot", "adventurous", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Calzone (The PizzaPlex)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Country Fried Steak (The Ole Hickory)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Fried Green Tomatoes (The Ole Hickory)", "hot", "familiar", "quick", "takeout", "easy", "light", "Veggie/Vegan");
+createTagsAndAdd("Blackwater Burger (Blackwater Bistro)", "hot", "familiar", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Shrimp and Scallop Pasta (Blackwater Bistro)", "hot", "adventurous", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Hibachi Chicken (Nikko Japanese Steak House)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Volcano Roll (Nikko Japanese Steak House)", "cold", "adventurous", "take your time", "takeout", "fancy", "light", "Meat/Fish");
+createTagsAndAdd("Carne Asada (La Hacienda)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Chiles Poblanos (La Hacienda)", "hot", "adventurous", "take your time", "takeout", "fancy", "hearty", "Veggie/Vegan");
+createTagsAndAdd("Gator Bites (Gator's)", "hot", "adventurous", "quick", "takeout", "easy", "light", "Meat/Fish");
+createTagsAndAdd("Philly Cheesesteak (Gator's)", "hot", "familiar", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+
+
+// --- NEW ENTRIES: MORE LOCAL RESTAURANTS (GULF BREEZE, NAVARRE, MIDWAY, PENSACOLA, MILTON, PACE) ---
+
+// --- Navarre Area Restaurants ---
+createTagsAndAdd("Sailor's Platter (Sailor's Grill, Navarre)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Ahi Tuna Nachos (Sailor's Grill, Navarre)", "hot", "adventurous", "quick", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Key Lime Pie (Sailor's Grill, Navarre)", "cold", "familiar", "quick", "takeout", "easy", "light", "Veggie/Vegan");
+createTagsAndAdd("Grouper Sandwich (Juana's Pagodas, Navarre Beach)", "hot", "familiar", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Island Chicken Salad (Juana's Pagodas, Navarre Beach)", "cold", "familiar", "quick", "takeout", "easy", "light", "Meat/Fish");
+createTagsAndAdd("Volleyball Nachos (Juana's Pagodas, Navarre Beach)", "hot", "familiar", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Shrimp Po' Boy (TC's Front Porch, Navarre)", "hot", "familiar", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Crawfish Étouffée (TC's Front Porch, Navarre)", "hot", "adventurous", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Artisan Bread Loaf (Navarre Bakery & Creamery)", "cold", "familiar", "quick", "takeout", "easy", "light", "Veggie/Vegan"); // Eaten at home
+createTagsAndAdd("Gourmet Cupcakes (Navarre Bakery & Creamery)", "cold", "familiar", "quick", "takeout", "easy", "light", "Veggie/Vegan");
+createTagsAndAdd("Truffle Burger (The Grey Taproom, Navarre)", "hot", "adventurous", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Charcuterie Board (The Grey Taproom, Navarre)", "cold", "adventurous", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Fried Mullet Dinner (Windjammers on the Pier, Navarre)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Oyster Sampler (Windjammers on the Pier, Navarre)", "hot", "adventurous", "take your time", "takeout", "fancy", "light", "Meat/Fish");
+
+// --- Gulf Breeze Area Restaurants ---
+createTagsAndAdd("The Maui Wowi Pizza (Rotolo's Pizzeria, Gulf Breeze)", "hot", "adventurous", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Spicy Italian Sandwich (Rotolo's Pizzeria, Gulf Breeze)", "hot", "familiar", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Sesame Seared Tuna Salad (The Pointe, Gulf Breeze)", "cold", "adventurous", "take your time", "takeout", "fancy", "light", "Meat/Fish");
+createTagsAndAdd("Crab Cake Sandwich (The Pointe, Gulf Breeze)", "hot", "familiar", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Oysters Rockefeller (The Pointe, Gulf Breeze)", "hot", "adventurous", "take your time", "takeout", "fancy", "light", "Meat/Fish");
+createTagsAndAdd("Country Benedict (Gulf Breeze Cafe)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Mediterranean Veggie Wrap (Gulf Breeze Cafe)", "cold", "familiar", "quick", "takeout", "easy", "light", "Veggie/Vegan");
+createTagsAndAdd("Homemade Chicken Salad Plate (Gulf Breeze Cafe)", "cold", "familiar", "quick", "takeout", "easy", "light", "Meat/Fish");
+createTagsAndAdd("Kalua Pork Plate (Aloha Grill, Gulf Breeze)", "hot", "adventurous", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Loco Moco (Aloha Grill, Gulf Breeze)", "hot", "adventurous", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Spam Musubi (Aloha Grill, Gulf Breeze)", "hot", "adventurous", "quick", "takeout", "easy", "light", "Meat/Fish");
+createTagsAndAdd("Beef Brisket Plate (Blue Wahoos Grill, Pensacola/Stadium)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish"); // Close enough to GB
+createTagsAndAdd("Grilled Salmon with Dill Sauce (Hemingway's Island Grill, Pensacola Beach)", "hot", "familiar", "take your time", "takeout", "fancy", "hearty", "Meat/Fish"); // Popular spot often visited by GB/Navarre locals
+createTagsAndAdd("Jumbo Lump Crab Cakes (Hemingway's Island Grill, Pensacola Beach)", "hot", "familiar", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+
+// --- Pensacola (more unique options, not covered by chains already) ---
+createTagsAndAdd("Polonza Bistro Burger (Polonza Bistro)", "hot", "adventurous", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Duck Confit (Restaurant IRON)", "hot", "adventurous", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Seasonal Vegetable Plate (Restaurant IRON)", "hot", "adventurous", "take your time", "takeout", "fancy", "light", "Veggie/Vegan");
+createTagsAndAdd("Fried Chicken Thigh Sandwich (Union Public House)", "hot", "familiar", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+createTagsAndAdd("Pork Belly Buns (Union Public House)", "hot", "adventurous", "quick", "takeout", "fancy", "light", "Meat/Fish");
+createTagsAndAdd("Oxtail Pho (Saigon Oriental Market & Deli)", "hot", "adventurous", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Banh Mi Dac Biet (Saigon Oriental Market & Deli)", "cold", "adventurous", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Gnocchi al Pesto (Bonelli's Cafe Italia)", "hot", "familiar", "take your time", "takeout", "fancy", "hearty", "Veggie/Vegan");
+createTagsAndAdd("Veal Piccata (Bonelli's Cafe Italia)", "hot", "familiar", "take your time", "takeout", "fancy", "hearty", "Meat/Fish");
+
+// --- Midway, Pace, Milton (more local options) ---
+createTagsAndAdd("The 'Godfather' Sandwich (Subs N Such, Milton)", "hot", "familiar", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Philly Cheesesteak (Oval Office Pub & Grub, Pace)", "hot", "familiar", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Blackened Mahi Tacos (Cosse's Place, Milton)", "hot", "adventurous", "quick", "takeout", "easy", "light", "Meat/Fish");
+createTagsAndAdd("Shrimp Creole (Cosse's Place, Milton)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Loaded Baked Potato (The Spud Shack, Pace)", "hot", "familiar", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("BBQ Pulled Pork Potato (The Spud Shack, Pace)", "hot", "familiar", "quick", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Chicken Alfredo Pizza (Milton Quality Bakery)", "hot", "adventurous", "take your time", "takeout", "easy", "hearty", "Meat/Fish"); // Assuming they do pizzas
+createTagsAndAdd("Glazed Donuts (Milton Quality Bakery)", "cold", "familiar", "quick", "takeout", "easy", "light", "Veggie/Vegan");
+createTagsAndAdd("Catfish Platter (David's Catfish House, Milton/Pace)", "hot", "familiar", "take your time", "takeout", "easy", "hearty", "Meat/Fish");
+createTagsAndAdd("Cole Slaw (David's Catfish House, Milton/Pace)", "cold", "familiar", "quick", "takeout", "easy", "light", "Veggie/Vegan"); // A notable side
+
         const getFoodSuggestions = (key) => {
     const suggestionsFromDB = foodDatabase[key]; // Get suggestions from your main database
 
@@ -638,7 +813,7 @@ createTagsAndAdd("Blizzard® Treat (DQ)", "cold", "familiar", "quick", "takeout"
                     const query = encodeURIComponent(food);
                     // Example: Open Google search in a new tab.
                     // You can change this to a specific food app deep link if available.
-                    window.open(`https://www.google.com/search?q=${query}+recipe`, '_blank');
+                    window.open(`https://www.google.com/search?q=${query}`, '_blank');
                 };
                 foodSuggestionsEl.appendChild(div);
             });
