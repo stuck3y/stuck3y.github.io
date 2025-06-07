@@ -160,6 +160,22 @@
         .clear-all:hover {
             background: #777;
         }
+				.credit {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.85rem;
+            color: #999;
+            font-style: italic;
+            letter-spacing: 0.5px;
+        }
+
+        .credit span {
+            color: #666;
+            font-weight: 500;
+            font-style: normal;
+        }
     </style>
 </head>
 <body>
@@ -180,6 +196,9 @@
         <div class="list" id="list">
             <div class="empty">Your not-todo list is empty. Add things to avoid!</div>
         </div>
+				
+    </div>
+		<div class="credit">invented by <span>Owen Carson Stuckey</span></div>
     </div>
 
     <script>
