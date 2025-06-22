@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Safari Pac-Man</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { margin:0; padding:20px; background:#000; font-family:monospace; color:#fff; display:flex; flex-direction:column; align-items:center; }
+    canvas { border:2px solid #fff; background:#001122; }
+    .ui { margin:10px 0; font-size:16px; }
+    .controls { margin:10px 0; font-size:12px; }
+  </style>
+</head>
+<body>
+  <div class="ui" id="ui">SCORE: 0 | LIVES: 3 | THEME: Cars (press T)</div>
+  <canvas id="game" width="560" height="480"></canvas>
+  <div class="controls">Arrow keys to move | T to change theme | R to restart</div>
+
+  <script>
+    // Pure vanilla Canvas game - Safari Sequoia guaranteed
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const ui = document.getElementById('ui');
+    
+    // Game constants
+    const TILE = 20;
+    const COLS = 28;
+    const ROWS = 24;
+    
+    // Simple maze (smaller for testing)
+    const MAZE = [
+      "############################",
+      "#............##............#",
+      "#.####.#####.##.#####.####.#",
+      "#o####.#####.##.#####.####o#",
+      "#..........................#",
+      "#.####.##.########.##.####.#",
+      "#......##....##....##......#",
+      "######.##### ## #####.######",
+      "     #.##### ## #####.#     ",
+      "     #.##    GG    ##.#     ",
+      "######.## ######## ##.######",
+      "#P.........................#",
+      "######.## ######## ##.######",
+      "     #.##          ##.#     ",
+      "######.## ######## ##.######",
+      "#............##............#",
+      "#.####.#####.##.#####.####.#",
+      "#o..##................##..o#",
+      "###.##.##.########.##.##.###",
+      "#......##....##....##......#",
+      "#.##########.##.##########.#",
+      "#..........................#",
+      "############################"
+    ];
+    
+    // Game state
+    let score = 0, lives = 3, dots = 0;
+    let themeIndex = 0;
+    const themes = [
+      { name: 'Cars', pacColor: '#ff0000', ghostColors: ['#00ff00', '#0000ff', '#ffff00', '#ff00ff'], road: '#333', wall: '#666' },
+      { name: 'Ocean', pacColor: '#ff7700', ghostColors: ['#ff88ff', '#88ffff', '#ffaaff', '#aaaaff'], road: '#002244', wall: '#004466' }
+    ];
+    
+    // Entities
+    const pac = { x: 1, y: 11, dx: 0, dy: 0, size: 8 };
+    const ghosts = [
+      { x: 13, y: 9, dx: 1, dy: 0, color: 0, size: 7, frightened: false },
+      { x: 14, y: 9, dx: -1, dy: 0, color: 1, size: 7, frightened: false }
+    ];
+    
+    // Find starting positions and count dots
+    function initGame() {
+      dots = 0;
+      for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+          const cell = MAZE[y][x];
+          if (cell === 'P') { pac.x = x; pac.y = y; }
+          if (cell === '.' || cell === 'o') dots++;
+        }
+      }
+      console.log('Game initialized. Pac at:', pac.x, pac.y, 'Dots:', dots);
+    }
+    
+    // Input handling
+    const keys = {};
+    window.addEventListener('keydown', e => {
+      keys[e.key] = true;
+      if (e.key === 't' || e.key === 'T') switchTheme();
+      if (e.key === 'r' || e.key === 'R') restart();
+    });
+    window.addEventListener('keyup', e => keys[e.key] = false);
+    
+    function switchTheme() {
+      themeIndex = (themeIndex + 1) % themes.length;
+      updateUI();
+    }
+    
+    function restart() {
+      score = 0; lives = 3;
+      pac.x = 1; pac.y = 11; pac.dx = 0; pac.dy = 0;
+      ghosts.forEach((g, i) => {
+        g.x = 13 + i; g.y = 9; g.dx = i === 0 ? 1 : -1; g.dy = 0; g.frightened = false;
+      });
+      initGame();
+      updateUI();
+    }
+    
+    function updateUI() {
+      ui.textContent = `SCORE: ${score} | LIVES: ${lives} | THEME: ${themes[themeIndex].name} (press T)`;
+    }
+    
+    // Game logic
+    function update() {
+      // Handle input
+      if (keys['ArrowUp'] || keys['w']) { pac.dx = 0; pac.dy = -1; }
+      if (keys['ArrowDown'] || keys['s']) { pac.dx = 0; pac.dy = 1; }
+      if (keys['ArrowLeft'] || keys['a']) { pac.dx = -1; pac.dy = 0; }
+      if (keys['ArrowRight'] || keys['d']) { pac.dx = 1; pac.dy = 0; }
+      
+      // Move Pac-Man
+      const newX = pac.x + pac.dx;
+      const newY = pac.y + pac.dy;
+      if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS) {
+        const cell = MAZE[newY][newX];
+        if (cell !== '#') {
+          pac.x = newX;
+          pac.y = newY;
+          
+          // Collect dots
+          if (cell === '.' || cell === 'o') {
+            score += cell === 'o' ? 50 : 10;
+            dots--;
+            // Mark as collected (simple approach)
+            MAZE[newY] = MAZE[newY].substring(0, newX) + ' ' + MAZE[newY].substring(newX + 1);
+            updateUI();
+          }
+        }
+      }
+      
+      // Simple ghost movement
+      ghosts.forEach(ghost => {
+        const newGX = ghost.x + ghost.dx;
+        const newGY = ghost.y + ghost.dy;
+        if (newGX >= 0 && newGX < COLS && newGY >= 0 && newGY < ROWS) {
+          const cell = MAZE[newGY][newGX];
+          if (cell !== '#') {
+            ghost.x = newGX;
+            ghost.y = newGY;
+          } else {
+            // Bounce off walls
+            ghost.dx = -ghost.dx;
+            ghost.dy = -ghost.dy;
+          }
+        } else {
+          ghost.dx = -ghost.dx;
+          ghost.dy = -ghost.dy;
+        }
+      });
+    }
+    
+    // Rendering
+    function render() {
+      const theme = themes[themeIndex];
+      
+      // Clear canvas
+      ctx.fillStyle = theme.road;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw maze
+      for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+          const cell = MAZE[y][x];
+          const px = x * TILE;
+          const py = y * TILE;
+          
+          if (cell === '#') {
+            ctx.fillStyle = theme.wall;
+            ctx.fillRect(px, py, TILE, TILE);
+          } else if (cell === '.') {
+            ctx.fillStyle = '#ffff00';
+            ctx.beginPath();
+            ctx.arc(px + TILE/2, py + TILE/2, 2, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (cell === 'o') {
+            ctx.fillStyle = '#ffaa00';
+            ctx.beginPath();
+            ctx.arc(px + TILE/2, py + TILE/2, 6, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+      
+      // Draw Pac-Man
+      ctx.fillStyle = theme.pacColor;
+      ctx.beginPath();
+      ctx.arc(pac.x * TILE + TILE/2, pac.y * TILE + TILE/2, pac.size, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Draw ghosts
+      ghosts.forEach((ghost, i) => {
+        ctx.fillStyle = theme.ghostColors[ghost.color];
+        ctx.beginPath();
+        ctx.arc(ghost.x * TILE + TILE/2, ghost.y * TILE + TILE/2, ghost.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+    
+    // Game loop
+    function gameLoop() {
+      update();
+      render();
+      requestAnimationFrame(gameLoop);
+    }
+    
+    // Start game
+    initGame();
+    updateUI();
+    gameLoop();
+    
+    console.log('Safari Pac-Man loaded successfully!');
+  </script>
+</body>
+</html> 
