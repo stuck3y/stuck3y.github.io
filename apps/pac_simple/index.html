@@ -62,6 +62,9 @@
       { name: 'Ocean', pacColor: '#ff7700', ghostColors: ['#ff88ff', '#88ffff', '#ffaaff', '#aaaaff'], road: '#002244', wall: '#004466' }
     ];
     
+    // Dynamic board state (separate from static MAZE)
+    let board = [];
+    
     // Entities
     const pac = { x: 1, y: 11, dx: 0, dy: 0, size: 8 };
     const ghosts = [
@@ -122,7 +125,7 @@
       const newX = pac.x + pac.dx;
       const newY = pac.y + pac.dy;
       if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS) {
-        const cell = MAZE[newY][newX];
+        const cell = board[newY][newX];
         if (cell !== '#') {
           pac.x = newX;
           pac.y = newY;
@@ -131,8 +134,8 @@
           if (cell === '.' || cell === 'o') {
             score += cell === 'o' ? 50 : 10;
             dots--;
-            // Mark as collected (simple approach)
-            MAZE[newY] = MAZE[newY].substring(0, newX) + ' ' + MAZE[newY].substring(newX + 1);
+            // Mark as collected in dynamic board
+            board[newY][newX] = ' ';
             updateUI();
           }
         }
@@ -143,7 +146,7 @@
         const newGX = ghost.x + ghost.dx;
         const newGY = ghost.y + ghost.dy;
         if (newGX >= 0 && newGX < COLS && newGY >= 0 && newGY < ROWS) {
-          const cell = MAZE[newGY][newGX];
+          const cell = board[newGY][newGX];
           if (cell !== '#') {
             ghost.x = newGX;
             ghost.y = newGY;
@@ -170,7 +173,7 @@
       // Draw maze
       for (let y = 0; y < ROWS; y++) {
         for (let x = 0; x < COLS; x++) {
-          const cell = MAZE[y][x];
+          const cell = board[y][x];
           const px = x * TILE;
           const py = y * TILE;
           
