@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Merry Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        /* iOS-style scrolling */
+        * { -webkit-tap-highlight-color: transparent; }
+        .chat-container {
+            height: 100vh;
+            height: -webkit-fill-available;
+        }
+        /* Smooth scroll */
+        .messages-container {
+            -webkit-overflow-scrolling: touch;
+        }
+        /* Input focus fix for iOS */
+        input:focus { outline: none; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const firebaseConfig = {
+            apiKey: "",
+            authDomain: "merrychat-a7b07.firebaseapp.com",
+            databaseURL: "https://merrychat-a7b07-default-rtdb.firebaseio.com",
+            projectId: "merrychat-a7b07",
+            storageBucket: "merrychat-a7b07.firebasestorage.app",
+            messagingSenderId: "724285663498",
+            appId: "1:724285663498:web:e78a870d78051405d332f3"
+        };
+
+        const OPENAI_API_KEY = '';
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        function App() {
+            const [messages, setMessages] = useState([]);
+            const [inputText, setInputText] = useState('');
+            const [roomId, setRoomId] = useState('');
+            const [userId] = useState('user-' + Math.random().toString(36).substr(2, 9));
+            const [userName, setUserName] = useState('');
+            const [partnerName, setPartnerName] = useState('');
+            const [showSetup, setShowSetup] = useState(true);
+            const messagesEndRef = useRef(null);
+            const messagesRef = useRef(null);
+
+            useEffect(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, [messages]);
+
+            useEffect(() => {
+                if (!roomId) return;
+
+                messagesRef.current = database.ref(`rooms/${roomId}/messages`);
+                
+                messagesRef.current.on('child_added', (snapshot) => {
+                    const message = snapshot.val();
+                    setMessages(prev => [...prev, { id: snapshot.key, ...message }]);
+                });
+
+                return () => messagesRef.current?.off();
+            }, [roomId]);
+
+            const startChat = () => {
+                if (!userName) return;
+                const newRoomId = window.location.hash.slice(1) || 
+                    'room-' + Math.random().toString(36).substr(2, 9);
+                setRoomId(newRoomId);
+                window.location.hash = newRoomId;
+                setShowSetup(false);
+            };
+
+            const getTranslations = async (text) => {
+                try {
+                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${OPENAI_API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            model: 'gpt-3.5-turbo',
+                            messages: [{
+                                role: 'system',
+                                content: 'You are a relationship communication helper. Given a message, provide 2-3 brief interpretations of what the sender might mean. Keep each under 15 words. Focus on emotional intent and common relationship misunderstandings. Format as JSON array of strings.'
+                            }, {
+                                role: 'user',
+                                content: text
+                            }],
+                            temperature: 0.7
+                        })
+                    });
+
+                    const data = await response.json();
+                    return JSON.parse(data.choices[0].message.content);
+                } catch (error) {
+                    console.error('Translation error:', error);
+                    return null;
+                }
+            };
+
+            const sendMessage = async () => {
+                if (!inputText.trim() || !messagesRef.current) return;
+
+                const translations = await getTranslations(inputText);
+                
+                const message = {
+                    text: inputText,
+                    translations: translations,
+                    senderId: userId,
+                    senderName: userName,
+                    timestamp: Date.now(),
+                    selected: null
+                };
+
+                messagesRef.current.push(message);
+                setInputText('');
+            };
+
+            const selectTranslation = (messageId, translation) => {
+                database.ref(`rooms/${roomId}/messages/${messageId}/selected`).set({
+                    translation: translation,
+                    selectedBy: userId,
+                    selectedAt: Date.now()
+                });
+            };
+
+            if (showSetup) {
+                return (
+                    <div className="chat-container bg-gray-50 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl p-6 shadow-lg max-w-sm w-full">
+                            <h1 className="text-2xl font-bold text-center mb-6">Merry Chat 💬</h1>
+                            <p className="text-gray-600 text-sm mb-4 text-center">
+                                A chat app that helps you understand what your partner really means
+                            </p>
+                            <input
+                                type="text"
+                                placeholder="Your name"
+                                value={userName}
+                                onChange={(e) => setUserName(e.target.value)}
+                                className="w-full p-3 border rounded-lg mb-4"
+                                autoComplete="off"
+                            />
+                            <button
+                                onClick={startChat}
+                                className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium"
+                            >
+                                Start Chatting
+                            </button>
+                            {window.location.hash && (
+                                <p className="text-xs text-gray-500 mt-4 text-center">
+                                    Joining existing room...
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="chat-container bg-gray-50 flex flex-col">
+                    {/* Header */}
+                    <div className="bg-white border-b px-4 py-3 flex items-center justify-between">
+                        <h1 className="font-semibold">Merry Chat</h1>
+                        <span className="text-xs text-gray-500">Room: {roomId.slice(-6)}</span>
+                    </div>
+
+                    {/* Messages */}
+                    <div className="messages-container flex-1 overflow-y-auto p-4 space-y-4">
+                        {messages.map((msg) => {
+                            const isMe = msg.senderId === userId;
+                            const showTranslations = !isMe && msg.translations && !msg.selected;
+                            
+                            return (
+                                <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-[70%] ${isMe ? 'items-end' : 'items-start'}`}>
+                                        <p className="text-xs text-gray-500 mb-1 px-1">
+                                            {msg.senderName}
+                                        </p>
+                                        <div className={`rounded-2xl px-4 py-2 ${
+                                            isMe ? 'bg-blue-500 text-white' : 'bg-white'
+                                        }`}>
+                                            {msg.text}
+                                        </div>
+                                        
+                                        {showTranslations && (
+                                            <div className="mt-2 space-y-1">
+                                                <p className="text-xs text-gray-500 px-1">They might mean:</p>
+                                                {msg.translations.map((trans, i) => (
+                                                    <button
+                                                        key={i}
+                                                        onClick={() => selectTranslation(msg.id, trans)}
+                                                        className="block w-full text-left bg-gray-100 rounded-xl px-3 py-2 text-sm hover:bg-gray-200"
+                                                    >
+                                                        {trans}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                        
+                                        {msg.selected && (
+                                            <p className="text-xs text-gray-500 mt-1 px-1">
+                                                {isMe ? `They heard: "${msg.selected.translation}"` : `You heard: "${msg.selected.translation}"`}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        <div ref={messagesEndRef} />
+                    </div>
+
+                    {/* Input */}
+                    <div className="bg-white border-t p-4">
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={inputText}
+                                onChange={(e) => setInputText(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                                placeholder="Type a message..."
+                                className="flex-1 p-3 bg-gray-100 rounded-full"
+                            />
+                            <button
+                                onClick={sendMessage}
+                                className="bg-blue-500 text-white px-6 py-3 rounded-full font-medium"
+                            >
+                                Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
