@@ -129,6 +129,37 @@
       ui.textContent = `SCORE: ${score} | LIVES: ${lives} | THEME: ${themes[themeIndex].name} (press T)${status}`;
     }
     
+    // Helper functions
+    function distance(a, b) {
+      return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+    }
+    
+    function checkCollisions() {
+      // Pac-Man vs Ghosts
+      ghosts.forEach((ghost, i) => {
+        if (distance(pac, ghost) < 0.8) {
+          if (ghost.frightened) {
+            // Eat frightened ghost
+            score += 200;
+            ghost.x = 13 + i; // Reset to start position
+            ghost.y = 9;
+            ghost.frightened = false;
+            updateUI();
+          } else {
+            // Ghost caught Pac-Man
+            lives--;
+            if (lives <= 0) {
+              gameLost = true;
+            } else {
+              // Reset Pac-Man position
+              pac.x = 1; pac.y = 11; pac.dx = 0; pac.dy = 0;
+            }
+            updateUI();
+          }
+        }
+      });
+    }
+    
     // Game logic
     let moveTimer = 0;
     const MOVE_SPEED = 8; // frames between moves (slower = higher number)
@@ -262,18 +293,168 @@
       }
       
       // Draw Pac-Man
-      ctx.fillStyle = theme.pacColor;
-      ctx.beginPath();
-      ctx.arc(pac.x * TILE + TILE/2, pac.y * TILE + TILE/2, pac.size, 0, Math.PI * 2);
-      ctx.fill();
+      drawPacMan(pac.x * TILE + TILE/2, pac.y * TILE + TILE/2, theme);
       
       // Draw ghosts
       ghosts.forEach((ghost, i) => {
-        ctx.fillStyle = ghost.frightened ? '#4444ff' : theme.ghostColors[ghost.color];
-        ctx.beginPath();
-        ctx.arc(ghost.x * TILE + TILE/2, ghost.y * TILE + TILE/2, ghost.size, 0, Math.PI * 2);
-        ctx.fill();
+        drawGhost(ghost.x * TILE + TILE/2, ghost.y * TILE + TILE/2, ghost, theme);
       });
+    }
+    
+    // Pixar-themed character drawing functions
+    function drawPacMan(x, y, theme) {
+      ctx.save();
+      ctx.translate(x, y);
+      
+      if (theme.name === 'Cars') {
+        // Lightning McQueen
+        const w = TILE * 0.8, h = TILE * 0.5;
+        
+        // Car body (red)
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(-w/2, -h/2, w, h);
+        
+        // Windshield
+        ctx.fillStyle = '#87ceeb';
+        ctx.fillRect(-w*0.3, -h*0.3, w*0.6, h*0.3);
+        
+        // Racing stripes
+        ctx.fillStyle = '#ffff00';
+        ctx.fillRect(-w*0.1, -h/2, w*0.05, h);
+        ctx.fillRect(w*0.05, -h/2, w*0.05, h);
+        
+        // Wheels
+        ctx.fillStyle = '#333';
+        ctx.beginPath();
+        ctx.arc(-w*0.25, h*0.6, TILE*0.15, 0, Math.PI * 2);
+        ctx.arc(w*0.25, h*0.6, TILE*0.15, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Eyes
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(-w*0.15, -h*0.1, TILE*0.08, 0, Math.PI * 2);
+        ctx.arc(w*0.15, -h*0.1, TILE*0.08, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(-w*0.15, -h*0.1, TILE*0.04, 0, Math.PI * 2);
+        ctx.arc(w*0.15, -h*0.1, TILE*0.04, 0, Math.PI * 2);
+        ctx.fill();
+        
+      } else {
+        // Nemo (clownfish)
+        const w = TILE * 0.7, h = TILE * 0.4;
+        
+        // Fish body (orange)
+        ctx.fillStyle = '#ff7700';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, w/2, h/2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // White stripes
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(-w*0.2, -h/2, w*0.1, h);
+        ctx.fillRect(w*0.1, -h/2, w*0.1, h);
+        
+        // Black stripe outlines
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.rect(-w*0.2, -h/2, w*0.1, h);
+        ctx.rect(w*0.1, -h/2, w*0.1, h);
+        ctx.stroke();
+        
+        // Tail fin
+        ctx.fillStyle = '#ff7700';
+        ctx.beginPath();
+        ctx.moveTo(-w/2, 0);
+        ctx.lineTo(-w/2 - TILE*0.3, -h*0.4);
+        ctx.lineTo(-w/2 - TILE*0.3, h*0.4);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Eye
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(w*0.2, -h*0.1, TILE*0.1, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(w*0.2, -h*0.1, TILE*0.05, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      ctx.restore();
+    }
+    
+    function drawGhost(x, y, ghost, theme) {
+      ctx.save();
+      ctx.translate(x, y);
+      
+      if (theme.name === 'Cars') {
+        // Rival cars (Chick Hicks, King, etc.)
+        const w = TILE * 0.7, h = TILE * 0.45;
+        const colors = ghost.frightened ? '#4444ff' : 
+                      ['#2e7d32', '#0051ff', '#ffdd00', '#ff00ff'][ghost.color];
+        
+        // Car body
+        ctx.fillStyle = colors;
+        ctx.fillRect(-w/2, -h/2, w, h);
+        
+        // Windshield
+        ctx.fillStyle = '#87ceeb';
+        ctx.fillRect(-w*0.25, -h*0.3, w*0.5, h*0.25);
+        
+        // Wheels
+        ctx.fillStyle = '#333';
+        ctx.beginPath();
+        ctx.arc(-w*0.2, h*0.6, TILE*0.12, 0, Math.PI * 2);
+        ctx.arc(w*0.2, h*0.6, TILE*0.12, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Racing number
+        ctx.fillStyle = '#fff';
+        ctx.font = `${TILE*0.3}px Arial`;
+        ctx.textAlign = 'center';
+        const numbers = ['86', '43', '34', '51'];
+        ctx.fillText(numbers[ghost.color] || '99', 0, h*0.1);
+        
+      } else {
+        // Sea creatures (jellyfish, etc.)
+        const r = TILE * 0.35;
+        const colors = ghost.frightened ? '#4444ff' : 
+                      ['#ff88ff', '#88ffff', '#ffaaff', '#aaaaff'][ghost.color];
+        
+        // Jellyfish bell
+        ctx.fillStyle = colors;
+        ctx.beginPath();
+        ctx.arc(0, -r*0.3, r, 0, Math.PI);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Jellyfish tentacles
+        ctx.strokeStyle = colors;
+        ctx.lineWidth = 3;
+        for (let i = -2; i <= 2; i++) {
+          ctx.beginPath();
+          ctx.moveTo(i * r * 0.3, 0);
+          const waveY = r * 0.8 + Math.sin(Date.now() / 200 + i) * r * 0.2;
+          ctx.lineTo(i * r * 0.3, waveY);
+          ctx.stroke();
+        }
+        
+        // Eyes
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(-r*0.3, -r*0.5, r*0.15, 0, Math.PI * 2);
+        ctx.arc(r*0.3, -r*0.5, r*0.15, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      ctx.restore();
     }
     
     // Game loop
