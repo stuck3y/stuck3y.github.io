@@ -74,10 +74,12 @@
     
     // Find starting positions and count dots
     function initGame() {
+      // Create dynamic board from static MAZE
+      board = MAZE.map(row => row.split(''));
       dots = 0;
       for (let y = 0; y < ROWS; y++) {
         for (let x = 0; x < COLS; x++) {
-          const cell = MAZE[y][x];
+          const cell = board[y][x];
           if (cell === 'P') { pac.x = x; pac.y = y; }
           if (cell === '.' || cell === 'o') dots++;
         }
