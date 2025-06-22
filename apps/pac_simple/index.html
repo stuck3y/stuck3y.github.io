@@ -122,52 +122,75 @@
     }
     
     // Game logic
+    let moveTimer = 0;
+    const MOVE_SPEED = 8; // frames between moves (slower = higher number)
+    
     function update() {
+      moveTimer++;
+      
       // Handle input
       if (keys['ArrowUp'] || keys['w']) { pac.dx = 0; pac.dy = -1; }
       if (keys['ArrowDown'] || keys['s']) { pac.dx = 0; pac.dy = 1; }
       if (keys['ArrowLeft'] || keys['a']) { pac.dx = -1; pac.dy = 0; }
       if (keys['ArrowRight'] || keys['d']) { pac.dx = 1; pac.dy = 0; }
       
-      // Move Pac-Man
-      const newX = pac.x + pac.dx;
-      const newY = pac.y + pac.dy;
-      if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS) {
-        const cell = board[newY][newX];
-        if (cell !== '#') {
-          pac.x = newX;
-          pac.y = newY;
-          
-          // Collect dots
-          if (cell === '.' || cell === 'o') {
-            score += cell === 'o' ? 50 : 10;
-            dots--;
-            // Mark as collected in dynamic board
-            board[newY][newX] = ' ';
-            updateUI();
+      // Move Pac-Man (only every MOVE_SPEED frames)
+      if (moveTimer >= MOVE_SPEED) {
+        moveTimer = 0;
+        
+        const newX = pac.x + pac.dx;
+        const newY = pac.y + pac.dy;
+        if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS) {
+          const cell = board[newY][newX];
+          if (cell !== '#') {
+            pac.x = newX;
+            pac.y = newY;
+            
+            // Collect dots
+            if (cell === '.' || cell === 'o') {
+              score += cell === 'o' ? 50 : 10;
+              dots--;
+              // Mark as collected in dynamic board
+              board[newY][newX] = ' ';
+              updateUI();
+            }
           }
         }
-      }
-      
-      // Simple ghost movement
-      ghosts.forEach(ghost => {
-        const newGX = ghost.x + ghost.dx;
-        const newGY = ghost.y + ghost.dy;
-        if (newGX >= 0 && newGX < COLS && newGY >= 0 && newGY < ROWS) {
-          const cell = board[newGY][newGX];
-          if (cell !== '#') {
-            ghost.x = newGX;
-            ghost.y = newGY;
+        
+        // Move ghosts (same timing as Pac-Man)
+        ghosts.forEach(ghost => {
+          // Try to move in current direction
+          let newGX = ghost.x + ghost.dx;
+          let newGY = ghost.y + ghost.dy;
+          
+          // Check bounds and walls
+          if (newGX >= 0 && newGX < COLS && newGY >= 0 && newGY < ROWS) {
+            const cell = board[newGY][newGX];
+            if (cell !== '#') {
+              ghost.x = newGX;
+              ghost.y = newGY;
+            } else {
+              // Hit wall - pick new random direction
+              const directions = [[0,-1],[0,1],[-1,0],[1,0]];
+              const validDirs = directions.filter(([dx,dy]) => {
+                const testX = ghost.x + dx;
+                const testY = ghost.y + dy;
+                return testX >= 0 && testX < COLS && testY >= 0 && testY < ROWS && 
+                       board[testY][testX] !== '#';
+              });
+              if (validDirs.length > 0) {
+                const [newDx, newDy] = validDirs[Math.floor(Math.random() * validDirs.length)];
+                ghost.dx = newDx;
+                ghost.dy = newDy;
+              }
+            }
           } else {
-            // Bounce off walls
+            // Hit boundary - reverse direction
             ghost.dx = -ghost.dx;
             ghost.dy = -ghost.dy;
           }
-        } else {
-          ghost.dx = -ghost.dx;
-          ghost.dy = -ghost.dy;
-        }
-      });
+        });
+      }
     }
     
     // Rendering
