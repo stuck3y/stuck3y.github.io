@@ -3,53 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Purple Pac‑Man</title>
+  <title>Purple Pac‑Man</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
   <style>
-    html,body{
-      margin:0;height:100%;
-      display:flex;justify-content:center;align-items:center;
-      background:#2c3a47;
-      font-family:'Press Start 2P',cursive;
-      color:#f7f1e3;overflow:hidden;
-    }
+    html,body{margin:0;height:100%;display:flex;justify-content:center;align-items:center;background:#2c3a47;font-family:'Press Start 2P',cursive;color:#f7f1e3;overflow:hidden}
     #ui{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:40px;font-size:12px;pointer-events:none}
-    canvas{background:#1a1a2e;image-rendering:pixelated;border:3px solid #1abc9c;border-radius:6px}
-    /* ── Mobile arrows ─────────────────────────────────────── */
+    canvas{background:#1a1a2e;border:3px solid #1abc9c;border-radius:6px;image-rendering:pixelated}
     .mob{display:none}
-    @media(max-width:768px){
-      #ui{font-size:10px}
-      .mob{display:grid;position:absolute;bottom:30px;left:50%;transform:translateX(-50%);grid-template-columns:repeat(3,60px);grid-gap:10px}
-      .mob button{background:#576574;border:2px solid #8395a7;border-radius:50%;height:60px;width:60px;color:#f7f1e3;font-size:20px}
-      .mob button:active{transform:translateY(2px)}
-      #up{grid-column:2}
-      #left{grid-column:1;grid-row:2}
-      #right{grid-column:3;grid-row:2}
-      #down{grid-column:2;grid-row:3}
-    }
+    @media(max-width:768px){#ui{font-size:10px}.mob{display:grid;position:absolute;bottom:30px;left:50%;transform:translateX(-50%);grid-template-columns:repeat(3,60px);grid-gap:10px}.mob button{background:#576574;border:2px solid #8395a7;border-radius:50%;height:60px;width:60px;color:#f7f1e3;font-size:20px}.mob button:active{transform:translateY(2px)}#up{grid-column:2}#left{grid-column:1;grid-row:2}#right{grid-column:3;grid-row:2}#down{grid-column:2;grid-row:3}}
   </style>
 </head>
 <body>
   <canvas id="c"></canvas>
   <div id="ui"><span id="score">SCORE 0</span><span id="lives">LIVES 3</span></div>
   <div class="mob">
-    <button id="up">▲</button>
-    <button id="left">◀</button>
-    <button id="right">▶</button>
-    <button id="down">▼</button>
+    <button id="up">▲</button><button id="left">◀</button><button id="right">▶</button><button id="down">▼</button>
   </div>
 
   <script type="module">
-    /* ───────────────────────────────────────────────────────────
-       Fully‑functional single‑file Pac‑Man
-       • Works with arrow keys/WASD & mobile buttons
-       • Clean 20‑tile grid, random‑walk ghosts, power pellets
-       • Drop straight into any GitHub Pages repo
-    ─────────────────────────────────────────────────────────── */
+    /*───────────────────────────────────────────────────────────
+      Safari‑friendly Pac‑Man v1.0 (Sequoia 15.5 optimised)
+      – Arrow/WASD & on‑screen arrows
+      – Fixed movement bug (sub‑tile canMove rounding)
+    ───────────────────────────────────────────────────────────*/
 
-    const TILE = 20, SPEED = 5, POWER_MS = 7000;
-
-    const MAP_STR = `############################
+    const TILE=20, SPEED=6, POWER_MS=7000;
+    const MAP=`############################
 #............##............#
 #.####.#####.##.#####.####.#
 #o####.#####.##.#####.####o#
@@ -74,169 +53,63 @@
 #..........................#
 ############################`;
 
-    const ROWS = MAP_STR.split("\n").length;
-    const COLS = MAP_STR.split("\n")[0].length;
+    const rows=MAP.split("\n"), ROWS=rows.length, COLS=rows[0].length;
+    const cvs=document.getElementById('c'), ctx=cvs.getContext('2d');
+    cvs.width=COLS*TILE; cvs.height=ROWS*TILE;
 
-    const canvas = document.getElementById("c");
-    const ctx = canvas.getContext("2d");
-    canvas.width = COLS * TILE;
-    canvas.height = ROWS * TILE;
+    let board=[], dots=0, score=0, lives=3, power=0, run=true;
+    const pac={x:0,y:0,dx:0,dy:0,nx:0,ny:0,mouth:0};
+    const ghosts=[];
 
-    let board = [], dots = 0;
-    let score = 0, lives = 3, powerTime = 0, running = true;
+    /*── Map ───────────────────────────────────────────────*/
+    function initMap(){const pal=['#e74c3c','#f39c12','#2ecc71','#9b59b6'];rows.forEach((r,y)=>{const row=[];[...r].forEach((ch,x)=>{switch(ch){case'P':pac.x=x;pac.y=y;row.push(' ');break;case'G':ghosts.push({x,y,dx:0,dy:0,startX:x,startY:y,fr:false,color:pal[ghosts.length%pal.length]});row.push(' ');break;default:row.push(ch);if(ch==='.'||ch==='o')dots++;}});board.push(row);});}
+    initMap();
 
-    const pac = { x: 0, y: 0, dx: 0, dy: 0, nx: 0, ny: 0, mouth: 0 };
-    const ghosts = [];
+    /*── Helpers ───────────────────────────────────────────*/
+    const tile=(x,y)=>{x=Math.round(x);y=Math.round(y);return (board[y]&&board[y][x])||'#'};
+    const passable=(x,y)=>tile(x,y)!=='#';
+    const center=(x)=>Math.abs(x-Math.round(x))<0.01;
+    const wrap=o=>{if(o.x<-1)o.x=COLS-1;if(o.x>COLS)o.x=0};
+    const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+    const setDir=(nx,ny)=>{pac.nx=nx;pac.ny=ny};
 
-    /* ── Map parsing ───────────────────────────────────────── */
-    function parseMap() {
-      const palette = ['#e74c3c', '#f39c12', '#2ecc71', '#9b59b6'];
-      MAP_STR.split("\n").forEach((row, y) => {
-        const arr = [];
-        [...row].forEach((ch, x) => {
-          switch (ch) {
-            case 'P':
-              pac.x = x; pac.y = y; arr.push(' ');
-              break;
-            case 'G':
-              ghosts.push({ x, y, startX: x, startY: y, dx: 0, dy: 0, fright: false, color: palette[ghosts.length % palette.length] });
-              arr.push(' ');
-              break;
-            default:
-              arr.push(ch);
-              if (ch === '.' || ch === 'o') dots++;
-          }
-        });
-        board.push(arr);
-      });
-    }
-    parseMap();
+    /*── Controls ──────────────────────────────────────────*/
+    document.addEventListener('keydown',e=>{if(!run&&e.key==='Enter')return reset();switch(e.key){case'ArrowUp':case'w':setDir(0,-1);break;case'ArrowDown':case's':setDir(0,1);break;case'ArrowLeft':case'a':setDir(-1,0);break;case'ArrowRight':case'd':setDir(1,0);break;}});
+    ['up','down','left','right'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>setDir(id==='left'?-1:id==='right'?1:0,id==='up'?-1:id==='down'?1:0)));
 
-    /* ── Helpers ──────────────────────────────────────────── */
-    const tile = (x, y) => (board[y] && board[y][x]) || '#';
-    const canMove = (x, y) => tile(x, y) !== '#';
-    const isCenter = (x, y) => Math.abs(x - Math.round(x)) < 0.05 && Math.abs(y - Math.round(y)) < 0.05;
-    const wrap = o => { if (o.x < -1) o.x = COLS - 1; if (o.x > COLS) o.x = 0; };
-    const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+    /*── UI ───────────────────────────────────────────────*/
+    const uiS=document.getElementById('score'), uiL=document.getElementById('lives');
+    const C={pac:'#9b59b6',dot:'#f1c40f',pellet:'#e67e22',fr:'#3498db',wall:'#34495e'};
+    const updUI=()=>{uiS.textContent=`SCORE ${score}`;uiL.textContent=`LIVES ${lives}`};
 
-    function setDir(nx, ny) { pac.nx = nx; pac.ny = ny; }
+    /*── Game update ──────────────────────────────────────*/
+    function update(dt){
+      if(center(pac.x)&&center(pac.y)&&passable(pac.x+pac.nx,pac.y+pac.ny)){pac.dx=pac.nx;pac.dy=pac.ny;}
+      if(!passable(pac.x+Math.sign(pac.dx)*0.51,pac.y+Math.sign(pac.dy)*0.51)){pac.dx=pac.dy=0;}
+      pac.x+=pac.dx*dt*SPEED;pac.y+=pac.dy*dt*SPEED;wrap(pac);pac.mouth+=dt*10;
 
-    /* ── Controls ─────────────────────────────────────────── */
-    document.addEventListener('keydown', e => {
-      if (!running && e.key === 'Enter') return reset();
-      switch (e.key) {
-        case 'ArrowUp': case 'w': setDir(0, -1); break;
-        case 'ArrowDown': case 's': setDir(0, 1); break;
-        case 'ArrowLeft': case 'a': setDir(-1, 0); break;
-        case 'ArrowRight': case 'd': setDir(1, 0); break;
-      }
-    });
-    ['up', 'down', 'left', 'right'].forEach(id => {
-      document.getElementById(id)?.addEventListener('click', () => {
-        setDir(id === 'left' ? -1 : id === 'right' ? 1 : 0, id === 'up' ? -1 : id === 'down' ? 1 : 0);
-      });
-    });
+      const cx=Math.round(pac.x),cy=Math.round(pac.y),cell=tile(cx,cy);
+      if(cell==='.'||cell==='o'){board[cy][cx]=' ';score+=cell==='o'?50:10;dots--;updUI();if(cell==='o'){power=POWER_MS;ghosts.forEach(g=>g.fr=true);} }
+      if(dots===0)return end(true);
+      if(power>0){power-=dt*1000;if(power<=0)ghosts.forEach(g=>g.fr=false);}
 
-    /* ── UI ─────────────────────────────────────────────── */
-    const uiScore = document.getElementById('score');
-    const uiLives = document.getElementById('lives');
-    const colors = { pac: '#9b59b6', dot: '#f1c40f', pellet: '#e67e22', fright: '#3498db' };
-    function updateUI() { uiScore.textContent = `SCORE ${score}`; uiLives.textContent = `LIVES ${lives}`; }
-
-    /* ── Game logic ─────────────────────────────────────── */
-    function update(dt) {
-      // Pac‑Man turning logic
-      if (isCenter(pac.x, pac.y) && canMove(pac.x + pac.nx, pac.y + pac.ny)) { pac.dx = pac.nx; pac.dy = pac.ny; }
-      if (!canMove(pac.x + pac.dx, pac.y + pac.dy)) { pac.dx = pac.dy = 0; }
-      pac.x += pac.dx * dt * SPEED; pac.y += pac.dy * dt * SPEED; wrap(pac);
-      pac.mouth += dt * 10;
-
-      const cx = Math.round(pac.x), cy = Math.round(pac.y);
-      const cell = tile(cx, cy);
-      if (cell === '.' || cell === 'o') {
-        board[cy][cx] = ' '; score += cell === 'o' ? 50 : 10; dots--; updateUI();
-        if (cell === 'o') { powerTime = POWER_MS; ghosts.forEach(g => g.fright = true); }
-      }
-      if (dots === 0) return end(true);
-
-      if (powerTime > 0) {
-        powerTime -= dt * 1000; if (powerTime <= 0) ghosts.forEach(g => g.fright = false);
-      }
-
-      ghosts.forEach(g => {
-        if (isCenter(g.x, g.y)) {
-          const options = [[0, -1], [0, 1], [-1, 0], [1, 0]].filter(([dx, dy]) => canMove(g.x + dx, g.y + dy) && !(dx === -g.dx && dy === -g.dy));
-          const [dx, dy] = options[Math.floor(Math.random() * options.length)] || [0, 0];
-          g.dx = dx; g.dy = dy;
-        }
-        g.x += g.dx * dt * (g.fright ? 3 : 4); g.y += g.dy * dt * (g.fright ? 3 : 4); wrap(g);
-
-        if (dist(g, pac) < 0.7) {
-          if (g.fright) { score += 200; g.x = g.startX; g.y = g.startY; g.fright = false; updateUI(); }
-          else loseLife();
-        }
-      });
+      ghosts.forEach(g=>{if(center(g.x)&&center(g.y)){const opts=[[0,-1],[0,1],[-1,0],[1,0]].filter(([dx,dy])=>passable(g.x+dx,g.y+dy)&&!(dx===-g.dx&&dy===-g.dy));const move=opts[Math.floor(Math.random()*opts.length)]||[0,0];[g.dx,g.dy]=move;}g.x+=g.dx*dt*4;g.y+=g.dy*dt*4;wrap(g);if(dist(g,pac)<0.7){if(g.fr){score+=200;g.x=g.startX;g.y=g.startY;g.fr=false;updUI();}else lose();}});
     }
 
-    function loseLife() {
-      lives--; updateUI();
-      if (lives <= 0) end(false);
-      else { pac.x = pac.y = 0; pac.dx = pac.dy = pac.nx = pac.ny = 0; }
-    }
+    function lose(){lives--;updUI();if(lives<=0)end(false);else{pac.x=pac.y=0;pac.dx=pac.dy=pac.nx=pac.ny=0;}}
 
-    function end(win) {
-      running = false;
-      ctx.fillStyle = '#000a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#f1c40f'; ctx.textAlign = 'center';
-      ctx.font = '32px "Press Start 2P"'; ctx.fillText(win ? 'YOU WIN!' : 'GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
-      ctx.font = '16px "Press Start 2P"'; ctx.fillText(`SCORE ${score}`, canvas.width / 2, canvas.height / 2 + 16);
-      ctx.fillText('Press Enter', canvas.width / 2, canvas.height / 2 + 48);
-    }
+    /*── End / Reset ──────────────────────────────────────*/
+    function end(win){run=false;ctx.fillStyle='#000c';ctx.fillRect(0,0,cvs.width,cvs.height);ctx.fillStyle='#f1c40f';ctx.textAlign='center';ctx.font='32px "Press Start 2P"';ctx.fillText(win?'YOU WIN!':'GAME OVER',cvs.width/2,cvs.height/2-20);ctx.font='16px "Press Start 2P"';ctx.fillText(`SCORE ${score}`,cvs.width/2,cvs.height/2+20);ctx.fillText('Press Enter',cvs.width/2,cvs.height/2+50);}
+    function reset(){board=[];dots=score=0;lives=3;ghosts.length=0;power=0;run=true;initMap();updUI();last=performance.now();requestAnimationFrame(loop);}
 
-    function reset() {
-      board = []; dots = score = 0; lives = 3; ghosts.length = 0; powerTime = 0; running = true;
-      parseMap(); updateUI(); last = performance.now(); requestAnimationFrame(loop);
-    }
+    /*── Rendering ───────────────────────────────────────*/
+    function draw(){ctx.fillStyle='#1a1a2e';ctx.fillRect(0,0,cvs.width,cvs.height);for(let y=0;y<ROWS;y++){for(let x=0;x<COLS;x++){const t=board[y][x];if(t==='#'){ctx.fillStyle=C.wall;ctx.fillRect(x*TILE,y*TILE,TILE,TILE);}else if(t==='.')dot(x,y,C.dot,0.12);else if(t==='o')dot(x,y,C.pellet,0.25);}}drawPac();ghosts.forEach(drawGhost);}
+    const dot=(x,y,col,s)=>{ctx.fillStyle=col;ctx.beginPath();ctx.arc(x*TILE+TILE/2,y*TILE+TILE/2,TILE*s,0,6.283);ctx.fill();};
+    function drawPac(){ctx.save();ctx.translate((pac.x+0.5)*TILE,(pac.y+0.5)*TILE);ctx.rotate(Math.atan2(pac.dy,pac.dx)||0);ctx.fillStyle=C.pac;const m=0.25+0.1*Math.abs(Math.sin(pac.mouth));ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,TILE*0.45,m,6.283-m);ctx.closePath();ctx.fill();ctx.restore();}
+    function drawGhost(g){ctx.save();ctx.translate((g.x+0.5)*TILE,(g.y+0.5)*TILE);const r=TILE*0.45;ctx.fillStyle=g.fr?C.fr:g.color;ctx.beginPath();ctx.arc(0,0,r,Math.PI,0);ctx.lineTo(r,r*0.8);ctx.lineTo(-r,r*0.8);ctx.closePath();ctx.fill();ctx.restore();}
 
-    /* ── Rendering ──────────────────────────────────────── */
-    function draw() {
-      ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-      for (let y = 0; y < ROWS; y++) {
-        for (let x = 0; x < COLS; x++) {
-          const t = board[y][x];
-          if (t === '#') { ctx.fillStyle = '#34495e'; ctx.fillRect(x * TILE, y * TILE, TILE, TILE); }
-          else if (t === '.') drawDot(x, y, colors.dot, 0.12);
-          else if (t === 'o') drawDot(x, y, colors.pellet, 0.25);
-        }
-      }
-      drawPac(); ghosts.forEach(drawGhost);
-    }
-
-    function drawDot(x, y, color, size) {
-      ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x * TILE + TILE / 2, y * TILE + TILE / 2, TILE * size, 0, Math.PI * 2); ctx.fill();
-    }
-
-    function drawPac() {
-      ctx.save(); ctx.translate((pac.x + 0.5) * TILE, (pac.y + 0.5) * TILE);
-      const ang = Math.atan2(pac.dy, pac.dx) || 0; ctx.rotate(ang);
-      ctx.fillStyle = colors.pac; const open = 0.25 + 0.1 * Math.sin(pac.mouth);
-      ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, TILE * 0.45, open, Math.PI * 2 - open); ctx.closePath(); ctx.fill(); ctx.restore();
-    }
-
-    function drawGhost(g) {
-      ctx.save(); ctx.translate((g.x + 0.5) * TILE, (g.y + 0.5) * TILE);
-      const r = TILE * 0.45; ctx.fillStyle = g.fright ? colors.fright : g.color;
-      ctx.beginPath(); ctx.arc(0, 0, r, Math.PI, 0); ctx.lineTo(r, r * 0.8); ctx.lineTo(-r, r * 0.8); ctx.closePath(); ctx.fill(); ctx.restore();
-    }
-
-    /* ── Game loop ───────────────────────────────────────── */
-    let last = performance.now();
-    function loop(now) {
-      if (!running) return; const dt = (now - last) / 1000; last = now;
-      update(dt); draw(); requestAnimationFrame(loop);
-    }
-
-    updateUI(); requestAnimationFrame(loop);
+    /*── Loop ─────────────────────────────────────────────*/
+    let last=performance.now();function loop(t){if(!run)return;const dt=(t-last)/1000;last=t;update(dt);draw();requestAnimationFrame(loop);}updUI();requestAnimationFrame(loop);
   </script>
 </body>
 </html>
