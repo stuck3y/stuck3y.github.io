@@ -71,11 +71,12 @@
     for(let y=0;y<ROWS;y++){
       for(let x=0;x<COLS;x++){
         const ch=board[y][x];
-        if(ch==='P'){pac.tileX=x;pac.tileY=y;board[y][x]='.';}
+        if(ch==='P'){pac.tileX=x;pac.tileY=y;board[y][x]='.';console.log('Pac start:',x,y);}
         else if(ch==='G'){
           const id=ghosts.length;
           ghosts.push({id,tileX:x,tileY:y,dirX:0,dirY:0,startX:x,startY:y,frightened:false,graphic:null,color:curTheme().name==='Cars'?[0x2e7d32,0x0051ff,0x0066ff,0xffdd00][id%4]:[0xe98eff,0x9effff,0xffb3ff,0xb5b3ff][id%4]});
           board[y][x]='.';
+          console.log('Ghost',id,'start:',x,y);
         }
         else if(ch==='.'||ch==='o') dots++;
       }
@@ -152,6 +153,7 @@
     window.addEventListener('keydown',e=>{
       keys[e.key]=true;
       if(e.key==='t'||e.key==='T') switchTheme();
+      if(e.key==='r'||e.key==='R') restart();
     });
     window.addEventListener('keyup',e=>{keys[e.key]=false;});
 
@@ -170,6 +172,56 @@
         g.color=curTheme().name==='Cars'?[0x2e7d32,0x0051ff,0x0066ff,0xffdd00][i%4]:[0xe98eff,0x9effff,0xffb3ff,0xb5b3ff][i%4];
         g.drawShape();
       });
+    }
+
+    function restart(){
+      // Reset game state
+      score=0;lives=3;fright=0;
+      board.length=0;
+      board.push(...rows.map(r=>[...r]));
+      dots=0;
+      
+      // Recount dots and reset positions
+      for(let y=0;y<ROWS;y++){
+        for(let x=0;x<COLS;x++){
+          const ch=board[y][x];
+          if(ch==='P'){pac.tileX=x;pac.tileY=y;board[y][x]='.';pac.dirX=pac.dirY=0;}
+          else if(ch==='G'){board[y][x]='.';}
+          else if(ch==='.'||ch==='o') dots++;
+        }
+      }
+      
+      // Reset ghost positions
+      ghosts.forEach(g=>{
+        g.tileX=g.startX;g.tileY=g.startY;g.dirX=g.dirY=0;g.frightened=false;
+        g.graphic.x=alignPixel(g.tileX);g.graphic.y=alignPixel(g.tileY);
+        g.drawShape();
+      });
+      
+      // Reset pac position
+      pac.graphic.x=alignPixel(pac.tileX);pac.graphic.y=alignPixel(pac.tileY);
+      
+      // Recreate pellets
+      pelletsContainer.removeChildren();
+      for(let y=0;y<ROWS;y++){
+        for(let x=0;x<COLS;x++){
+          const ch=rows[y][x];
+          if(ch==='.'){
+            const dot=new PIXI.Graphics();
+            dot.beginFill(0xffe66d).drawCircle(0,0,TILE*0.08).endFill();
+            dot.x=x*TILE+TILE/2;dot.y=y*TILE+TILE/2;
+            pelletsContainer.addChild(dot);
+          }
+          else if(ch==='o'){
+            const pellet=new PIXI.Graphics();
+            pellet.beginFill(0xff9e3d).drawCircle(0,0,TILE*0.2).endFill();
+            pellet.x=x*TILE+TILE/2;pellet.y=y*TILE+TILE/2;
+            pelletsContainer.addChild(pellet);
+          }
+        }
+      }
+      
+      updateUI();
     }
 
     /* ───────────────── UI ───────────────── */
