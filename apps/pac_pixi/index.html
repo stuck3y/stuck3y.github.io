@@ -83,19 +83,15 @@
     }
 
     /* ───────────────── PAC GRAPHIC ───────────────── */
-    const pacG=new PIXI.Graphics();
+    // Create simple colored rectangle for Pac (Safari-compatible)
+    const pacTexture=PIXI.Texture.WHITE;
+    const pacG=new PIXI.Sprite(pacTexture);
     function drawPacShape(){
-      pacG.clear();
-      // Make car body larger and more visible
-      pacG.beginFill(curTheme().pacTint).drawRect(-TILE*0.45,-TILE*0.3,TILE*0.9,TILE*0.6).endFill();
-      // Windshield
-      pacG.beginFill(0xffffff).drawRect(-TILE*0.25,-TILE*0.2,TILE*0.5,TILE*0.2).endFill();
-      // Wheels - make them bigger
-      pacG.beginFill(0x000000).drawCircle(-TILE*0.25,TILE*0.35,TILE*0.15).drawCircle(TILE*0.25,TILE*0.35,TILE*0.15).endFill();
-      // Debug border - bright yellow outline
-      pacG.lineStyle(2,0xffff00);
-      pacG.drawRect(-TILE*0.45,-TILE*0.3,TILE*0.9,TILE*0.6);
-      console.log('Pac drawn at:',pacG.x,pacG.y);
+      pacG.tint=curTheme().pacTint;
+      pacG.width=TILE*0.8;
+      pacG.height=TILE*0.8;
+      pacG.anchor.set(0.5);
+      console.log('Pac redrawn, tint:',pacG.tint.toString(16));
     }
     drawPacShape();
     pacG.x=pac.tileX*TILE+TILE/2;
@@ -112,14 +108,18 @@
       for(let x=0;x<COLS;x++){
         const ch=rows[y][x];
         if(ch==='.'){
-          const dot=new PIXI.Graphics();
-          dot.beginFill(0xffe66d).drawCircle(0,0,TILE*0.08).endFill();
+          const dot=new PIXI.Sprite(PIXI.Texture.WHITE);
+          dot.tint=0xffe66d;
+          dot.width=dot.height=TILE*0.15;
+          dot.anchor.set(0.5);
           dot.x=x*TILE+TILE/2;dot.y=y*TILE+TILE/2;
           pelletsContainer.addChild(dot);
         }
         else if(ch==='o'){
-          const pellet=new PIXI.Graphics();
-          pellet.beginFill(0xff9e3d).drawCircle(0,0,TILE*0.2).endFill();
+          const pellet=new PIXI.Sprite(PIXI.Texture.WHITE);
+          pellet.tint=0xff9e3d;
+          pellet.width=pellet.height=TILE*0.4;
+          pellet.anchor.set(0.5);
           pellet.x=x*TILE+TILE/2;pellet.y=y*TILE+TILE/2;
           pelletsContainer.addChild(pellet);
         }
@@ -131,27 +131,14 @@
     app.stage.addChild(ghostsContainer);
     
     ghosts.forEach(g=>{
-      const ghostG=new PIXI.Graphics();
+      // Create simple colored rectangle for Ghost (Safari-compatible)
+      const ghostG=new PIXI.Sprite(PIXI.Texture.WHITE);
       function drawGhostShape(){
-        ghostG.clear();
-        if(curTheme().name==='Cars'){
-          // Draw as rival cars - make them bigger
-          ghostG.beginFill(g.frightened?0x2ec4b6:g.color).drawRect(-TILE*0.4,-TILE*0.25,TILE*0.8,TILE*0.5).endFill();
-          ghostG.beginFill(0xffffff).drawRect(-TILE*0.2,-TILE*0.15,TILE*0.4,TILE*0.15).endFill();
-          ghostG.beginFill(0x000000).drawCircle(-TILE*0.2,TILE*0.3,TILE*0.12).drawCircle(TILE*0.2,TILE*0.3,TILE*0.12).endFill();
-          // Debug border
-          ghostG.lineStyle(2,0x00ff00);
-          ghostG.drawRect(-TILE*0.4,-TILE*0.25,TILE*0.8,TILE*0.5);
-        } else {
-          // Draw as jellyfish - make them bigger
-          const r=TILE*0.4;
-          ghostG.beginFill(g.frightened?0x2ec4b6:g.color).drawCircle(0,0,r).endFill();
-          ghostG.beginFill(0x000000).drawCircle(-r*0.3,-r*0.2,r*0.15).drawCircle(r*0.3,-r*0.2,r*0.15).endFill();
-          // Debug border
-          ghostG.lineStyle(2,0x00ff00);
-          ghostG.drawCircle(0,0,r);
-        }
-        console.log('Ghost',g.id,'drawn at:',ghostG.x,ghostG.y);
+        ghostG.tint=g.frightened?0x2ec4b6:g.color;
+        ghostG.width=TILE*0.7;
+        ghostG.height=TILE*0.7;
+        ghostG.anchor.set(0.5);
+        console.log('Ghost',g.id,'redrawn, tint:',ghostG.tint.toString(16));
       }
       drawGhostShape();
       ghostG.x=g.tileX*TILE+TILE/2;
@@ -221,14 +208,18 @@
         for(let x=0;x<COLS;x++){
           const ch=rows[y][x];
           if(ch==='.'){
-            const dot=new PIXI.Graphics();
-            dot.beginFill(0xffe66d).drawCircle(0,0,TILE*0.08).endFill();
+            const dot=new PIXI.Sprite(PIXI.Texture.WHITE);
+            dot.tint=0xffe66d;
+            dot.width=dot.height=TILE*0.15;
+            dot.anchor.set(0.5);
             dot.x=x*TILE+TILE/2;dot.y=y*TILE+TILE/2;
             pelletsContainer.addChild(dot);
           }
           else if(ch==='o'){
-            const pellet=new PIXI.Graphics();
-            pellet.beginFill(0xff9e3d).drawCircle(0,0,TILE*0.2).endFill();
+            const pellet=new PIXI.Sprite(PIXI.Texture.WHITE);
+            pellet.tint=0xff9e3d;
+            pellet.width=pellet.height=TILE*0.4;
+            pellet.anchor.set(0.5);
             pellet.x=x*TILE+TILE/2;pellet.y=y*TILE+TILE/2;
             pelletsContainer.addChild(pellet);
           }
