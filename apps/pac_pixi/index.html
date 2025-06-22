@@ -63,11 +63,21 @@
     /* ───────────────── GAME STATE ───────────────── */
     const board=rows.map(r=>[...r]);
     const pac={tileX:0,tileY:0,dirX:0,dirY:0,nextX:0,nextY:0,graphic:null};
+    const ghosts=[];
+    let score=0,lives=3,dots=0,fright=0;
+    const POWER_MS=5000,GHOST_SPEED=3;
 
     // Parse map for starting position
     for(let y=0;y<ROWS;y++){
       for(let x=0;x<COLS;x++){
-        if(board[y][x]==='P'){pac.tileX=x;pac.tileY=y;board[y][x]='.';}
+        const ch=board[y][x];
+        if(ch==='P'){pac.tileX=x;pac.tileY=y;board[y][x]='.';}
+        else if(ch==='G'){
+          const id=ghosts.length;
+          ghosts.push({id,tileX:x,tileY:y,dirX:0,dirY:0,startX:x,startY:y,frightened:false,graphic:null,color:curTheme().name==='Cars'?[0x2e7d32,0x0051ff,0x0066ff,0xffdd00][id%4]:[0xe98eff,0x9effff,0xffb3ff,0xb5b3ff][id%4]});
+          board[y][x]='.';
+        }
+        else if(ch==='.'||ch==='o') dots++;
       }
     }
 
@@ -87,6 +97,56 @@
     app.stage.addChild(pacG);
     pac.graphic=pacG;
 
+    /* ───────────────── PELLETS ───────────────── */
+    const pelletsContainer=new PIXI.Container();
+    app.stage.addChild(pelletsContainer);
+    
+    for(let y=0;y<ROWS;y++){
+      for(let x=0;x<COLS;x++){
+        const ch=rows[y][x];
+        if(ch==='.'){
+          const dot=new PIXI.Graphics();
+          dot.beginFill(0xffe66d).drawCircle(0,0,TILE*0.08).endFill();
+          dot.x=x*TILE+TILE/2;dot.y=y*TILE+TILE/2;
+          pelletsContainer.addChild(dot);
+        }
+        else if(ch==='o'){
+          const pellet=new PIXI.Graphics();
+          pellet.beginFill(0xff9e3d).drawCircle(0,0,TILE*0.2).endFill();
+          pellet.x=x*TILE+TILE/2;pellet.y=y*TILE+TILE/2;
+          pelletsContainer.addChild(pellet);
+        }
+      }
+    }
+
+    /* ───────────────── GHOSTS ───────────────── */
+    const ghostsContainer=new PIXI.Container();
+    app.stage.addChild(ghostsContainer);
+    
+    ghosts.forEach(g=>{
+      const ghostG=new PIXI.Graphics();
+      function drawGhostShape(){
+        ghostG.clear();
+        if(curTheme().name==='Cars'){
+          // Draw as rival cars
+          ghostG.beginFill(g.frightened?0x2ec4b6:g.color).drawRect(-TILE*0.35,-TILE*0.2,TILE*0.7,TILE*0.4).endFill();
+          ghostG.beginFill(0xffffff).drawRect(-TILE*0.2,-TILE*0.15,TILE*0.4,TILE*0.1).endFill();
+          ghostG.beginFill(0x000000).drawCircle(-TILE*0.15,TILE*0.25,TILE*0.08).drawCircle(TILE*0.15,TILE*0.25,TILE*0.08).endFill();
+        } else {
+          // Draw as jellyfish
+          const r=TILE*0.3;
+          ghostG.beginFill(g.frightened?0x2ec4b6:g.color).drawCircle(0,0,r).endFill();
+          ghostG.beginFill(0x000000).drawCircle(-r*0.3,-r*0.2,r*0.15).drawCircle(r*0.3,-r*0.2,r*0.15).endFill();
+        }
+      }
+      drawGhostShape();
+      ghostG.x=g.tileX*TILE+TILE/2;
+      ghostG.y=g.tileY*TILE+TILE/2;
+      ghostsContainer.addChild(ghostG);
+      g.graphic=ghostG;
+      g.drawShape=drawGhostShape;
+    });
+
     /* ───────────────── INPUT ───────────────── */
     const keys={};
     window.addEventListener('keydown',e=>{
@@ -99,17 +159,29 @@
       themeIndex=(themeIndex+1)%THEMES.length;
       updateThemeLabel();
       drawPacShape();
-      // recolor board tiles
+      // recolor board tiles and ghosts
       boardContainer.children.forEach(child=>{
         const g=child; // Graphics
         const localX=g.x/TILE, localY=g.y/TILE;
         const ch=board[localY][localX];
         g.tint= ch==='#' ? curTheme().wall : curTheme().road;
       });
+      ghosts.forEach((g,i)=>{
+        g.color=curTheme().name==='Cars'?[0x2e7d32,0x0051ff,0x0066ff,0xffdd00][i%4]:[0xe98eff,0x9effff,0xffb3ff,0xb5b3ff][i%4];
+        g.drawShape();
+      });
     }
+
+    /* ───────────────── UI ───────────────── */
+    const uiText=new PIXI.Text('',{fontFamily:'monospace',fontSize:14,fill:0xffffff});
+    uiText.x=10;uiText.y=10;
+    app.stage.addChild(uiText);
+    function updateUI(){uiText.text=`SCORE ${score}  LIVES ${lives}  DOTS ${dots}`;}
+    updateUI();
 
     /* ───────────────── HELPERS ───────────────── */
     const pass=(x,y)=>board[y] && board[y][x] && board[y][x]!=='#';
+    const dist=(a,b)=>Math.hypot((a.tileX||a.x/TILE)-b.tileX,(a.tileY||a.y/TILE)-b.tileY);
 
     function alignPixel(val){return val*TILE+TILE/2;}
 
@@ -118,6 +190,9 @@
       // delta is frames since last tick (usually 1)
       handleInput();
       movePac(delta);
+      moveGhosts(delta);
+      checkCollisions();
+      updateFright(delta);
     });
 
     function handleInput(){
@@ -140,6 +215,88 @@
 
       // Wrap horizontally
       if(pac.tileX<0){pac.tileX=COLS-1;pac.graphic.x=alignPixel(pac.tileX);} else if(pac.tileX>=COLS){pac.tileX=0;pac.graphic.x=alignPixel(pac.tileX);}    
+    }
+
+    function moveGhosts(delta){
+      ghosts.forEach(g=>{
+        const atCenter=(g.graphic.x-TILE/2)%TILE===0 && (g.graphic.y-TILE/2)%TILE===0;
+        if(atCenter){
+          // Simple AI: pick random valid direction, avoid reversing
+          const dirs=[[0,-1],[0,1],[-1,0],[1,0]].filter(([dx,dy])=>pass(g.tileX+dx,g.tileY+dy)&&!(dx===-g.dirX&&dy===-g.dirY));
+          const choice=dirs[Math.floor(Math.random()*dirs.length)]||[0,-1];
+          [g.dirX,g.dirY]=choice;
+        }
+        const speed=g.frightened?GHOST_SPEED*0.7:GHOST_SPEED;
+        g.graphic.x += ((alignPixel(g.tileX)-g.graphic.x)/(TILE/speed))*delta;
+        g.graphic.y += ((alignPixel(g.tileY)-g.graphic.y)/(TILE/speed))*delta;
+        
+        // Update tile position
+        if(atCenter){
+          g.tileX+=g.dirX;g.tileY+=g.dirY;
+          // Wrap horizontally
+          if(g.tileX<0){g.tileX=COLS-1;g.graphic.x=alignPixel(g.tileX);} 
+          else if(g.tileX>=COLS){g.tileX=0;g.graphic.x=alignPixel(g.tileX);}
+        }
+      });
+    }
+
+    function checkCollisions(){
+      // Pellet collection
+      const cx=Math.round(pac.tileX),cy=Math.round(pac.tileY);
+      const cell=board[cy]?board[cy][cx]:'#';
+      if(cell==='.'||cell==='o'){
+        board[cy][cx]=' ';
+        score+=cell==='o'?50:10;
+        dots--;
+        updateUI();
+        
+        // Remove pellet graphic
+        const pelletToRemove=pelletsContainer.children.find(p=>Math.abs(p.x-cx*TILE-TILE/2)<1&&Math.abs(p.y-cy*TILE-TILE/2)<1);
+        if(pelletToRemove)pelletsContainer.removeChild(pelletToRemove);
+        
+        // Power pellet effect
+        if(cell==='o'){
+          fright=POWER_MS;
+          ghosts.forEach(g=>{g.frightened=true;g.drawShape();});
+        }
+        
+        if(dots===0){
+          uiText.text='YOU WIN! Press R to restart';
+          return;
+        }
+      }
+      
+      // Ghost collision
+      ghosts.forEach(g=>{
+        if(dist(pac,g)<0.7){
+          if(g.frightened){
+            score+=200;
+            g.tileX=g.startX;g.tileY=g.startY;
+            g.graphic.x=alignPixel(g.tileX);g.graphic.y=alignPixel(g.tileY);
+            g.frightened=false;g.drawShape();
+            updateUI();
+          } else {
+            lives--;
+            updateUI();
+            if(lives<=0){
+              uiText.text='GAME OVER! Press R to restart';
+            } else {
+              // Reset pac position
+              pac.tileX=pac.tileY=13;pac.dirX=pac.dirY=0;
+              pac.graphic.x=alignPixel(pac.tileX);pac.graphic.y=alignPixel(pac.tileY);
+            }
+          }
+        }
+      });
+    }
+
+    function updateFright(delta){
+      if(fright>0){
+        fright-=delta*16.67; // ~60fps assumption
+        if(fright<=0){
+          ghosts.forEach(g=>{g.frightened=false;g.drawShape();});
+        }
+      }
     }
 
     })();
