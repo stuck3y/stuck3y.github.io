@@ -86,15 +86,21 @@
     const pacG=new PIXI.Graphics();
     function drawPacShape(){
       pacG.clear();
-      pacG.beginFill(curTheme().pacTint).drawRect(-TILE*0.4,-TILE*0.25,TILE*0.8,TILE*0.5).endFill();
-      pacG.beginFill(0xffffff).drawRect(-TILE*0.15,-TILE*0.18,TILE*0.3,TILE*0.15).endFill();
-      // wheels
-      pacG.beginFill(0x000000).drawCircle(-TILE*0.2,TILE*0.3,TILE*0.12).drawCircle(TILE*0.2,TILE*0.3,TILE*0.12).endFill();
+      // Make car body larger and more visible
+      pacG.beginFill(curTheme().pacTint).drawRect(-TILE*0.45,-TILE*0.3,TILE*0.9,TILE*0.6).endFill();
+      // Windshield
+      pacG.beginFill(0xffffff).drawRect(-TILE*0.25,-TILE*0.2,TILE*0.5,TILE*0.2).endFill();
+      // Wheels - make them bigger
+      pacG.beginFill(0x000000).drawCircle(-TILE*0.25,TILE*0.35,TILE*0.15).drawCircle(TILE*0.25,TILE*0.35,TILE*0.15).endFill();
+      // Debug border - bright yellow outline
+      pacG.lineStyle(2,0xffff00);
+      pacG.drawRect(-TILE*0.45,-TILE*0.3,TILE*0.9,TILE*0.6);
+      console.log('Pac drawn at:',pacG.x,pacG.y);
     }
     drawPacShape();
     pacG.x=pac.tileX*TILE+TILE/2;
     pacG.y=pac.tileY*TILE+TILE/2;
-    pacG.pivot.set(0);
+    console.log('Pac positioned at:',pacG.x,pacG.y,'tile:',pac.tileX,pac.tileY);
     app.stage.addChild(pacG);
     pac.graphic=pacG;
 
@@ -129,20 +135,28 @@
       function drawGhostShape(){
         ghostG.clear();
         if(curTheme().name==='Cars'){
-          // Draw as rival cars
-          ghostG.beginFill(g.frightened?0x2ec4b6:g.color).drawRect(-TILE*0.35,-TILE*0.2,TILE*0.7,TILE*0.4).endFill();
-          ghostG.beginFill(0xffffff).drawRect(-TILE*0.2,-TILE*0.15,TILE*0.4,TILE*0.1).endFill();
-          ghostG.beginFill(0x000000).drawCircle(-TILE*0.15,TILE*0.25,TILE*0.08).drawCircle(TILE*0.15,TILE*0.25,TILE*0.08).endFill();
+          // Draw as rival cars - make them bigger
+          ghostG.beginFill(g.frightened?0x2ec4b6:g.color).drawRect(-TILE*0.4,-TILE*0.25,TILE*0.8,TILE*0.5).endFill();
+          ghostG.beginFill(0xffffff).drawRect(-TILE*0.2,-TILE*0.15,TILE*0.4,TILE*0.15).endFill();
+          ghostG.beginFill(0x000000).drawCircle(-TILE*0.2,TILE*0.3,TILE*0.12).drawCircle(TILE*0.2,TILE*0.3,TILE*0.12).endFill();
+          // Debug border
+          ghostG.lineStyle(2,0x00ff00);
+          ghostG.drawRect(-TILE*0.4,-TILE*0.25,TILE*0.8,TILE*0.5);
         } else {
-          // Draw as jellyfish
-          const r=TILE*0.3;
+          // Draw as jellyfish - make them bigger
+          const r=TILE*0.4;
           ghostG.beginFill(g.frightened?0x2ec4b6:g.color).drawCircle(0,0,r).endFill();
           ghostG.beginFill(0x000000).drawCircle(-r*0.3,-r*0.2,r*0.15).drawCircle(r*0.3,-r*0.2,r*0.15).endFill();
+          // Debug border
+          ghostG.lineStyle(2,0x00ff00);
+          ghostG.drawCircle(0,0,r);
         }
+        console.log('Ghost',g.id,'drawn at:',ghostG.x,ghostG.y);
       }
       drawGhostShape();
       ghostG.x=g.tileX*TILE+TILE/2;
       ghostG.y=g.tileY*TILE+TILE/2;
+      console.log('Ghost',g.id,'positioned at:',ghostG.x,ghostG.y,'tile:',g.tileX,g.tileY);
       ghostsContainer.addChild(ghostG);
       g.graphic=ghostG;
       g.drawShape=drawGhostShape;
