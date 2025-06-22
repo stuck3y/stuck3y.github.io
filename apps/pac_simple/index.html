@@ -25,7 +25,7 @@
     // Game constants
     const TILE = 20;
     const COLS = 28;
-    const ROWS = 24;
+    const ROWS = 23;
     
     // Simple maze (smaller for testing)
     const MAZE = [
@@ -76,9 +76,15 @@
     function initGame() {
       // Create dynamic board from static MAZE
       board = MAZE.map(row => row.split(''));
+      console.log('MAZE length:', MAZE.length, 'ROWS:', ROWS);
+      console.log('Board created, length:', board.length);
       dots = 0;
       for (let y = 0; y < ROWS; y++) {
         for (let x = 0; x < COLS; x++) {
+          if (!board[y]) {
+            console.error('Missing board row at y:', y);
+            return;
+          }
           const cell = board[y][x];
           if (cell === 'P') { pac.x = x; pac.y = y; }
           if (cell === '.' || cell === 'o') dots++;
