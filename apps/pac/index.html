@@ -88,7 +88,7 @@
     /* ── Helpers ────────────────────────────────── */
     const tile=(x,y)=>{x=Math.round(x);y=Math.round(y);return (board[y]&&board[y][x])||'#'};
     const pass=(x,y)=>tile(x,y)!=='#';
-    const center=(v,eps=0.001)=>Math.abs(v-Math.round(v))<eps;
+    const center=(v,eps=0.02)=>Math.abs(v-Math.round(v))<eps;
     const wrap=o=>{if(o.x<-1)o.x=COLS-1;if(o.x>COLS)o.x=0};
     const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
     const setDir=(nx,ny)=>{pac.nx=nx;pac.ny=ny};
@@ -111,9 +111,11 @@
     function update(dt){
       // Pac movement
       if(center(pac.x)&&center(pac.y)&&pass(pac.x+pac.nx,pac.y+pac.ny)){pac.dx=pac.nx;pac.dy=pac.ny;}
-      const nextX=Math.floor(pac.x+pac.dx*0.51);
-      const nextY=Math.floor(pac.y+pac.dy*0.51);
-      if(tile(nextX,nextY)==='#'){pac.dx=pac.dy=0;}
+      if(pac.dx!==0||pac.dy!==0){
+        const nextX=Math.round(pac.x+pac.dx*0.51);
+        const nextY=Math.round(pac.y+pac.dy*0.51);
+        if(tile(nextX,nextY)==='#')pac.dx=pac.dy=0;
+      }
       pac.x+=pac.dx*dt*SPEED;pac.y+=pac.dy*dt*SPEED;wrap(pac);pac.anim+=dt*10;
 
       // Pellets
