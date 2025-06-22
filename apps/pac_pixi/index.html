@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PixiPac – Theme-able Pac-Man Scaffold</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    html,body{margin:0;height:100%;display:flex;justify-content:center;align-items:center;background:#0b0b0b;font-family:system-ui,sans-serif}
+    #themeLabel{position:fixed;top:8px;right:8px;color:#fff;font-size:12px;user-select:none}
+  </style>
+</head>
+<body>
+  <div id="themeLabel"></div>
+
+  <script type="module">
+    // Minimal, production-grade scaffold using PixiJS 7.x (GPU-accelerated, Safari-friendly)
+    import * as PIXI from 'https://cdn.jsdelivr.net/npm/pixijs@7.x/dist/pixi.min.mjs';
+
+    /* ───────────────── CONSTANTS ───────────────── */
+    const TILE=20, SPEED=6;           // tile size in px, tiles per second
+    const MAP=`############################\n#............##............#\n#.####.#####.##.#####.####.#\n#o####.#####.##.#####.####o#\n#.####.#####.##.#####.####.#\n#............##............#\n#.####.##.########.##.####.#\n#......##....##....##......#\n######.##### ## #####.######\n     #.##### ## #####.#     \n     #.##   G  G   ##.#     \n######.## ###--### ##.######\n#P..........................#\n######.## ######## ##.######\n     #.##          ##.#     \n######.## ######## ##.######\n#............##............#\n#.####.#####.##.#####.####.#\n#o..##................##..o#\n###.##.##.########.##.##.###\n#......##....##....##......#\n#.##########.##.##########.#\n#..........................#\n############################`;
+    const rows=MAP.split('\n');
+    const ROWS=rows.length, COLS=rows[0].length;
+
+    /* ───────────────── PIXI APP ───────────────── */
+    const app = new PIXI.Application({ width: COLS*TILE, height: ROWS*TILE, background: 0x001825, antialias: false });
+    document.body.appendChild(app.view);
+
+    /* ───────────────── THEMES ───────────────── */
+    const THEMES=[
+      {name:'Ocean', pacTint:0xff7e29, road:0x0d2633, wall:0x00334d},
+      {name:'Cars',  pacTint:0xff0000, road:0x2b2b2b, wall:0x333333}
+    ];
+    let themeIndex=1; // default to Cars
+    function curTheme(){return THEMES[themeIndex];}
+    const themeLabel=document.getElementById('themeLabel');
+    function updateThemeLabel(){themeLabel.textContent=`Theme: ${curTheme().name} (press T)`;}
+    updateThemeLabel();
+
+    /* ───────────────── BOARD RENDER ───────────────── */
+    const boardContainer=new PIXI.Container();
+    app.stage.addChild(boardContainer);
+
+    // Pre-render static tiles once for performance
+    for(let y=0;y<ROWS;y++){
+      for(let x=0;x<COLS;x++){
+        const ch=rows[y][x];
+        if(ch==='#'){
+          const g=new PIXI.Graphics();
+          g.beginFill(curTheme().wall).drawRect(0,0,TILE,TILE).endFill();
+          g.x=x*TILE;g.y=y*TILE;boardContainer.addChild(g);
+        } else {
+          const g=new PIXI.Graphics();
+          g.beginFill(curTheme().road).drawRect(0,0,TILE,TILE).endFill();
+          g.x=x*TILE;g.y=y*TILE;boardContainer.addChild(g);
+        }
+      }
+    }
+
+    /* ───────────────── GAME STATE ───────────────── */
+    const board=rows.map(r=>[...r]);
+    const pac={tileX:0,tileY:0,dirX:0,dirY:0,nextX:0,nextY:0,graphic:null};
+
+    // Parse map for starting position
+    for(let y=0;y<ROWS;y++){
+      for(let x=0;x<COLS;x++){
+        if(board[y][x]==='P'){pac.tileX=x;pac.tileY=y;board[y][x]='.';}
+      }
+    }
+
+    /* ───────────────── PAC GRAPHIC ───────────────── */
+    const pacG=new PIXI.Graphics();
+    function drawPacShape(){
+      pacG.clear();
+      pacG.beginFill(curTheme().pacTint).drawRect(-TILE*0.4,-TILE*0.25,TILE*0.8,TILE*0.5).endFill();
+      pacG.beginFill(0xffffff).drawRect(-TILE*0.15,-TILE*0.18,TILE*0.3,TILE*0.15).endFill();
+      // wheels
+      pacG.beginFill(0x000000).drawCircle(-TILE*0.2,TILE*0.3,TILE*0.12).drawCircle(TILE*0.2,TILE*0.3,TILE*0.12).endFill();
+    }
+    drawPacShape();
+    pacG.x=pac.tileX*TILE+TILE/2;
+    pacG.y=pac.tileY*TILE+TILE/2;
+    pacG.pivot.set(0);
+    app.stage.addChild(pacG);
+    pac.graphic=pacG;
+
+    /* ───────────────── INPUT ───────────────── */
+    const keys={};
+    window.addEventListener('keydown',e=>{
+      keys[e.key]=true;
+      if(e.key==='t'||e.key==='T') switchTheme();
+    });
+    window.addEventListener('keyup',e=>{keys[e.key]=false;});
+
+    function switchTheme(){
+      themeIndex=(themeIndex+1)%THEMES.length;
+      updateThemeLabel();
+      drawPacShape();
+      // recolor board tiles
+      boardContainer.children.forEach(child=>{
+        const g=child; // Graphics
+        const localX=g.x/TILE, localY=g.y/TILE;
+        const ch=board[localY][localX];
+        g.tint= ch==='#' ? curTheme().wall : curTheme().road;
+      });
+    }
+
+    /* ───────────────── HELPERS ───────────────── */
+    const pass=(x,y)=>board[y] && board[y][x] && board[y][x]!=='#';
+
+    function alignPixel(val){return val*TILE+TILE/2;}
+
+    /* ───────────────── GAME LOOP ───────────────── */
+    app.ticker.add((delta)=>{
+      // delta is frames since last tick (usually 1)
+      handleInput();
+      movePac(delta);
+    });
+
+    function handleInput(){
+      if(keys['ArrowUp']||keys['w']) {pac.dirX=0;pac.dirY=-1;}
+      else if(keys['ArrowDown']||keys['s']) {pac.dirX=0;pac.dirY=1;}
+      else if(keys['ArrowLeft']||keys['a']) {pac.dirX=-1;pac.dirY=0;}
+      else if(keys['ArrowRight']||keys['d']) {pac.dirX=1;pac.dirY=0;}
+    }
+
+    function movePac(delta){
+      // If at tile centre and next tile is passable → commit move
+      const atCenter=(pac.graphic.x - TILE/2)%TILE===0 && (pac.graphic.y- TILE/2)%TILE===0;
+      if(atCenter){
+        const nx=pac.tileX+pac.dirX, ny=pac.tileY+pac.dirY;
+        if(pass(nx,ny)) {pac.tileX=nx; pac.tileY=ny;}
+      }
+      // Interpolate toward tile position
+      pac.graphic.x += ((alignPixel(pac.tileX)-pac.graphic.x)/(TILE/SPEED))*delta;
+      pac.graphic.y += ((alignPixel(pac.tileY)-pac.graphic.y)/(TILE/SPEED))*delta;
+
+      // Wrap horizontally
+      if(pac.tileX<0){pac.tileX=COLS-1;pac.graphic.x=alignPixel(pac.tileX);} else if(pac.tileX>=COLS){pac.tileX=0;pac.graphic.x=alignPixel(pac.tileX);}    
+    }
+
+  </script>
+</body>
+</html> 
