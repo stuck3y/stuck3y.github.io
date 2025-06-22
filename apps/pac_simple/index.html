@@ -13,7 +13,7 @@
 </head>
 <body>
   <div class="ui" id="ui">SCORE: 0 | LIVES: 3 | THEME: Cars (press T)</div>
-  <canvas id="game" width="560" height="480"></canvas>
+  <canvas id="game" width="784" height="644"></canvas>
   <div class="controls">Arrow keys to move | T to change theme | R to restart</div>
 
   <script>
@@ -23,7 +23,7 @@
     const ui = document.getElementById('ui');
     
     // Game constants
-    const TILE = 20;
+    const TILE = 28; // Bigger tiles for easier visibility
     const COLS = 28;
     const ROWS = 23;
     
@@ -56,6 +56,9 @@
     
     // Game state
     let score = 0, lives = 3, dots = 0;
+    let powerTimer = 0; // frames remaining for power pellet effect
+    let gameWon = false, gameLost = false;
+    const POWER_DURATION = 300; // frames (5 seconds at 60fps)
     let themeIndex = 0;
     const themes = [
       { name: 'Cars', pacColor: '#ff0000', ghostColors: ['#00ff00', '#0000ff', '#ffff00', '#ff00ff'], road: '#333', wall: '#666' },
@@ -66,10 +69,10 @@
     let board = [];
     
     // Entities
-    const pac = { x: 1, y: 11, dx: 0, dy: 0, size: 8 };
+    const pac = { x: 1, y: 11, dx: 0, dy: 0, size: 12 }; // Bigger for new tile size
     const ghosts = [
-      { x: 13, y: 9, dx: 1, dy: 0, color: 0, size: 7, frightened: false },
-      { x: 14, y: 9, dx: -1, dy: 0, color: 1, size: 7, frightened: false }
+      { x: 13, y: 9, dx: 1, dy: 0, color: 0, size: 10, frightened: false },
+      { x: 14, y: 9, dx: -1, dy: 0, color: 1, size: 10, frightened: false }
     ];
     
     // Find starting positions and count dots
@@ -108,7 +111,7 @@
     }
     
     function restart() {
-      score = 0; lives = 3;
+      score = 0; lives = 3; powerTimer = 0; gameWon = false; gameLost = false;
       pac.x = 1; pac.y = 11; pac.dx = 0; pac.dy = 0;
       ghosts.forEach((g, i) => {
         g.x = 13 + i; g.y = 9; g.dx = i === 0 ? 1 : -1; g.dy = 0; g.frightened = false;
@@ -118,7 +121,12 @@
     }
     
     function updateUI() {
-      ui.textContent = `SCORE: ${score} | LIVES: ${lives} | THEME: ${themes[themeIndex].name} (press T)`;
+      let status = '';
+      if (gameWon) status = ' | YOU WIN!';
+      else if (gameLost) status = ' | GAME OVER';
+      else if (powerTimer > 0) status = ` | POWER: ${Math.ceil(powerTimer/60)}s`;
+      
+      ui.textContent = `SCORE: ${score} | LIVES: ${lives} | THEME: ${themes[themeIndex].name} (press T)${status}`;
     }
     
     // Game logic
@@ -126,7 +134,20 @@
     const MOVE_SPEED = 8; // frames between moves (slower = higher number)
     
     function update() {
+      // Don't update if game is over
+      if (gameWon || gameLost) return;
+      
       moveTimer++;
+      
+      // Update power timer
+      if (powerTimer > 0) {
+        powerTimer--;
+        if (powerTimer === 0) {
+          // Power effect ended
+          ghosts.forEach(g => g.frightened = false);
+        }
+        updateUI();
+      }
       
       // Handle input
       if (keys['ArrowUp'] || keys['w']) { pac.dx = 0; pac.dy = -1; }
@@ -152,10 +173,25 @@
               dots--;
               // Mark as collected in dynamic board
               board[newY][newX] = ' ';
+              
+              // Power pellet effect
+              if (cell === 'o') {
+                powerTimer = POWER_DURATION;
+                ghosts.forEach(g => g.frightened = true);
+              }
+              
+              // Check win condition
+              if (dots === 0) {
+                gameWon = true;
+              }
+              
               updateUI();
             }
           }
         }
+        
+        // Check collisions
+        checkCollisions();
         
         // Move ghosts (same timing as Pac-Man)
         ghosts.forEach(ghost => {
@@ -214,12 +250,12 @@
           } else if (cell === '.') {
             ctx.fillStyle = '#ffff00';
             ctx.beginPath();
-            ctx.arc(px + TILE/2, py + TILE/2, 2, 0, Math.PI * 2);
+            ctx.arc(px + TILE/2, py + TILE/2, 3, 0, Math.PI * 2);
             ctx.fill();
           } else if (cell === 'o') {
             ctx.fillStyle = '#ffaa00';
             ctx.beginPath();
-            ctx.arc(px + TILE/2, py + TILE/2, 6, 0, Math.PI * 2);
+            ctx.arc(px + TILE/2, py + TILE/2, 8, 0, Math.PI * 2);
             ctx.fill();
           }
         }
@@ -233,7 +269,7 @@
       
       // Draw ghosts
       ghosts.forEach((ghost, i) => {
-        ctx.fillStyle = theme.ghostColors[ghost.color];
+        ctx.fillStyle = ghost.frightened ? '#4444ff' : theme.ghostColors[ghost.color];
         ctx.beginPath();
         ctx.arc(ghost.x * TILE + TILE/2, ghost.y * TILE + TILE/2, ghost.size, 0, Math.PI * 2);
         ctx.fill();
