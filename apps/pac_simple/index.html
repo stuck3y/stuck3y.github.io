@@ -71,11 +71,12 @@
     // Entities
     const pac = { x: 1, y: 11, dx: 0, dy: 0, size: 12, rotation: 0 }; // Added rotation
     const ghosts = [
-      { x: 13, y: 9, dx: 1, dy: 0, color: 0, size: 10, frightened: false, rotation: 0, type: 'enemy' },
-      { x: 14, y: 9, dx: -1, dy: 0, color: 1, size: 10, frightened: false, rotation: Math.PI, type: 'enemy' },
-      { x: 12, y: 9, dx: 0, dy: 1, color: 2, size: 10, frightened: false, rotation: Math.PI/2, type: 'enemy' },
-      { x: 15, y: 9, dx: 0, dy: -1, color: 3, size: 10, frightened: false, rotation: -Math.PI/2, type: 'enemy' },
-      { x: 2, y: 11, dx: 1, dy: 0, color: 4, size: 10, frightened: false, rotation: 0, type: 'ally' } // AI ally
+      // Reduced enemy count for better gameplay
+      { x: 13, y: 9, dx: 1, dy: 0, color: 0, size: 9, frightened: false, rotation: 0, type: 'enemy' },
+      { x: 14, y: 9, dx: -1, dy: 0, color: 1, size: 9, frightened: false, rotation: Math.PI, type: 'enemy' },
+      // Smart AI ally - larger and more distinctive
+      { x: 2, y: 11, dx: 1, dy: 0, color: 0, size: 14, frightened: false, rotation: 0, type: 'ally', 
+        targetX: 2, targetY: 11, mode: 'follow' } // AI ally with pathfinding
     ];
     
     // Find starting positions and count dots
@@ -242,22 +243,65 @@
         // Move ghosts (same timing as Pac-Man)
         ghosts.forEach(ghost => {
           if (ghost.type === 'ally') {
-            // AI ally follows player with some intelligence
-            const dx = pac.x - ghost.x;
-            const dy = pac.y - ghost.y;
-            const distance = Math.abs(dx) + Math.abs(dy);
+            // Smart AI ally with strategic behavior
+            const pacDistance = Math.abs(pac.x - ghost.x) + Math.abs(pac.y - ghost.y);
             
-            // Only move if not too close to player (give some space)
-            if (distance > 2) {
-              if (Math.abs(dx) > Math.abs(dy)) {
-                ghost.dx = dx > 0 ? 1 : -1;
-                ghost.dy = 0;
-              } else {
-                ghost.dx = 0;
-                ghost.dy = dy > 0 ? 1 : -1;
+            // Check if player is in danger (enemy nearby)
+            const nearbyEnemies = ghosts.filter(g => 
+              g.type === 'enemy' && !g.frightened && 
+              Math.abs(g.x - pac.x) + Math.abs(g.y - pac.y) < 4
+            );
+            
+            if (nearbyEnemies.length > 0 && powerTimer === 0) {
+              // Player in danger - find nearest power pellet
+              let nearestPellet = null;
+              let minDist = Infinity;
+              
+              for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                  if (board[y][x] === 'o') {
+                    const dist = Math.abs(x - ghost.x) + Math.abs(y - ghost.y);
+                    if (dist < minDist) {
+                      minDist = dist;
+                      nearestPellet = {x, y};
+                    }
+                  }
+                }
+              }
+              
+              if (nearestPellet) {
+                // Navigate to power pellet
+                const dx = nearestPellet.x - ghost.x;
+                const dy = nearestPellet.y - ghost.y;
+                
+                if (Math.abs(dx) > Math.abs(dy)) {
+                  ghost.dx = dx > 0 ? 1 : -1;
+                  ghost.dy = 0;
+                } else {
+                  ghost.dx = 0;
+                  ghost.dy = dy > 0 ? 1 : -1;
+                }
+                ghost.mode = 'rescue';
               }
             } else {
-              ghost.dx = 0; ghost.dy = 0; // Stop when close
+              // Normal following behavior
+              const dx = pac.x - ghost.x;
+              const dy = pac.y - ghost.y;
+              
+              // Only move if not too close to player (give some space)
+              if (pacDistance > 3) {
+                if (Math.abs(dx) > Math.abs(dy)) {
+                  ghost.dx = dx > 0 ? 1 : -1;
+                  ghost.dy = 0;
+                } else {
+                  ghost.dx = 0;
+                  ghost.dy = dy > 0 ? 1 : -1;
+                }
+                ghost.mode = 'follow';
+              } else {
+                ghost.dx = 0; ghost.dy = 0; // Stop when close
+                ghost.mode = 'guard';
+              }
             }
           } else {
             // Enemy AI - try to move toward player occasionally
@@ -363,160 +407,209 @@
       
       if (theme.name === 'Cars') {
         // Lightning McQueen - more realistic proportions
-        const w = TILE * 1.2, h = TILE * 0.7;
+        const w = TILE * 1.4, h = TILE * 0.8; // Movie-accurate proportions
         
-        // Main car body with curves
+        // Main car body with authentic Lightning McQueen shape
         ctx.fillStyle = '#ff0000';
         ctx.beginPath();
-        ctx.roundRect(-w/2, -h/2, w, h, h*0.2);
+        ctx.ellipse(0, 0, w/2, h/2, 0, 0, Math.PI * 2);
         ctx.fill();
         
-        // Hood and roof details
+        // Hood scoop and roof details
         ctx.fillStyle = '#cc0000';
         ctx.beginPath();
-        ctx.roundRect(-w*0.3, -h*0.4, w*0.6, h*0.3, h*0.1);
+        ctx.ellipse(w*0.1, -h*0.1, w*0.25, h*0.15, 0, 0, Math.PI * 2);
         ctx.fill();
         
-        // Windshield with reflection
+        // Windshield with authentic curve
         ctx.fillStyle = '#87ceeb';
         ctx.beginPath();
-        ctx.roundRect(-w*0.25, -h*0.35, w*0.5, h*0.25, h*0.05);
+        ctx.ellipse(0, -h*0.2, w*0.3, h*0.15, 0, 0, Math.PI * 2);
         ctx.fill();
         
-        // Windshield highlight
+        // Windshield reflection highlight
         ctx.fillStyle = '#b8e0ff';
         ctx.beginPath();
-        ctx.roundRect(-w*0.2, -h*0.3, w*0.15, h*0.1, h*0.02);
+        ctx.ellipse(-w*0.1, -h*0.25, w*0.08, h*0.05, 0, 0, Math.PI * 2);
         ctx.fill();
         
-        // Racing stripes and numbers
+        // Rust-eze sponsor decal (authentic movie detail)
         ctx.fillStyle = '#ffff00';
-        ctx.beginPath();
-        ctx.roundRect(-w*0.08, -h/2, w*0.04, h, h*0.02);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.roundRect(w*0.04, -h/2, w*0.04, h, h*0.02);
-        ctx.fill();
-        
-        // "95" number
-        ctx.fillStyle = '#ffff00';
-        ctx.font = `bold ${TILE*0.25}px Arial`;
+        ctx.font = `bold ${TILE*0.15}px Arial`;
         ctx.textAlign = 'center';
-        ctx.fillText('95', 0, h*0.05);
+        ctx.fillText('Rust-eze', 0, -h*0.05);
         
-        // Wheels with rims
-        ctx.fillStyle = '#666';
+        // Racing stripes (movie-accurate)
+        ctx.fillStyle = '#ffff00';
         ctx.beginPath();
-        ctx.arc(-w*0.3, h*0.55, TILE*0.18, 0, Math.PI * 2);
-        ctx.arc(w*0.3, h*0.55, TILE*0.18, 0, Math.PI * 2);
+        ctx.ellipse(-w*0.05, 0, w*0.02, h*0.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(w*0.05, 0, w*0.02, h*0.4, 0, 0, Math.PI * 2);
         ctx.fill();
         
-        // Wheel rims
-        ctx.fillStyle = '#666';
+        // "95" number (movie-accurate placement)
+        ctx.fillStyle = '#ffff00';
+        ctx.font = `bold ${TILE*0.3}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('95', 0, h*0.15);
+        
+        // Wheels with movie-accurate rims
+        ctx.fillStyle = '#333';
         ctx.beginPath();
-        ctx.arc(-w*0.3, h*0.55, TILE*0.12, 0, Math.PI * 2);
-        ctx.arc(w*0.3, h*0.55, TILE*0.12, 0, Math.PI * 2);
+        ctx.arc(-w*0.35, h*0.45, TILE*0.2, 0, Math.PI * 2);
+        ctx.arc(w*0.35, h*0.45, TILE*0.2, 0, Math.PI * 2);
         ctx.fill();
         
-        // Eyes
+        // Wheel rims (Lightning's signature wheels)
+        ctx.fillStyle = '#888';
+        ctx.beginPath();
+        ctx.arc(-w*0.35, h*0.45, TILE*0.12, 0, Math.PI * 2);
+        ctx.arc(w*0.35, h*0.45, TILE*0.12, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Lightning's signature eyes (Ka-chiga expression)
         ctx.fillStyle = '#fff';
         ctx.beginPath();
-        ctx.arc(-w*0.12, -h*0.15, TILE*0.1, 0, Math.PI * 2);
-        ctx.arc(w*0.12, -h*0.15, TILE*0.1, 0, Math.PI * 2);
+        ctx.ellipse(-w*0.15, -h*0.25, TILE*0.12, TILE*0.08, 0, 0, Math.PI * 2);
+        ctx.ellipse(w*0.15, -h*0.25, TILE*0.12, TILE*0.08, 0, 0, Math.PI * 2);
         ctx.fill();
         
-        // Eye pupils
+        // Eye pupils (confident look)
         ctx.fillStyle = '#000';
         ctx.beginPath();
-        ctx.arc(-w*0.12, -h*0.15, TILE*0.05, 0, Math.PI * 2);
-        ctx.arc(w*0.12, -h*0.15, TILE*0.05, 0, Math.PI * 2);
+        ctx.arc(-w*0.15, -h*0.25, TILE*0.06, 0, Math.PI * 2);
+        ctx.arc(w*0.15, -h*0.25, TILE*0.06, 0, Math.PI * 2);
         ctx.fill();
         
-        // Eye highlights
+        // Eye highlights (movie sparkle)
         ctx.fillStyle = '#fff';
         ctx.beginPath();
-        ctx.arc(-w*0.1, -h*0.18, TILE*0.02, 0, Math.PI * 2);
-        ctx.arc(w*0.14, -h*0.18, TILE*0.02, 0, Math.PI * 2);
+        ctx.arc(-w*0.12, -h*0.28, TILE*0.025, 0, Math.PI * 2);
+        ctx.arc(w*0.18, -h*0.28, TILE*0.025, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Lightning bolt decal (signature detail)
+        ctx.strokeStyle = '#ffff00';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(w*0.25, -h*0.1);
+        ctx.lineTo(w*0.3, h*0.1);
+        ctx.lineTo(w*0.35, -h*0.05);
+        ctx.stroke();
+        
+        // Front spoiler (NASCAR detail)
+        ctx.fillStyle = '#cc0000';
+        ctx.beginPath();
+        ctx.ellipse(w*0.45, 0, w*0.05, h*0.2, 0, 0, Math.PI * 2);
         ctx.fill();
         
       } else {
         // Nemo (clownfish) - more realistic and detailed
-        const w = TILE * 0.9, h = TILE * 0.6;
+        const w = TILE * 1.1, h = TILE * 0.7; // Movie-accurate proportions
         
-        // Fish body with gradient effect
+        // Authentic clownfish body shape
         ctx.fillStyle = '#ff7700';
         ctx.beginPath();
         ctx.ellipse(0, 0, w/2, h/2, 0, 0, Math.PI * 2);
         ctx.fill();
         
-        // Body shading
+        // Body shading (movie lighting effect)
         ctx.fillStyle = '#e65500';
         ctx.beginPath();
-        ctx.ellipse(0, h*0.1, w*0.4, h*0.3, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, h*0.15, w*0.45, h*0.25, 0, 0, Math.PI * 2);
         ctx.fill();
         
-        // White stripes
+        // Authentic clownfish white stripes (movie-accurate)
         ctx.fillStyle = '#fff';
         ctx.beginPath();
-        ctx.ellipse(-w*0.15, 0, w*0.08, h*0.45, 0, 0, Math.PI * 2);
+        ctx.ellipse(-w*0.2, 0, w*0.1, h*0.48, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.beginPath();
-        ctx.ellipse(w*0.15, 0, w*0.08, h*0.45, 0, 0, Math.PI * 2);
+        ctx.ellipse(w*0.05, 0, w*0.08, h*0.45, 0, 0, Math.PI * 2);
         ctx.fill();
         
-        // Black stripe outlines
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.ellipse(-w*0.15, 0, w*0.08, h*0.45, 0, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.ellipse(w*0.15, 0, w*0.08, h*0.45, 0, 0, Math.PI * 2);
-        ctx.stroke();
-        
-        // Tail fin with more detail
-        ctx.fillStyle = '#ff7700';
-        ctx.beginPath();
-        ctx.moveTo(-w/2, 0);
-        ctx.lineTo(-w/2 - TILE*0.4, -h*0.5);
-        ctx.lineTo(-w/2 - TILE*0.35, 0);
-        ctx.lineTo(-w/2 - TILE*0.4, h*0.5);
-        ctx.closePath();
-        ctx.fill();
-        
-        // Tail fin stripes
+        // Black stripe outlines (movie detail)
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(-w/2 - TILE*0.38, -h*0.2);
-        ctx.lineTo(-w/2 - TILE*0.38, h*0.2);
+        ctx.ellipse(-w*0.2, 0, w*0.1, h*0.48, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(w*0.05, 0, w*0.08, h*0.45, 0, 0, Math.PI * 2);
         ctx.stroke();
         
-        // Dorsal and ventral fins
+        // Tail fin (movie-accurate shape)
         ctx.fillStyle = '#ff7700';
         ctx.beginPath();
-        ctx.moveTo(w*0.1, -h/2);
-        ctx.lineTo(w*0.2, -h*0.7);
-        ctx.lineTo(w*0.3, -h/2);
+        ctx.moveTo(-w/2, 0);
+        ctx.lineTo(-w/2 - TILE*0.45, -h*0.4);
+        ctx.lineTo(-w/2 - TILE*0.4, 0);
+        ctx.lineTo(-w/2 - TILE*0.45, h*0.4);
         ctx.closePath();
         ctx.fill();
         
-        // Eye (bigger and more detailed)
-        ctx.fillStyle = '#fff';
+        // Tail fin black edge
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(w*0.25, -h*0.1, TILE*0.12, 0, Math.PI * 2);
+        ctx.moveTo(-w/2, 0);
+        ctx.lineTo(-w/2 - TILE*0.45, -h*0.4);
+        ctx.lineTo(-w/2 - TILE*0.4, 0);
+        ctx.lineTo(-w/2 - TILE*0.45, h*0.4);
+        ctx.closePath();
+        ctx.stroke();
+        
+        // Dorsal fin (top fin)
+        ctx.fillStyle = '#ff7700';
+        ctx.beginPath();
+        ctx.moveTo(w*0.05, -h*0.45);
+        ctx.lineTo(w*0.15, -h*0.65);
+        ctx.lineTo(w*0.25, -h*0.45);
+        ctx.closePath();
         ctx.fill();
         
-        // Eye pupil
+        // Right fin (Nemo's "lucky fin" - smaller!)
+        ctx.fillStyle = '#ff7700';
+        ctx.beginPath();
+        ctx.ellipse(w*0.3, h*0.1, w*0.06, h*0.15, Math.PI/4, 0, Math.PI * 2); // Smaller lucky fin
+        ctx.fill();
+        
+        // Left fin (normal size)
+        ctx.beginPath();
+        ctx.ellipse(w*0.3, -h*0.1, w*0.1, h*0.2, -Math.PI/4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Nemo's worried expression eye
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.ellipse(w*0.2, -h*0.15, TILE*0.13, TILE*0.1, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Eye pupil (worried look)
         ctx.fillStyle = '#000';
         ctx.beginPath();
-        ctx.arc(w*0.25, -h*0.1, TILE*0.06, 0, Math.PI * 2);
+        ctx.arc(w*0.18, -h*0.15, TILE*0.06, 0, Math.PI * 2);
         ctx.fill();
         
-        // Eye highlight
+        // Eye highlight (movie sparkle)
         ctx.fillStyle = '#fff';
         ctx.beginPath();
-        ctx.arc(w*0.27, -h*0.13, TILE*0.02, 0, Math.PI * 2);
+        ctx.arc(w*0.16, -h*0.18, TILE*0.02, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Worried eyebrow (Nemo's expression)
+        ctx.strokeStyle = '#cc5500';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(w*0.1, -h*0.25);
+        ctx.lineTo(w*0.25, -h*0.28);
+        ctx.stroke();
+        
+        // Small mouth (worried expression)
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.ellipse(w*0.15, -h*0.05, w*0.02, h*0.01, 0, 0, Math.PI * 2);
         ctx.fill();
       }
       
@@ -550,39 +643,102 @@
     }
     
     function drawMater(ghost) {
-      const w = TILE * 1.1, h = TILE * 0.8;
+      const w = TILE * 1.3, h = TILE * 0.9; // Larger for ally distinction
       
-      // Mater's rusty body
+      // Helper indicator (green glow for ally)
+      ctx.shadowColor = '#00ff00';
+      ctx.shadowBlur = 10;
+      
+      // Mater's authentic rusty body
       ctx.fillStyle = ghost.frightened ? '#4444ff' : '#8B4513';
       ctx.beginPath();
-      ctx.roundRect(-w/2, -h/2, w, h, h*0.15);
+      ctx.ellipse(0, 0, w/2, h/2, 0, 0, Math.PI * 2);
       ctx.fill();
       
-      // Rust spots
+      ctx.shadowBlur = 0; // Reset shadow
+      
+      // Authentic rust spots and dents
       ctx.fillStyle = '#A0522D';
       ctx.beginPath();
-      ctx.arc(-w*0.2, -h*0.1, TILE*0.05, 0, Math.PI * 2);
-      ctx.arc(w*0.3, h*0.1, TILE*0.04, 0, Math.PI * 2);
+      ctx.arc(-w*0.25, -h*0.15, TILE*0.06, 0, Math.PI * 2);
+      ctx.arc(w*0.2, h*0.2, TILE*0.05, 0, Math.PI * 2);
+      ctx.arc(-w*0.1, h*0.25, TILE*0.04, 0, Math.PI * 2);
       ctx.fill();
       
-      // Tow hook
-      ctx.strokeStyle = '#666';
-      ctx.lineWidth = 4;
+      // More rust patches
+      ctx.fillStyle = '#654321';
       ctx.beginPath();
-      ctx.moveTo(-w/2, 0);
-      ctx.lineTo(-w/2 - TILE*0.2, 0);
+      ctx.arc(w*0.15, -h*0.2, TILE*0.03, 0, Math.PI * 2);
+      ctx.arc(-w*0.3, h*0.1, TILE*0.035, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Tow hook/cable (Mater's signature feature)
+      ctx.strokeStyle = '#666';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(-w/2, h*0.1);
+      ctx.lineTo(-w/2 - TILE*0.25, h*0.1);
+      ctx.arc(-w/2 - TILE*0.3, h*0.1, TILE*0.05, 0, Math.PI * 2);
       ctx.stroke();
       
-      // Eyes (buck teeth style)
+      // Missing headlight (left side - movie detail)
+      ctx.fillStyle = '#333';
+      ctx.beginPath();
+      ctx.arc(-w*0.35, -h*0.2, TILE*0.08, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Working headlight (right side)
+      ctx.fillStyle = '#ffff99';
+      ctx.beginPath();
+      ctx.arc(w*0.35, -h*0.2, TILE*0.08, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Headlight rim
+      ctx.strokeStyle = '#666';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(w*0.35, -h*0.2, TILE*0.08, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      // Mater's signature buck-toothed grin
       ctx.fillStyle = '#fff';
       ctx.beginPath();
-      ctx.arc(-w*0.1, -h*0.2, TILE*0.08, 0, Math.PI * 2);
-      ctx.arc(w*0.1, -h*0.2, TILE*0.08, 0, Math.PI * 2);
+      ctx.ellipse(-w*0.12, -h*0.25, TILE*0.09, TILE*0.07, 0, 0, Math.PI * 2);
+      ctx.ellipse(w*0.12, -h*0.25, TILE*0.09, TILE*0.07, 0, 0, Math.PI * 2);
       ctx.fill();
+      
+      // Eye pupils (friendly expression)
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.arc(-w*0.12, -h*0.25, TILE*0.04, 0, Math.PI * 2);
+      ctx.arc(w*0.12, -h*0.25, TILE*0.04, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Buck teeth (Mater's signature feature)
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.rect(-w*0.05, -h*0.05, w*0.02, h*0.08);
+      ctx.rect(w*0.03, -h*0.05, w*0.02, h*0.08);
+      ctx.fill();
+      
+      // Helper indicator text
+      ctx.fillStyle = '#00ff00';
+      ctx.font = `bold ${TILE*0.15}px Arial`;
+      ctx.textAlign = 'center';
+      if (ghost.mode === 'rescue') {
+        ctx.fillText('HELP!', 0, -h*0.6);
+      } else if (ghost.mode === 'follow') {
+        ctx.fillText('BUDDY', 0, -h*0.6);
+      }
     }
     
     function drawRivalCar(ghost) {
-      const w = TILE * 0.9, h = TILE * 0.6;
+      const w = TILE * 0.8, h = TILE * 0.55; // Smaller for enemies
+      
+      // Enemy warning indicator (red glow)
+      ctx.shadowColor = '#ff0000';
+      ctx.shadowBlur = 8;
+      
       const colors = ghost.frightened ? '#4444ff' : 
                     ['#2e7d32', '#0051ff', '#ffdd00', '#800080', '#ff4500'][ghost.color];
       const names = ['Chick', 'King', 'Storm', 'Cruz', 'Boost'][ghost.color];
@@ -591,13 +747,15 @@
       // Car body with aerodynamic shape
       ctx.fillStyle = colors;
       ctx.beginPath();
-      ctx.roundRect(-w/2, -h/2, w, h, h*0.2);
+      ctx.ellipse(0, 0, w/2, h/2, 0, 0, Math.PI * 2);
       ctx.fill();
+      
+      ctx.shadowBlur = 0; // Reset shadow
       
       // Racing details
       ctx.fillStyle = '#fff';
       ctx.beginPath();
-      ctx.roundRect(-w*0.2, -h*0.3, w*0.4, h*0.2, h*0.05);
+      ctx.ellipse(0, -h*0.15, w*0.25, h*0.1, 0, 0, Math.PI * 2);
       ctx.fill();
       
       // Racing number
@@ -605,36 +763,90 @@
       ctx.font = `bold ${TILE*0.2}px Arial`;
       ctx.textAlign = 'center';
       ctx.fillText(numbers, 0, h*0.05);
+      
+      // Aggressive eyes
+      ctx.fillStyle = '#ff0000';
+      ctx.beginPath();
+      ctx.arc(-w*0.15, -h*0.25, TILE*0.04, 0, Math.PI * 2);
+      ctx.arc(w*0.15, -h*0.25, TILE*0.04, 0, Math.PI * 2);
+      ctx.fill();
     }
     
     function drawDory(ghost) {
-      const w = TILE * 0.8, h = TILE * 0.5;
+      const w = TILE * 1.0, h = TILE * 0.6; // Larger for ally distinction
       
-      // Dory's blue body
+      // Helper indicator (blue glow for ally)
+      ctx.shadowColor = '#00aaff';
+      ctx.shadowBlur = 10;
+      
+      // Dory's authentic blue tang body
       ctx.fillStyle = ghost.frightened ? '#4444ff' : '#4169E1';
       ctx.beginPath();
       ctx.ellipse(0, 0, w/2, h/2, 0, 0, Math.PI * 2);
       ctx.fill();
       
-      // Yellow details
+      ctx.shadowBlur = 0; // Reset shadow
+      
+      // Authentic yellow details (movie-accurate)
       ctx.fillStyle = '#FFD700';
       ctx.beginPath();
-      ctx.ellipse(0, h*0.2, w*0.3, h*0.2, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, h*0.25, w*0.35, h*0.15, 0, 0, Math.PI * 2);
       ctx.fill();
       
-      // Big forgetful eyes
+      // Yellow stripe on back
+      ctx.beginPath();
+      ctx.ellipse(-w*0.2, 0, w*0.08, h*0.3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Dory's signature big forgetful eyes
       ctx.fillStyle = '#fff';
       ctx.beginPath();
-      ctx.arc(-w*0.1, -h*0.1, TILE*0.08, 0, Math.PI * 2);
-      ctx.arc(w*0.1, -h*0.1, TILE*0.08, 0, Math.PI * 2);
+      ctx.ellipse(-w*0.1, -h*0.15, TILE*0.1, TILE*0.08, 0, 0, Math.PI * 2);
+      ctx.ellipse(w*0.1, -h*0.15, TILE*0.1, TILE*0.08, 0, 0, Math.PI * 2);
       ctx.fill();
+      
+      // Eye pupils (optimistic expression)
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.arc(-w*0.1, -h*0.15, TILE*0.04, 0, Math.PI * 2);
+      ctx.arc(w*0.1, -h*0.15, TILE*0.04, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Dory's fins
+      ctx.fillStyle = '#4169E1';
+      ctx.beginPath();
+      ctx.ellipse(w*0.3, 0, w*0.08, h*0.15, Math.PI/6, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Tail fin
+      ctx.beginPath();
+      ctx.moveTo(-w/2, 0);
+      ctx.lineTo(-w/2 - TILE*0.3, -h*0.3);
+      ctx.lineTo(-w/2 - TILE*0.25, 0);
+      ctx.lineTo(-w/2 - TILE*0.3, h*0.3);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Helper indicator text
+      ctx.fillStyle = '#00aaff';
+      ctx.font = `bold ${TILE*0.15}px Arial`;
+      ctx.textAlign = 'center';
+      if (ghost.mode === 'rescue') {
+        ctx.fillText('RESCUE!', 0, -h*0.6);
+      } else if (ghost.mode === 'follow') {
+        ctx.fillText('FRIEND', 0, -h*0.6);
+      }
     }
     
     function drawSeaCreature(ghost) {
-      const r = TILE * 0.4;
+      const r = TILE * 0.35; // Smaller for enemies
+      
+      // Enemy warning indicator (red glow)
+      ctx.shadowColor = '#ff4444';
+      ctx.shadowBlur = 6;
+      
       const colors = ghost.frightened ? '#4444ff' : 
                     ['#ff88ff', '#88ffff', '#ffaaff', '#aaaaff', '#ff6347'][ghost.color];
-      const creatures = ['Jellyfish', 'Seahorse', 'Starfish', 'Octopus', 'Crab'][ghost.color];
       
       if (ghost.color === 0) {
         // Jellyfish with animated tentacles
@@ -643,6 +855,8 @@
         ctx.arc(0, -r*0.3, r, 0, Math.PI);
         ctx.closePath();
         ctx.fill();
+        
+        ctx.shadowBlur = 0; // Reset shadow
         
         // Animated tentacles
         ctx.strokeStyle = colors;
@@ -655,18 +869,20 @@
           ctx.stroke();
         }
       } else {
-        // Other sea creatures as simple colored shapes
+        // Other sea creatures
         ctx.fillStyle = colors;
         ctx.beginPath();
         ctx.arc(0, 0, r*0.8, 0, Math.PI * 2);
         ctx.fill();
+        
+        ctx.shadowBlur = 0; // Reset shadow
       }
       
-      // Eyes for all sea creatures
-      ctx.fillStyle = '#000';
+      // Aggressive eyes for all sea creatures
+      ctx.fillStyle = '#ff0000';
       ctx.beginPath();
-      ctx.arc(-r*0.2, -r*0.3, r*0.1, 0, Math.PI * 2);
-      ctx.arc(r*0.2, -r*0.3, r*0.1, 0, Math.PI * 2);
+      ctx.arc(-r*0.2, -r*0.3, r*0.08, 0, Math.PI * 2);
+      ctx.arc(r*0.2, -r*0.3, r*0.08, 0, Math.PI * 2);
       ctx.fill();
     }
     
