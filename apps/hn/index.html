@@ -1,41 +1,49 @@
 <!--  hn-clear.html  -->
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>HN Clear</title>
 <link rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
 <style>
-/* ---------- Clear‑inspired minimal UI ---------- */
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-      background:#f7f7f7;margin:0}
+      background:#f7f7f7;margin:0;-webkit-tap-highlight-color:transparent}
 header{background:#ff6600;color:#fff;padding:.75rem 1rem;font-weight:600}
-#toolbar{display:flex;gap:.5rem;margin:.5rem}
-button{background:#ff6600;color:#fff;border:0;padding:.5rem .8rem;border-radius:4px;cursor:pointer}
+#toolbar{display:flex;gap:.5rem;margin:.5rem 1rem}
+button{background:#ff6600;color:#fff;border:0;padding:.5rem .9rem;border-radius:6px;cursor:pointer;
+       font-size:1rem}
 button.secondary{background:#ddd;color:#333}
 ul#stories{list-style:none;margin:0;padding:0}
-li.story{background:#fff;margin:.5rem 1rem;padding:1rem;border-radius:8px;
-         display:flex;align-items:center;justify-content:space-between;position:relative;
+li.story{background:#fff;margin:.5rem 0;padding:1rem;border-radius:10px;
+         display:flex;align-items:center;position:relative;gap:.75rem;
          transition:transform .2s}
 li.dragging{opacity:.6}
-.title{flex:1;font-size:1rem;font-weight:500;margin-right:.5rem}
-.points{flex:none;background:#ff6600;color:#fff;padding:.25rem .5rem;border-radius:4px;font-size:.8rem}
-.checkbox{display:none;margin-right:.5rem}
-.swipe-actions{position:absolute;top:0;right:0;height:100%;display:flex;
-              align-items:center;gap:.25rem;padding-right:.5rem}
-.swipe-actions button{background:#e74c3c}
+a.title{flex:1;font-size:1rem;font-weight:500;text-decoration:none;color:#000}
+a.comments{flex:none;font-size:.9rem;color:#555;text-decoration:none}
+a.comments:after{content:"💬";font-size:1.25rem}
+.points{flex:none;background:#ff6600;color:#fff;padding:.25rem .55rem;border-radius:4px;font-size:.8rem}
+.checkbox{display:none}
 .selecting .checkbox{display:block}
-/* ---------- Modal ---------- */
+.checkbox input{width:20px;height:20px}
+.swipe-actions{position:absolute;top:0;right:0;height:100%;display:flex;
+              align-items:center;padding-right:.5rem}
+.swipe-actions button{background:#e74c3c}
 #modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-       background:rgba(0,0,0,.5);padding:1rem;box-sizing:border-box}
-#modal .card{background:#fff;max-width:600px;width:100%;padding:1rem;border-radius:8px;
+       background:rgba(0,0,0,.45);padding:1rem;box-sizing:border-box;z-index:999}
+#modal .card{background:#fff;max-width:640px;width:100%;padding:1rem;border-radius:10px;
              max-height:90vh;overflow:auto;position:relative}
 #modal header{font-size:1.25rem;font-weight:700;margin-bottom:.5rem}
-#modal .close{position:absolute;top:.5rem;right:.5rem;font-size:1.5rem;color:#555;cursor:pointer}
+#modal .close{position:absolute;top:.4rem;right:.8rem;font-size:1.6rem;color:#555;cursor:pointer}
 pre.chat-log{white-space:pre-wrap;background:#f3f3f3;padding:.5rem;border-radius:4px;
              max-height:50vh;overflow:auto}
+.copy-btn{margin-top:.6rem;background:#2ecc71}
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
+       background:#333;color:#fff;border-radius:20px;padding:.5rem 1rem;font-size:.9rem;opacity:0;
+       transition:opacity .3s}
+.toast.show{opacity:1}
 </style>
 </head><body>
-<header>Hacker News -- Clear View</header>
+<header>Hacker News – Clear View</header>
 <div id="toolbar">
   <button id="refresh">Refresh</button>
   <button id="select">Select</button>
@@ -52,8 +60,10 @@ pre.chat-log{white-space:pre-wrap;background:#f3f3f3;padding:.5rem;border-radius
   <div id="modal-body"></div>
 </div></div>
 
-<!-- tiny helper libs -->
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<div id="toast" class="toast">Copied!</div>
+
+<!-- helper libs -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
 
 <script>
@@ -62,14 +72,15 @@ const list=document.getElementById("stories"),
       btnRefresh=document.getElementById("refresh"),
       btnSelect=document.getElementById("select"),
       btnSum=document.getElementById("summarize"),
-      btnChat=document.getElementById("chat");
+      btnChat=document.getElementById("chat"),
+      toast=document.getElementById("toast");
 let stories=[],selectMode=false;
 
 /* ---------- Data ---------- */
 async function loadStories(){
   const ids=await fetch(API_ROOT+"/topstories.json").then(r=>r.json());
-  const slice=ids.slice(0,MAX_STORIES);
-  stories=await Promise.all(slice.map(id=>fetch(`${API_ROOT}/item/${id}.json`).then(r=>r.json())));
+  stories=await Promise.all(ids.slice(0,MAX_STORIES)
+              .map(id=>fetch(`${API_ROOT}/item/${id}.json`).then(r=>r.json())));
   render();
 }
 
@@ -78,20 +89,29 @@ function render(){
   list.innerHTML="";
   stories.forEach((s,i)=>{
     const li=document.createElement("li");li.className="story";li.dataset.index=i;
+    const url=s.url||`https://news.ycombinator.com/item?id=${s.id}`;
     li.innerHTML=`
       <label class="checkbox"><input type="checkbox"></label>
-      <span class="title">${s.title}</span>
-      <span class="points">${s.score} pts</span>
+      <a class="title" href="${url}" target="_blank" rel="noopener"
+         draggable="false">${s.title}</a>
+      <span class="points">${s.score}</span>
+      <a class="comments" href="https://news.ycombinator.com/item?id=${s.id}"
+         target="_blank" rel="noopener" draggable="false"></a>
       <div class="swipe-actions hidden"><button class="remove">Remove</button></div>`;
     list.appendChild(li);wireSwipe(li);
   });
-  Sortable.create(list,{animation:150,onEnd:e=>{
-    const [m]=stories.splice(e.oldIndex,1);stories.splice(e.newIndex,0,m);render();
-  }});
+  Sortable.create(list,{
+    animation:150,
+    filter:"a,button,input",
+    onEnd:e=>{
+      const [m]=stories.splice(e.oldIndex,1);stories.splice(e.newIndex,0,m);render();
+    }
+  });
+  updateActionButtons();
 }
 
 function wireSwipe(li){
-  const mc=new Hammer(li);
+  const mc=new Hammer(li);mc.get("swipe").set({direction:Hammer.DIRECTION_HORIZONTAL});
   mc.on("swipeleft",()=>li.querySelector(".swipe-actions").classList.remove("hidden"));
   li.querySelector(".remove").onclick=()=>{stories.splice(li.dataset.index,1);render();}
 }
@@ -99,10 +119,7 @@ function wireSwipe(li){
 btnSelect.onclick=()=>{
   selectMode=!selectMode;
   list.classList.toggle("selecting",selectMode);
-  [...list.children].forEach(li=>{
-    li.querySelector(".checkbox").style.display=selectMode?"block":"none";
-    if(!selectMode) li.querySelector("input").checked=false;
-  });
+  list.querySelectorAll("input").forEach(cb=>{cb.checked=false;});
   updateActionButtons();
 };
 
@@ -111,29 +128,35 @@ function selected(){return [...list.children]
           .filter(li=>li.querySelector("input")?.checked)
           .map(li=>stories[li.dataset.index]);}
 function updateActionButtons(){
-  const any=selected().length>0;
-  btnSum.disabled=!any;btnChat.disabled=!(any&&selected().length===1);
+  const any=selected().length;
+  btnSum.disabled=!any;
+  btnChat.disabled=!(any===1);
 }
 
-/* ---------- Modal helpers ---------- */
+/* ---------- Modal / toast ---------- */
 function modal(title,bodyHTML){
   const m=document.getElementById("modal");
   m.style.display="flex";m.querySelector("#modal-title").textContent=title;
   m.querySelector("#modal-body").innerHTML=bodyHTML;
   m.querySelector(".close").onclick=()=>m.style.display="none";
 }
+function showToast(){toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1200);}
 
-/* ---------- OpenAI ---------- */
+/* ---------- Key helper ---------- */
 function askKey(){
   const cur=localStorage.getItem("OPENAI_API_KEY")||"";
-  const k=prompt("Paste your OpenAI API key",cur);if(k) localStorage.setItem("OPENAI_API_KEY",k.trim());
+  const k=prompt("Paste your OpenAI API key",cur);
+  if(k!==null) k.trim()?localStorage.setItem("OPENAI_API_KEY",k.trim())
+                       :localStorage.removeItem("OPENAI_API_KEY");
 }
 document.getElementById("set-key").onclick=askKey;
 
+/* ---------- GPT helper ---------- */
 async function chatAPI(messages){
-  const key=localStorage.getItem("OPENAI_API_KEY");if(!key){alert("Set API key first");throw 0;}
+  const key=localStorage.getItem("OPENAI_API_KEY");
   const res=await fetch("https://api.openai.com/v1/chat/completions",{
-    method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
     body:JSON.stringify({model:"gpt-3.5-turbo-0125",messages,max_tokens:256})
   }).then(r=>r.json());
   if(res.error) throw Error(res.error.message);
@@ -143,12 +166,27 @@ async function chatAPI(messages){
 /* ---------- Summaries ---------- */
 btnSum.onclick=async()=>{
   const sel=selected();if(!sel.length) return;
-  modal("Summaries","Working…");
+  const key=localStorage.getItem("OPENAI_API_KEY");
+  if(!key){                       /* -------- Prompt fallback -------- */
+    const prompts=sel.map(art=>{
+      return `Summarize the article at ${art.url||"N/A"} titled "${art.title}" in:\n`+
+             "• 5 concise bullet points\n• A one‑sentence ELI5 explanation\n";
+    }).join("\n---\n\n");
+    modal("Copy to ChatGPT",
+          `<textarea style="width:100%;height:45vh" readonly>${prompts}</textarea>
+           <button class="copy-btn">Copy 📋</button>`);
+    document.querySelector(".copy-btn").onclick=()=>{
+      navigator.clipboard.writeText(prompts).then(showToast);
+    };
+    return;
+  }
+  /* ---------- Live summaries via OpenAI ---------- */
+  modal("Summaries","Working… ⏳");
   const outs=[];
   for(const art of sel){
     const msg=[{role:"system",content:"You are a concise summarizer."},
-               {role:"user",content:`Give me a 5‑bullet summary of the article titled "${art.title}". `+
-                 `If the full text at ${art.url||"N/A"} can't be fetched, summarise from its title + context.`}];
+               {role:"user",content:`Give me 5 bullet points + an ELI5 sentence for "${art.title}". `+
+                 `Full article URL: ${art.url||"N/A"}`}];
     outs.push(`<h3>${art.title}</h3><p>${await chatAPI(msg)}</p>`);
   }
   document.getElementById("modal-body").innerHTML=outs.join("");
@@ -156,10 +194,24 @@ btnSum.onclick=async()=>{
 
 /* ---------- Chat ---------- */
 btnChat.onclick=()=>{
-  const art=selected()[0]; if(!art) return;
+  const art=selected()[0];if(!art) return;
+  const key=localStorage.getItem("OPENAI_API_KEY");
+  if(!key){                       /* -------- Prompt fallback -------- */
+    const prompt=`You are ChatGPT. The topic is the Hacker News story "${art.title}".\n`+
+                 "Answer my questions about it as if you had read the full article.";
+    modal("Start a Chat",
+          `<p>Open your favourite LLM chat (ChatGPT, Claude, Gemini…)</p>
+           <textarea style="width:100%;height:20vh" readonly>${prompt}</textarea>
+           <button class="copy-btn">Copy System Prompt 📋</button>`);
+    document.querySelector(".copy-btn").onclick=()=>{
+      navigator.clipboard.writeText(prompt).then(showToast);
+    };
+    return;
+  }
+  /* ---------- Live chat ---------- */
   modal("Chat -- "+art.title,
         `<pre class="chat-log" id="chatLog"></pre>
-         <input id="chatInput" placeholder="Ask anything…" style="width:100%;padding:.5rem;margin-top:.5rem">`);
+         <input id="chatInput" placeholder="Ask anything…" style="width:100%;padding:.6rem;margin-top:.6rem;border-radius:6px;border:1px solid #ccc">`);
   const log=document.getElementById("chatLog"),input=document.getElementById("chatInput");
   let history=[{role:"system",content:`You are a helpful assistant. The story title is "${art.title}".`}];
   input.addEventListener("keydown",async e=>{
@@ -169,6 +221,7 @@ btnChat.onclick=()=>{
     history.push({role:"user",content:q});
     const a=await chatAPI(history);history.push({role:"assistant",content:a});
     log.textContent+=`\nAssistant: ${a}\n`;
+    log.scrollTop=log.scrollHeight;
   });
 };
 
