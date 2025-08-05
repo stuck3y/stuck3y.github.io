@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pac-Man Game Tests</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            white-space: pre-wrap;
+        }
+        .pass { color: #4caf50; }
+        .fail { color: #f44336; }
+        button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pac-Man Game Test Suite</h1>
+    <button onclick="runTests()">Run Tests</button>
+    <div id="output"></div>
+    
+    <script src="game.test.js"></script>
+    <script>
+        async function runTests() {
+            const output = document.getElementById('output');
+            output.textContent = 'Running tests...\n\n';
+            
+            // Capture console output
+            const originalLog = console.log;
+            const originalError = console.error;
+            
+            console.log = (msg) => {
+                output.textContent += msg + '\n';
+                if (msg.includes('✅')) {
+                    const span = document.createElement('span');
+                    span.className = 'pass';
+                    span.textContent = msg + '\n';
+                    output.appendChild(span);
+                } else {
+                    output.textContent += msg + '\n';
+                }
+            };
+            
+            console.error = (msg) => {
+                const span = document.createElement('span');
+                span.className = 'fail';
+                span.textContent = msg + '\n';
+                output.appendChild(span);
+            };
+            
+            try {
+                await window.runGameTests();
+            } finally {
+                console.log = originalLog;
+                console.error = originalError;
+            }
+        }
+    </script>
+</body>
+</html>

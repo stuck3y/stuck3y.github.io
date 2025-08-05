@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Pac-Man - Custom Themes</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        #gameWrapper {
+            position: relative;
+            background: rgba(20, 20, 30, 0.9);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(0, 200, 255, 0.3);
+        }
+        
+        #gameCanvas {
+            display: block;
+            border: 3px solid #00ccff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 200, 255, 0.5);
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+        }
+        
+        #ui {
+            position: absolute;
+            top: -50px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 18px;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .ui-item {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 15px;
+            border-radius: 25px;
+            border: 2px solid #00ccff;
+            min-width: 150px;
+            text-align: center;
+        }
+        
+        #score {
+            color: #ffeb3b;
+        }
+        
+        #lives {
+            color: #ff5252;
+        }
+        
+        #level {
+            color: #4caf50;
+        }
+        
+        #controls {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #888;
+        }
+        
+        #themeSelector {
+            position: absolute;
+            bottom: -50px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .theme-btn {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #555;
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+        }
+        
+        .theme-btn.active {
+            border-color: #00ccff;
+            background: rgba(0, 200, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 200, 255, 0.5);
+        }
+        
+        #gameOver, #victory {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            display: none;
+            z-index: 10;
+        }
+        
+        #gameOver h2, #victory h2 {
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+        }
+        
+        #victory h2 {
+            text-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+            color: #4caf50;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            color: #fff;
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            transition: all 0.3s ease;
+        }
+        
+        .restart-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameWrapper">
+        <div id="ui">
+            <div class="ui-item">SCORE: <span id="score">0</span></div>
+            <div class="ui-item">LEVEL: <span id="level">1</span></div>
+            <div class="ui-item">LIVES: <span id="lives">3</span></div>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="themeSelector">
+            <button class="theme-btn active" data-theme="neon">NEON</button>
+            <button class="theme-btn" data-theme="retro">RETRO</button>
+            <button class="theme-btn" data-theme="ocean">OCEAN</button>
+            <button class="theme-btn" data-theme="candy">CANDY</button>
+            <button class="theme-btn" data-theme="space">SPACE</button>
+            <button class="theme-btn" data-theme="switcheroo">SWITCHEROO</button>
+        </div>
+        
+        <div id="gameOver">
+            <h2>GAME OVER</h2>
+            <button class="restart-btn" onclick="game.restart()">PLAY AGAIN</button>
+        </div>
+        
+        <div id="victory">
+            <h2>VICTORY!</h2>
+            <button class="restart-btn" onclick="game.nextLevel()">NEXT LEVEL</button>
+        </div>
+    </div>
+    
+    <div id="controls">
+        Use ARROW KEYS or WASD to move | Press SPACE to pause | Press T to change theme
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>
