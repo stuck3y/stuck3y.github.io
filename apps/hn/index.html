@@ -76,12 +76,50 @@ function openSheet(dom,x,y){closeSheet();sheet=dom;document.body.appendChild(she
 
 //// data load
 async function loadStories(){
-  try{btnRefresh.disabled=true;btnRefresh.textContent='⏳';
-    const ids=await fetch(API_ROOT+"/topstories.json").then(r=>r.json());
-    stories=await Promise.all(ids.slice(0,MAX_STORIES).map(id=>fetch(`${API_ROOT}/item/${id}.json`).then(r=>r.json())));
-    render();vibrate(50);}
-  catch{list.innerHTML="<p style='padding:2rem'>Load failed.</p>";}
-  finally{btnRefresh.disabled=false;btnRefresh.textContent='⟳';}
+  btnRefresh.disabled = true;
+  btnRefresh.textContent = "⏳";
+  list.innerHTML = "";                       // clear old rows
+  try {
+    // ---------- 1) try official Firebase ----------
+    const ids = await fetch(
+      "https://hacker-news.firebaseio.com/v0/topstories.json"
+    ).then(r => r.json());
+
+    stories = await Promise.all(
+      ids.slice(0, MAX_STORIES).map(id =>
+        fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(r => r.json())
+      )
+    );
+  } catch (err) {
+    console.warn("Firebase failed, switching to Algolia:", err);
+
+    try {
+      // ---------- 2) fallback to Algolia ----------
+      const algolia = await fetch(
+        "https://hn.algolia.com/api/v1/search?tags=front_page"
+      ).then(r => r.json());
+
+      stories = algolia.hits.slice(0, MAX_STORIES).map(h => ({
+        id: h.objectID,
+        title: h.title,
+        url: h.url,
+        score: h.points || 0
+      }));
+    } catch (err2) {
+      console.error("Algolia failed too:", err2);
+      list.innerHTML =
+        "<p style='padding:2rem;color:#555'>Couldn’t reach Hacker News.<br><button id='retry'>Retry</button></p>";
+      document.getElementById("retry").onclick = loadStories;
+      btnRefresh.disabled = false;
+      btnRefresh.textContent = "⟳";
+      return;                                // abort render()
+    }
+  }
+
+  render();
+  vibrate(50);
+  btnRefresh.disabled = false;
+  btnRefresh.textContent = "⟳";
 }
 
 //// render
