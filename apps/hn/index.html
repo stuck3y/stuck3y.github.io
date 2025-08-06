@@ -1,281 +1,288 @@
-<!-- hn-plus.html  – v9.3.1  (dual‑source loader + v9.2 ui fixes) -->
+<!-- hn-plus.html  – v9.4 -->
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Hacker News Plus – v9.3.1</title>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-<style>
-:root{--orange:#ff6600;--radius:12px;--anim:.18s cubic-bezier(.25,.8,.5,1)}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;font:-apple-system-body;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f7f7f7}
-
-/* ---------- header & toolbar ---------- */
-header{background:var(--orange);color:#fff;padding:.75rem 1.2rem;font-weight:600;font-size:1.15rem}
-#toolbar{display:flex;gap:.5rem;padding:.55rem 1rem}
-.tbtn{background:var(--orange);color:#fff;border:0;border-radius:var(--radius);
-  width:38px;height:38px;font-size:1.55rem;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:opacity var(--anim)}
-#refresh{font-size:1.7rem}
-.tbtn:active{opacity:.7}#filter,#showAll{display:none}
-
-/* ---------- list & row ---------- */
-ul#stories{list-style:none;margin:0;padding:0}
-li.story{background:#fff;margin:.5rem 0;padding:.9rem 1rem;border-radius:var(--radius);
-  display:flex;align-items:center;gap:.8rem;position:relative;touch-action:none;
-  box-shadow:0 1px 2px rgba(0,0,0,.06)}
-.drag-handle{font-size:1.35rem;cursor:grab}
-.menu-btn{font-size:1.5rem;cursor:pointer;color:#555;padding:.25rem}
-.comment{font-size:1.25rem;text-decoration:none;color:#666;margin-left:.15rem}
-a.title{flex:1;font-size:1rem;font-weight:500;text-decoration:none;color:#000}
-.points{background:var(--orange);color:#fff;border-radius:6px;padding:.2rem .55rem;font-size:.75rem}
-.checkbox{display:none;margin-right:.3rem}.selecting .checkbox{display:block}
-.checkbox input{width:22px;height:22px}
-
-.swipe-delete{position:absolute;top:0;right:-80px;height:100%;display:flex;align-items:center;padding:0 .8rem;transition:right var(--anim)}
-.swipe-delete button{background:#e74c3c;border:0;border-radius:8px;padding:.6rem .9rem;font-size:1.05rem;color:#fff}
-
-/* ---------- floating bits ---------- */
-#fab{position:fixed;bottom:calc(env(safe-area-inset-bottom)+1rem);left:50%;transform:translateX(-50%);
-  background:var(--orange);color:#fff;border-radius:999px;padding:.6rem 1.3rem;font-weight:600;display:none;
-  box-shadow:0 4px 14px rgba(0,0,0,.2)}
-
-#modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:1rem;z-index:900}
-#modal .card{background:#fff;border-radius:var(--radius);max-width:650px;width:100%;max-height:90vh;overflow:auto;padding:1rem;position:relative}
-#modal header{font-size:1.25rem;font-weight:700;margin-bottom:.4rem}
-#modal .close{position:absolute;top:.4rem;right:.8rem;font-size:1.6rem;cursor:pointer;color:#555}
-
-.copy-btn{margin-top:.7rem;background:#2ecc71;color:#fff;border:0;border-radius:8px;padding:.6rem 1rem;font-size:1rem}
-
-.toast{position:fixed;top:0;left:0;right:0;background:#333;color:#fff;text-align:center;padding:.4rem 0;font-size:.9rem;transform:translateY(-120%);transition:transform var(--anim);z-index:950}
-.toast.show{transform:translateY(0)}
-
-.sheet{position:fixed;background:#fff;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.25);overflow:hidden;z-index:1100}
-.sheet button{display:block;width:100%;text-align:left;padding:.8rem 1.1rem;border:0;background:#fff;font-size:.95rem;color:#222}
-.sheet button:hover{background:#f2f2f2}
-</style>
-</head><body>
-
-<header>Hacker News Plus – v9.3.1</header>
-
-<div id="toolbar">
-  <button id="refresh" class="tbtn">⟳</button>
-  <button id="select"  class="tbtn">☑</button>
-  <button id="filter"  class="tbtn">👁</button>
-  <button id="showAll" class="tbtn">🔄</button>
-</div>
-
-<ul id="stories"></ul>
-<button id="fab"></button>
-
-<!-- Modal -->
-<div id="modal"><div class="card">
-  <span class="close">×</span>
-  <header id="modal-title"></header>
-  <div id="modal-body"></div>
-</div></div>
-
-<div id="toast" class="toast">Copied</div>
-
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
-<script>
-/* ------------------------------------------------------------------
-   Dual‑source loader  (Firebase + Algolia)  +  UI / sheet fixes
--------------------------------------------------------------------*/
-const API_FB  = "https://hacker-news.firebaseio.com/v0",
-      API_ALG = "https://hn.algolia.com/api/v1/search?tags=front_page",
-      TIMEOUT = 6000,
-      MAX_STORIES = 30;
-
-const list=document.getElementById("stories"),fab=document.getElementById("fab");
-const btnRefresh=document.getElementById("refresh"),btnSelect=document.getElementById("select");
-const btnFilter=document.getElementById("filter"),btnShowAll=document.getElementById("showAll");
-const toast=document.getElementById("toast");
-
-let stories=[],selectMode=false,filterActive=false,sortable;
-
-/* ---------- helpers ---------- */
-const vibrate=n=>{try{navigator.vibrate(n);}catch{}};
-const showToast=t=>{toast.textContent=t;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1400);};
-function modal(t,html){
-  const m=document.getElementById("modal");m.style.display="flex";
-  document.getElementById("modal-title").textContent=t;
-  document.getElementById("modal-body").innerHTML=html;
-  m.querySelector(".close").onclick=()=>m.style.display="none";
-}
-function copyText(id){navigator.clipboard.writeText(document.getElementById(id).value).then(()=>showToast("Copied"));}
-
-/* ---------- sheet logic (stable) ---------- */
-let sheet=null,sheetTimeout=null,sheetDocHandler=null;
-function closeSheet(){
-  clearTimeout(sheetTimeout);
-  if(sheet){ sheet.remove(); sheet=null; }
-  if(sheetDocHandler){ document.removeEventListener("click",sheetDocHandler); sheetDocHandler=null; }
-}
-function openSheet(dom,x,y){
-  closeSheet();
-  sheet=dom; document.body.appendChild(sheet);
-  const w=190; sheet.style.width=w+"px";
-  sheet.style.left=Math.max(8,x-w/2)+"px";
-  sheet.style.top=(y+10)+"px";
-  sheetTimeout=setTimeout(closeSheet,4000);
-  sheetDocHandler=()=>closeSheet();
-  setTimeout(()=>document.addEventListener("click",sheetDocHandler,{once:true}));
-}
-
-/* ---------- loader ---------- */
-function fetchWithTimeout(url, mapFn){
-  const ctrl=new AbortController();
-  const t=setTimeout(()=>ctrl.abort(),TIMEOUT);
-  return fetch(url,{signal:ctrl.signal})
-          .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
-          .then(mapFn)
-          .finally(()=>clearTimeout(t));
-}
-function algoliaToStories(json){
-  return json.hits.slice(0,MAX_STORIES).map(h=>({
-    id:h.objectID,
-    title:h.title||"(no title)",
-    url:h.url||`https://news.ycombinator.com/item?id=${h.objectID}`,
-    score:h.points||0
-  }));
-}
-async function firebaseToStories(){
-  const ids = await fetchWithTimeout(`${API_FB}/topstories.json`, j=>j);
-  const items = await Promise.all(
-    ids.slice(0,MAX_STORIES)
-       .map(id=>fetchWithTimeout(`${API_FB}/item/${id}.json`, j=>j))
-  );
-  return items.map(it=>({
-    id:it.id,
-    title:it.title,
-    url:it.url||`https://news.ycombinator.com/item?id=${it.id}`,
-    score:it.score||0
-  }));
-}
-
-async function loadStories(){
-  btnRefresh.disabled=true; btnRefresh.textContent='⏳';
-  list.innerHTML="";
-
-  try{
-    /* ask both endpoints in parallel; first success wins */
-    stories=await Promise.any([
-      fetchWithTimeout(API_ALG, algoliaToStories),
-      firebaseToStories()
-    ]);
-    render(); vibrate(40);
-
-  }catch(err){
-    console.error(err);
-    list.innerHTML=`
-      <p style="padding:2rem">
-        Couldn’t load Hacker News:<br>
-        <code>${err instanceof AggregateError ? err.errors[0].message : err.message}</code><br><br>
-        <button id="retry">Retry</button>
-      </p>`;
-    list.querySelector("#retry").onclick=loadStories;
-  }finally{
-    btnRefresh.disabled=false; btnRefresh.textContent='⟳';
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Hacker News Plus – v9.4</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+  <style>
+  :root{--orange:#ff6600;--radius:12px;--anim:.18s cubic-bezier(.25,.8,.5,1)}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;font:-apple-system-body;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f7f7f7}
+  
+  /* ---------- header & toolbar ---------- */
+  header{background:var(--orange);color:#fff;padding:.75rem 1.2rem;font-weight:600;font-size:1.15rem}
+  #toolbar{display:flex;gap:.5rem;padding:.55rem 1rem}
+  .tbtn{background:var(--orange);color:#fff;border:0;border-radius:var(--radius);
+    width:38px;height:38px;font-size:1.6rem;line-height:1;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:opacity var(--anim)}
+  #refresh{font-size:1.8rem}
+  .tbtn:active{opacity:.7}#filter,#showAll{display:none}
+  
+  /* ---------- list & row ---------- */
+  ul#stories{list-style:none;margin:0;padding:0}
+  li.story{background:#fff;margin:.5rem 0;padding:.9rem 1rem;border-radius:var(--radius);
+    display:flex;align-items:center;gap:.8rem;position:relative;touch-action:none;
+    box-shadow:0 1px 2px rgba(0,0,0,.06)}
+  .drag-handle{font-size:1.35rem;cursor:grab}
+  .menu-btn{font-size:1.5rem;cursor:pointer;color:#555;padding:.25rem}
+  .comment{font-size:1.25rem;text-decoration:none;color:#666;margin-left:.15rem}
+  a.title{flex:1;font-size:1rem;font-weight:500;text-decoration:none;color:#000}
+  .points{background:var(--orange);color:#fff;border-radius:6px;padding:.2rem .55rem;font-size:.75rem}
+  .checkbox{display:none;margin-right:.3rem}.selecting .checkbox{display:block}
+  .checkbox input{width:22px;height:22px}
+  
+  .swipe-delete{position:absolute;top:0;right:-80px;height:100%;display:flex;align-items:center;padding:0 .8rem;transition:right var(--anim)}
+  .swipe-delete button{background:#e74c3c;border:0;border-radius:8px;padding:.6rem .9rem;font-size:1.05rem;color:#fff}
+  
+  /* ---------- floating bits ---------- */
+  #fab{position:fixed;bottom:calc(env(safe-area-inset-bottom)+1rem);left:50%;transform:translateX(-50%);
+    background:var(--orange);color:#fff;border-radius:999px;padding:.6rem 1.3rem;font-weight:600;display:none;
+    box-shadow:0 4px 14px rgba(0,0,0,.2)}
+  
+  #modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:1rem;z-index:900}
+  #modal .card{background:#fff;border-radius:var(--radius);max-width:650px;width:100%;max-height:90vh;overflow:auto;padding:1rem;position:relative}
+  #modal header{font-size:1.25rem;font-weight:700;margin-bottom:.4rem}
+  #modal .close{position:absolute;top:.35rem;right:.8rem;font-size:1.6rem;cursor:pointer;color:#555}
+  
+  .copy-btn,.chat-btn,.listen-btn{margin-top:.7rem;border:0;border-radius:8px;padding:.6rem 1rem;font-size:.95rem;cursor:pointer}
+  .copy-btn{background:#2ecc71;color:#fff}
+  .listen-btn{background:#3498db;color:#fff}
+  .chat-btn{background:#ecf0f1;color:#333}
+  .chat-wrapper{display:flex;gap:.5rem;flex-wrap:wrap}
+  
+  .toast{position:fixed;top:0;left:0;right:0;background:#333;color:#fff;text-align:center;padding:.4rem 0;font-size:.9rem;transform:translateY(-120%);transition:transform var(--anim);z-index:950}
+  .toast.show{transform:translateY(0)}
+  
+  .sheet{position:fixed;background:#fff;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.25);overflow:hidden;z-index:1100}
+  .sheet button{display:block;width:100%;text-align:left;padding:.8rem 1.1rem;border:0;background:#fff;font-size:.95rem;color:#222}
+  .sheet button:hover{background:#f2f2f2}
+  </style>
+  </head><body>
+  
+  <header>Hacker News Plus – v9.4</header>
+  
+  <div id="toolbar">
+    <button id="refresh" class="tbtn">⟳</button>
+    <button id="select"  class="tbtn">☑</button>
+    <button id="filter"  class="tbtn">👁</button>
+    <button id="showAll" class="tbtn">🔄</button>
+  </div>
+  
+  <ul id="stories"></ul>
+  <button id="fab"></button>
+  
+  <!-- Modal -->
+  <div id="modal"><div class="card">
+    <span class="close">×</span>
+    <header id="modal-title"></header>
+    <div id="modal-body"></div>
+  </div></div>
+  
+  <div id="toast" class="toast">Copied</div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+  <script>
+  /* ------------------------------------------------------------------
+     Data & constants
+  -------------------------------------------------------------------*/
+  const API_FB  = "https://hacker-news.firebaseio.com/v0",
+        API_ALG = "https://hn.algolia.com/api/v1/search?tags=front_page",
+        TIMEOUT = 6000,
+        MAX_STORIES = 30;
+  
+  const list=document.getElementById("stories"),fab=document.getElementById("fab");
+  const btnRefresh=document.getElementById("refresh"),btnSelect=document.getElementById("select");
+  const btnFilter=document.getElementById("filter"),btnShowAll=document.getElementById("showAll");
+  const toast=document.getElementById("toast");
+  
+  let stories=[],selectMode=false,filterActive=false,sortable;
+  
+  /* ---------- helpers ---------- */
+  const vibrate=n=>{try{navigator.vibrate(n);}catch{}};
+  const showToast=t=>{toast.textContent=t;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1400);};
+  function modal(t,html){
+    const m=document.getElementById("modal");m.style.display="flex";
+    document.getElementById("modal-title").textContent=t;
+    document.getElementById("modal-body").innerHTML=html;
+    m.querySelector(".close").onclick=()=>m.style.display="none";
   }
-}
-
-/* ---------- render ---------- */
-function render(){
-  list.innerHTML="";
-  stories.forEach((s,i)=>list.appendChild(makeItem(s,i)));
-  if(!sortable){
-    sortable=Sortable.create(list,{handle:".drag-handle",animation:150,
-      onEnd:e=>{const [m]=stories.splice(e.oldIndex,1);stories.splice(e.newIndex,0,m);}
+  function copyToClipboard(text){
+    return navigator.clipboard.writeText(text).then(()=>showToast("Copied"));
+  }
+  
+  /* ---------- sheet logic ---------- */
+  let sheet=null,sheetTimeout=null,sheetDocHandler=null;
+  function closeSheet(){
+    clearTimeout(sheetTimeout);
+    if(sheet){ sheet.remove(); sheet=null; }
+    if(sheetDocHandler){ document.removeEventListener("click",sheetDocHandler); sheetDocHandler=null; }
+  }
+  function openSheet(dom,x,y){
+    closeSheet();
+    sheet=dom; document.body.appendChild(sheet);
+    const w=190; sheet.style.width=w+"px";
+    sheet.style.left=Math.max(8,x-w/2)+"px";
+    sheet.style.top=(y+10)+"px";
+    sheetTimeout=setTimeout(closeSheet,4000);
+    sheetDocHandler=()=>closeSheet();
+    setTimeout(()=>document.addEventListener("click",sheetDocHandler,{once:true}));
+  }
+  
+  /* ---------- loader ---------- */
+  function fetchJSON(url,signal){return fetch(url,{signal}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();});}
+  function withTimeout(promise){
+    const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),TIMEOUT);
+    return promise(ctrl.signal).finally(()=>clearTimeout(t));
+  }
+  function algoliaStories(sig){
+    return fetchJSON(API_ALG,sig).then(j=>j.hits.slice(0,MAX_STORIES).map(h=>({
+      id:h.objectID,title:h.title||"(no title)",url:h.url||`https://news.ycombinator.com/item?id=${h.objectID}`,score:h.points||0
+    })));
+  }
+  async function firebaseStories(sig){
+    const ids=await fetchJSON(`${API_FB}/topstories.json`,sig);
+    const items=await Promise.all(ids.slice(0,MAX_STORIES).map(id=>fetchJSON(`${API_FB}/item/${id}.json`,sig)));
+    return items.map(it=>({id:it.id,title:it.title,url:it.url||`https://news.ycombinator.com/item?id=${it.id}`,score:it.score||0}));
+  }
+  
+  async function loadStories(){
+    btnRefresh.disabled=true;btnRefresh.textContent='⏳';list.innerHTML="";
+    try{
+      stories=await Promise.any([withTimeout(algoliaStories),withTimeout(firebaseStories)]);
+      render();vibrate(40);
+    }catch(err){
+      console.error(err);
+      list.innerHTML=`
+        <p style="padding:2rem">
+          Couldn’t load Hacker News:<br>
+          <code>${err instanceof AggregateError ? err.errors[0].message : err.message}</code><br><br>
+          <button id="retry">Retry</button>
+        </p>`;
+      list.querySelector("#retry").onclick=loadStories;
+    }finally{
+      btnRefresh.disabled=false;btnRefresh.textContent='⟳';
+    }
+  }
+  
+  /* ---------- render ---------- */
+  function render(){
+    list.innerHTML="";
+    stories.forEach((s,i)=>list.appendChild(makeItem(s,i)));
+    if(!sortable){
+      sortable=Sortable.create(list,{handle:".drag-handle",animation:150,
+        onEnd:e=>{const [m]=stories.splice(e.oldIndex,1);stories.splice(e.newIndex,0,m);}
+      });
+    }
+    updateUI();
+  }
+  function makeItem(s,i){
+    const li=document.createElement("li");li.className="story";li.dataset.index=i;
+    li.innerHTML=`
+      <span class="drag-handle">☰</span>
+      <label class="checkbox"><input type="checkbox"></label>
+      <a class="title" href="${s.url}" target="_blank">${s.title}</a>
+      <span class="points">${s.score}</span>
+      <a class="comment" href="https://news.ycombinator.com/item?id=${s.id}" target="_blank">💬</a>
+      <span class="menu-btn">⋯</span>
+      <div class="swipe-delete"><button class="remove">🗑</button></div>`;
+    wire(li);return li;
+  }
+  
+  /* ---------- interactions ---------- */
+  function wire(li){
+    const mc=new Hammer(li);mc.get("swipe").set({direction:Hammer.DIRECTION_HORIZONTAL,velocity:0.2});
+    mc.on("swipeleft",()=>li.querySelector(".swipe-delete").style.right="0");
+    mc.on("swiperight",ev=>{
+      li.querySelector(".swipe-delete").style.right="-80px";
+      /* Quick‑select on right swipe */
+      if(!selectMode){btnSelect.click();}
+      const cb=li.querySelector("input");cb.checked=true;updateUI();vibrate(15);
     });
+  
+    li.querySelector(".remove").onclick=()=>{
+      stories.splice(li.dataset.index,1);li.remove();updateUI();vibrate(25);
+    };
+    li.querySelector("input").addEventListener("change",updateUI);
+  
+    li.querySelector(".menu-btn").onclick=e=>{
+      const i=li.dataset.index;
+      const node=document.createElement("div");node.className="sheet";
+      node.innerHTML=`<button id="msum">Summarize</button>
+        <button id="mhide">Hide others</button>
+        <button id="mcomments">Open comments</button>
+        <button id="mremove">Remove</button>`;
+      openSheet(node,e.clientX,e.clientY);
+  
+      node.querySelector("#msum").onclick=()=>{closeSheet();summarize([stories[i]]);};
+      node.querySelector("#mhide").onclick=()=>{closeSheet();hideOthers([li]);};
+      node.querySelector("#mcomments").onclick=()=>{window.open('https://news.ycombinator.com/item?id='+stories[i].id,'_blank');closeSheet();};
+      node.querySelector("#mremove").onclick=()=>{li.querySelector(".remove").click();closeSheet();};
+  
+      e.stopPropagation();
+    };
   }
-  updateUI();
-}
-function makeItem(s,i){
-  const li=document.createElement("li");li.className="story";li.dataset.index=i;
-  li.innerHTML=`
-    <span class="drag-handle">☰</span>
-    <label class="checkbox"><input type="checkbox"></label>
-    <a class="title" href="${s.url}" target="_blank">${s.title}</a>
-    <span class="points">${s.score}</span>
-    <a class="comment" href="https://news.ycombinator.com/item?id=${s.id}" target="_blank">💬</a>
-    <span class="menu-btn">⋯</span>
-    <div class="swipe-delete"><button class="remove">🗑</button></div>`;
-  wire(li);return li;
-}
-
-/* ---------- interactions ---------- */
-function wire(li){
-  const mc=new Hammer(li);mc.get("swipe").set({direction:Hammer.DIRECTION_HORIZONTAL,velocity:0.2});
-  mc.on("swipeleft",()=>li.querySelector(".swipe-delete").style.right="0");
-  mc.on("swiperight",()=>li.querySelector(".swipe-delete").style.right="-80px");
-
-  li.querySelector(".remove").onclick=()=>{
-    stories.splice(li.dataset.index,1);li.remove();updateUI();vibrate(25);
+  
+  /* ---------- select & filter ---------- */
+  btnSelect.onclick=()=>{
+    selectMode=!selectMode;
+    list.classList.toggle("selecting",selectMode);
+    if(!selectMode) list.querySelectorAll("input").forEach(cb=>cb.checked=false);
+    updateUI();vibrate(18);
   };
-  li.querySelector("input").addEventListener("change",updateUI);
-
-  li.querySelector(".menu-btn").onclick=e=>{
-    const i=li.dataset.index;
-    const node=document.createElement("div");node.className="sheet";
-    node.innerHTML=`<button id="msum">Summarize</button>
-      <button id="mhide">Hide others</button>
-      <button id="mcomments">Open comments</button>
-      <button id="mremove">Remove</button>`;
-    openSheet(node,e.clientX,e.clientY);
-
-    node.querySelector("#msum").onclick=()=>{closeSheet();summarize([stories[i]]);};
-    node.querySelector("#mhide").onclick=()=>{closeSheet();hideOthers([li]);};
-    node.querySelector("#mcomments").onclick = () => {
-      window.open(`https://news.ycombinator.com/item?id=${stories[i].id}`, '_blank');
-      closeSheet();
-      };
-    node.querySelector("#mremove").onclick=()=>{li.querySelector(".remove").click();closeSheet();};
-
-    e.stopPropagation();
-  };
-}
-
-/* ---------- select & filter ---------- */
-btnSelect.onclick=()=>{
-  selectMode=!selectMode;
-  list.classList.toggle("selecting",selectMode);
-  if(!selectMode) list.querySelectorAll("input").forEach(cb=>cb.checked=false);
-  updateUI();vibrate(18);
-};
-function selectedLis(){return [...list.children].filter(li=>li.querySelector("input").checked);}
-btnFilter.onclick=()=>hideOthers(selectedLis());
-btnShowAll.onclick=()=>{[...list.children].forEach(li=>li.style.display="flex");filterActive=false;updateUI();}
-function hideOthers(keep){
-  [...list.children].forEach(li=>li.style.display="none");
-  keep.forEach(li=>li.style.display="flex");
-  filterActive=true;selectMode=false;list.classList.remove("selecting");
-  updateUI();
-}
-function updateUI(){
-  const cnt=selectedLis().length;
-  fab.style.display=cnt&&selectMode?"block":"none";
-  fab.textContent=cnt?`${cnt} selected`:"";
-  btnFilter.style.display=cnt&&!filterActive?"inline-block":"none";
-  btnShowAll.style.display=filterActive?"inline-block":"none";
-}
-
-/* ---------- summary prompts ---------- */
-function buildPrompt(t,u){
-  return `• 5 concise bullet points summarizing "${t}".\n`+
-         "• Add an analogy or concrete scenario to make the idea clear.\n"+
-         "• One sentence on why this could be interesting or significant.\n"+
-         `URL: ${u}`;
-}
-function summarize(arr){
-  const txt=arr.map(a=>`**${a.title}**\n${buildPrompt(a.title,a.url)}`).join("\n\n");
-  modal("Copy these prompts",
-    `<textarea id="copyBox" readonly rows="14" style="width:100%">${txt}</textarea>
-     <button class="copy-btn" onclick="copyText('copyBox')">Copy 📋</button>`);
-}
-
-/* ---------- boot ---------- */
-btnRefresh.onclick=loadStories;
-loadStories();
-</script>
-</body></html>
+  function selectedLis(){return [...list.children].filter(li=>li.querySelector("input").checked);}
+  btnFilter.onclick=()=>hideOthers(selectedLis());
+  btnShowAll.onclick=()=>{[...list.children].forEach(li=>li.style.display="flex");filterActive=false;updateUI();}
+  function hideOthers(keep){
+    [...list.children].forEach(li=>li.style.display="none");
+    keep.forEach(li=>li.style.display="flex");
+    filterActive=true;selectMode=false;list.classList.remove("selecting");
+    updateUI();
+  }
+  function updateUI(){
+    const cnt=selectedLis().length;
+    fab.style.display=cnt&&selectMode?"block":"none";
+    fab.textContent=cnt?`${cnt} selected`:"";
+    btnFilter.style.display=cnt&&!filterActive?"inline-block":"none";
+    btnShowAll.style.display=filterActive?"inline-block":"none";
+  }
+  
+  /* ---------- summary dialog ---------- */
+  function buildPrompt(t,u){
+    return `• 5 concise bullet points summarizing "${t}".\n`+
+           "• Add an analogy or concrete scenario to make the idea clear.\n"+
+           "• One sentence on why this could be interesting or significant.\n"+
+           `URL: ${u}`;
+  }
+  function summarize(arr){
+    const txt=arr.map(a=>`**${a.title}**\n${buildPrompt(a.title,a.url)}`).join("\n\n");
+    modal("Copy these prompts",
+      `<textarea id="copyBox" readonly rows="14" style="width:100%">${txt}</textarea>
+       <div class="chat-wrapper">
+         <button class="copy-btn"   id="btnCopy"  >Copy 📋</button>
+         <button class="listen-btn" id="btnListen">🔊 Listen</button>
+         <button class="chat-btn"   id="btnGPT"   >ChatGPT ↗</button>
+         <button class="chat-btn"   id="btnClaude">Claude ↗</button>
+         <button class="chat-btn"   id="btnGem"   >Gemini ↗</button>
+       </div>`);
+  
+    /* buttons */
+    document.getElementById("btnCopy").onclick = ()=>copyToClipboard(txt);
+  
+    document.getElementById("btnListen").onclick = ()=>{
+      try{ speechSynthesis.cancel(); }catch{}
+      const utter=new SpeechSynthesisUtterance(txt); speechSynthesis.speak(utter);
+    };
+  
+    const openChat=url=>copyToClipboard(txt).then(()=>window.open(url,'_blank'));
+  
+    document.getElementById("btnGPT"   ).onclick=()=>openChat("https://chat.openai.com/");
+    document.getElementById("btnClaude").onclick=()=>openChat("https://claude.ai/chat");
+    document.getElementById("btnGem"   ).onclick=()=>openChat("https://gemini.google.com/app");
+  }
+  
+  /* ---------- boot ---------- */
+  btnRefresh.onclick=loadStories;
+  loadStories();
+  </script>
+  </body></html>
