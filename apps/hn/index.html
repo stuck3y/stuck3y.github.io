@@ -1,4 +1,4 @@
-<!-- hn-clear.html  – v5 -->
+<!-- hn-clear.html  – v6 -->
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Hacker News – Simple</title>
@@ -6,91 +6,90 @@
 <style>
 :root{--orange:#ff6600;--radius:12px;--anim:.18s cubic-bezier(.25,.8,.5,1)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;margin:0;font:-apple-system-body;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f7f7f7}
-header{background:var(--orange);color:#fff;padding:.7rem 1.2rem;font-weight:600;font-size:1.2rem}
-#toolbar{display:flex;gap:.6rem;padding:.6rem 1rem}
-button{background:var(--orange);color:#fff;border:0;border-radius:var(--radius);padding:.55rem .95rem;font-size:1rem;cursor:pointer;transition:opacity var(--anim)}
-button:active{opacity:.7}button[disabled]{opacity:.4}button.secondary{background:#dadada;color:#333}
-#showAll{display:none}
+html,body{margin:0;height:100%;font:-apple-system-body;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f7f7f7}
+header{background:var(--orange);color:#fff;padding:.75rem 1.2rem;font-weight:600;font-size:1.15rem}
+#toolbar{display:flex;gap:.5rem;padding:.5rem 1rem}
+.tbtn{background:var(--orange);color:#fff;border:0;border-radius:var(--radius);padding:.5rem .8rem;font-size:1.25rem;cursor:pointer;transition:opacity var(--anim)}
+.tbtn:active{opacity:.7}#filter,#showAll{display:none}
 ul#stories{list-style:none;margin:0;padding:0}
-li.story{background:#fff;margin:.55rem 0;padding:.9rem 1rem;border-radius:var(--radius);display:flex;align-items:center;gap:.8rem;position:relative;touch-action:none;box-shadow:0 1px 2px rgba(0,0,0,.06);transition:box-shadow var(--anim);overflow:visible}
-li.dragging{box-shadow:0 8px 12px rgba(0,0,0,.15);opacity:.92}
-.drag-handle{font-size:1.35rem;cursor:grab;user-select:none}
-.menu-btn{font-size:1.6rem;cursor:pointer;color:#555;padding:.2rem .5rem;margin:-.2rem -.4rem}
+li.story{background:#fff;margin:.5rem 0;padding:.9rem 1rem;border-radius:var(--radius);
+  display:flex;align-items:center;gap:.8rem;position:relative;touch-action:none;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.drag-handle{font-size:1.35rem;cursor:grab}
+.menu-btn{font-size:1.5rem;cursor:pointer;color:#555;padding:.25rem}
+.comment{font-size:1.25rem;text-decoration:none;color:#666;margin-left:.15rem}
 a.title{flex:1;font-size:1rem;font-weight:500;text-decoration:none;color:#000}
 .points{background:var(--orange);color:#fff;border-radius:6px;padding:.2rem .55rem;font-size:.75rem}
-.checkbox{display:none;margin-right:.3rem}.selecting li .checkbox{display:block}
+.checkbox{display:none;margin-right:.3rem}.selecting .checkbox{display:block}
 .checkbox input{width:22px;height:22px}
 .swipe-delete{position:absolute;top:0;right:-80px;height:100%;display:flex;align-items:center;padding:0 .8rem;transition:right var(--anim)}
 .swipe-delete button{background:#e74c3c;border:0;border-radius:8px;padding:.6rem .9rem;font-size:1.05rem;color:#fff}
-#fab{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 1rem);left:50%;transform:translateX(-50%);background:var(--orange);color:#fff;border-radius:999px;padding:.6rem 1.4rem;font-weight:600;display:none;box-shadow:0 4px 14px rgba(0,0,0,.2);transition:transform var(--anim)}
-#fab.show{display:block}
-#modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:1rem;z-index:1000}
-#modal .card{background:#fff;border-radius:var(--radius);max-width:650px;width:100%;max-height:90vh;overflow:auto;position:relative;padding:1rem}
+#fab{position:fixed;bottom:calc(env(safe-area-inset-bottom)+1rem);left:50%;transform:translateX(-50%);
+  background:var(--orange);color:#fff;border-radius:999px;padding:.6rem 1.3rem;font-weight:600;display:none;
+  box-shadow:0 4px 14px rgba(0,0,0,.2)}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:1rem;z-index:900}
+#modal .card{background:#fff;border-radius:var(--radius);max-width:650px;width:100%;max-height:90vh;overflow:auto;padding:1rem;position:relative}
 #modal header{font-size:1.25rem;font-weight:700;margin-bottom:.4rem}
-#modal .close{position:absolute;top:.4rem;right:.8rem;font-size:1.6rem;color:#555;cursor:pointer}
-.copy-btn{margin-top:.7rem;background:#2ecc71}
-.toast{position:fixed;top:0;left:0;right:0;background:#333;color:#fff;text-align:center;padding:.4rem 0;font-size:.9rem;transform:translateY(-120%);transition:transform var(--anim);z-index:1500}
+#modal .close{position:absolute;top:.4rem;right:.8rem;font-size:1.6rem;cursor:pointer;color:#555}
+.copy-btn{margin-top:.7rem;background:#2ecc71;color:#fff;border:0;border-radius:8px;padding:.6rem 1rem;font-size:1rem}
+.toast{position:fixed;top:0;left:0;right:0;background:#333;color:#fff;text-align:center;padding:.4rem 0;font-size:.9rem;transform:translateY(-120%);transition:transform var(--anim);z-index:950}
 .toast.show{transform:translateY(0)}
-/* action sheet */
-.sheet{position:fixed;background:#fff;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.25);overflow:hidden;z-index:1200}
-.sheet button{display:block;width:100%;text-align:left;padding:.8rem 1.1rem;border:0;background:#fff;font-size:.95rem}
+.sheet{position:fixed;background:#fff;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.25);overflow:hidden;z-index:1100}
+.sheet button{display:block;width:100%;text-align:left;padding:.8rem 1.1rem;border:0;background:#fff;font-size:.95rem;color:#222}
 .sheet button:hover{background:#f2f2f2}
 </style>
 </head><body>
 <header>Hacker News – Simple</header>
 <div id="toolbar">
-  <button id="refresh">Refresh</button>
-  <button id="select">Select</button>
-  <button id="showAll">Show All</button>
+  <button id="refresh" class="tbtn">⟳</button>
+  <button id="select" class="tbtn">☑</button>
+  <button id="filter" class="tbtn">👁</button>
+  <button id="showAll" class="tbtn">🔄</button>
 </div>
 <ul id="stories"></ul>
 <button id="fab"></button>
 
 <!-- Modal -->
 <div id="modal"><div class="card">
-  <span class="close">&times;</span>
+  <span class="close">×</span>
   <header id="modal-title"></header>
   <div id="modal-body"></div>
 </div></div>
-
 <div id="toast" class="toast">Copied</div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
 <script>
 const API_ROOT="https://hacker-news.firebaseio.com/v0",MAX_STORIES=30;
-const list=document.getElementById("stories"),fab=document.getElementById("fab"),
-      btnRefresh=document.getElementById("refresh"),btnSelect=document.getElementById("select"),
-      btnShowAll=document.getElementById("showAll"),toast=document.getElementById("toast");
-let stories=[],selectMode=false,sortable,filterActive=false;
+const list=document.getElementById("stories"),fab=document.getElementById("fab");
+const btnRefresh=document.getElementById("refresh"),btnSelect=document.getElementById("select");
+const btnFilter=document.getElementById("filter"),btnShowAll=document.getElementById("showAll");
+const toast=document.getElementById("toast");
+let stories=[],selectMode=false,filterActive=false,sortable;
 
-//// utils
+//// helpers
 const vibrate=n=>{try{navigator.vibrate(n);}catch{}};
 const showToast=t=>{toast.textContent=t;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1400);};
 function modal(t,html){const m=document.getElementById("modal");m.style.display="flex";
   document.getElementById("modal-title").textContent=t;document.getElementById("modal-body").innerHTML=html;
   m.querySelector(".close").onclick=()=>m.style.display="none";}
-const copy=txt=>navigator.clipboard.writeText(txt).then(()=>showToast("Copied"));
+const qs=(sel,ctx=document)=>ctx.querySelector(sel);
 
-//// data
+//// data load
 async function loadStories(){
-  try{btnRefresh.disabled=true;btnRefresh.innerHTML='⏳';
+  try{btnRefresh.disabled=true;btnRefresh.textContent='⏳';
     const ids=await fetch(API_ROOT+"/topstories.json").then(r=>r.json());
     stories=await Promise.all(ids.slice(0,MAX_STORIES).map(id=>fetch(`${API_ROOT}/item/${id}.json`).then(r=>r.json())));
-    vibrate(50);render();
-  }catch(e){list.innerHTML="<p style='padding:2rem'>Failed. Tap Refresh.</p>";}
-  finally{btnRefresh.disabled=false;btnRefresh.textContent="Refresh";}
+    render();vibrate(50);}
+  catch{list.innerHTML="<p style='padding:2rem'>Load failed.</p>";}
+  finally{btnRefresh.disabled=false;btnRefresh.textContent='⟳';}
 }
 
-//// render
+//// render list
 function render(){
   list.innerHTML="";stories.forEach((s,i)=>list.appendChild(makeItem(s,i)));
   if(!sortable){
-    sortable=Sortable.create(list,{animation:150,handle:".drag-handle",
-      onStart:evt=>evt.item.classList.add("dragging"),
-      onEnd:evt=>{evt.item.classList.remove("dragging");const [m]=stories.splice(evt.oldIndex,1);stories.splice(evt.newIndex,0,m);[...list.children].forEach((li,idx)=>li.dataset.index=idx);vibrate(25);}
-    });
+    sortable=Sortable.create(list,{handle:".drag-handle",animation:150,
+      onEnd:e=>{const [m]=stories.splice(e.oldIndex,1);stories.splice(e.newIndex,0,m);}});
   }
   updateUI();
 }
@@ -101,77 +100,84 @@ function makeItem(s,i){
     <label class="checkbox"><input type="checkbox"></label>
     <a class="title" href="${s.url||`https://news.ycombinator.com/item?id=${s.id}`}" target="_blank">${s.title}</a>
     <span class="points">${s.score}</span>
+    <a class="comment" href="https://news.ycombinator.com/item?id=${s.id}" target="_blank">💬</a>
     <span class="menu-btn">⋯</span>
     <div class="swipe-delete"><button class="remove">🗑</button></div>`;
   wire(li);return li;
 }
 
-//// wire interactions
+//// interactions
 function wire(li){
   // swipe delete
   const mc=new Hammer(li);mc.get("swipe").set({direction:Hammer.DIRECTION_HORIZONTAL,velocity:0.2});
-  mc.on("swipeleft",()=>li.querySelector(".swipe-delete").style.right="0");
-  mc.on("swiperight",()=>li.querySelector(".swipe-delete").style.right="-80px");
-  li.querySelector(".remove").onclick=()=>{stories.splice(li.dataset.index,1);li.remove();updateUI();vibrate(35);};
+  mc.on("swipeleft",()=>qs(".swipe-delete",li).style.right="0");
+  mc.on("swiperight",()=>qs(".swipe-delete",li).style.right="-80px");
+  qs(".remove",li).onclick=()=>{stories.splice(li.dataset.index,1);li.remove();updateUI();vibrate(30);};
 
   // select
-  li.querySelector("input").addEventListener("change",updateUI);
+  qs("input",li).addEventListener("change",updateUI);
 
-  // per-item menu
-  li.querySelector(".menu-btn").onclick=e=>{
+  // ⋯ menu
+  qs(".menu-btn",li).onclick=e=>{
+    closeSheet();
     const sheet=document.createElement("div");sheet.className="sheet";
-    sheet.style.left=`${e.clientX-140}px`;sheet.style.top=`${e.clientY}px`;
-    sheet.innerHTML=`<button id="mSum">Summarize</button><button id="mKeep">Hide others</button><button id="mDel">Remove</button>`;
+    sheet.innerHTML=`
+      <button id="msum">Summarize</button>
+      <button id="mhide">Hide others</button>
+      <button id="mcomments">Open comments</button>
+      <button id="mremove">Remove</button>`;
     document.body.appendChild(sheet);
-    sheet.querySelector("#mSum").onclick=()=>{sheet.remove();summarize([stories[li.dataset.index]]);}
-    sheet.querySelector("#mKeep").onclick=()=>{sheet.remove();hideOthers([li]);}
-    sheet.querySelector("#mDel").onclick=()=>{sheet.remove();li.querySelector(".remove").click();}
-    vibrate(15);
-    setTimeout(()=>document.addEventListener("click",()=>sheet.remove(),{once:true}));
-    e.stopPropagation();
+    positionSheet(sheet,e.clientX,e.clientY);
+    sheet.querySelector("#msum").onclick=()=>{closeSheet();summarize([stories[li.dataset.index]]);}
+    sheet.querySelector("#mhide").onclick=()=>{closeSheet();hideOthers([li]);}
+    sheet.querySelector("#mcomments").onclick=()=>{window.open(`https://news.ycombinator.com/item?id=${stories[li.dataset.index].id}`,'_blank');closeSheet();}
+    sheet.querySelector("#mremove").onclick=()=>{qs(".remove",li).click();closeSheet();}
+    setTimeout(()=>document.addEventListener("click",closeSheet,{once:true}));
   };
 }
 
-//// selection flow
-btnSelect.onclick=()=>{selectMode=!selectMode;btnSelect.textContent=selectMode?"Done":"Select";
-  list.classList.toggle("selecting",selectMode);list.querySelectorAll("input").forEach(cb=>cb.checked=false);
+let sheetOpen=null;
+function closeSheet(){sheetOpen?.remove();sheetOpen=null;}
+function positionSheet(sheet,x,y){
+  const w=180,h=200;sheet.style.width=w+"px";
+  sheet.style.left=Math.min(x,w/2)+"px";
+  sheet.style.top=Math.min(y,h/2)+"px";
+  sheetOpen=sheet;
+}
+
+//// selection + filter
+btnSelect.onclick=()=>{selectMode=!selectMode;
+  list.classList.toggle("selecting",selectMode);btnSelect.style.opacity=selectMode?".6":"";
+  if(!selectMode){list.querySelectorAll("input").forEach(cb=>cb.checked=false);}
   updateUI();vibrate(20);};
-function selectedLis(){return [...list.children].filter(li=>li.querySelector("input").checked);}
+function selectedLis(){return [...list.children].filter(li=>qs("input",li).checked);}
+btnFilter.onclick=()=>hideOthers(selectedLis());
+btnShowAll.onclick=()=>{[...list.children].forEach(li=>li.style.display="flex");filterActive=false;updateUI();}
+function hideOthers(keepLis){
+  [...list.children].forEach(li=>li.style.display="none");keepLis.forEach(li=>li.style.display="flex");
+  filterActive=true;selectMode=false;list.classList.remove("selecting");btnSelect.style.opacity="";updateUI();
+}
 function updateUI(){
   const cnt=selectedLis().length;
-  fab.classList.toggle("show",cnt>0);fab.textContent=`${cnt} selected`;
+  fab.style.display=cnt&&selectMode?"block":"none";
+  fab.textContent=`${cnt} selected`;
+  btnFilter.style.display=cnt&&!filterActive?"inline-block":"none";
   btnShowAll.style.display=filterActive?"inline-block":"none";
 }
-fab.onclick=()=>{
-  const lis=selectedLis();const sheet=document.createElement("div");sheet.className="sheet";
-  sheet.style.left="50%";sheet.style.bottom="calc(env(safe-area-inset-bottom)+4.5rem)";sheet.style.transform="translateX(-50%)";
-  sheet.innerHTML=`<button id="sSum">Summarize</button><button id="sHide">Hide others</button>`;
-  document.body.appendChild(sheet);vibrate(15);
-  sheet.querySelector("#sSum").onclick=()=>{sheet.remove();summarize(lis.map(li=>stories[li.dataset.index]));}
-  sheet.querySelector("#sHide").onclick=()=>{sheet.remove();hideOthers(lis);}
-  setTimeout(()=>document.addEventListener("click",()=>sheet.remove(),{once:true}));
-};
+fab.onclick=()=>{const arr=selectedLis().map(li=>stories[li.dataset.index]);summarize(arr);};
 
-function hideOthers(keepLis){
-  [...list.children].forEach(li=>li.style.display="none");
-  keepLis.forEach(li=>li.style.display="flex");
-  filterActive=true;btnShowAll.style.display="inline-block";
-  fab.classList.remove("show");selectMode=false;btnSelect.textContent="Select";
-}
-btnShowAll.onclick=()=>{[...list.children].forEach(li=>li.style.display="flex");filterActive=false;btnShowAll.style.display="none";};
-
-//// summarize (no API-key path)
+//// summarize (copy prompt)
 function buildPrompt(t,u){
   return `• 5 concise bullet points summarizing "${t}".\n`+
-         "• Add an analogy or concrete scenario that makes the core idea easy to grasp.\n"+
-         "• One sentence on *why this could be interesting or significant*.\n"+
+         "• Add an analogy or concrete scenario to make the idea clear.\n"+
+         "• One sentence on why this could be interesting or significant.\n"+
          `URL: ${u||"N/A"}`;
 }
 function summarize(arr){
   const txt=arr.map(a=>`**${a.title}**\n${buildPrompt(a.title,a.url)}`).join("\n\n");
   modal("Copy these prompts",
-    `<textarea id="promptBox" readonly rows="14" style="width:100%">${txt}</textarea>
-     <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('promptBox').value).then(()=>showToast('Copied'));">Copy 📋</button>`);
+    `<textarea id="box" readonly rows="14" style="width:100%">${txt}</textarea>
+     <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('box').value).then(()=>(${showToast.toString()})('Copied'));">Copy 📋</button>`);
 }
 
 //// boot
