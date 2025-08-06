@@ -101,35 +101,40 @@ function openSheet(dom,x,y){
 }
 
 //// data load (Firebase → Algolia fallback)
-async function loadStories(){
- btnRefresh.disabled=true;btnRefresh.textContent="⏳";list.innerHTML="";
- try{
-   const ids=await fetch("https://hacker-news.firebaseio.com/v0/topstories.json")
-              .then(r=>r.json());
-   stories=await Promise.all(ids.slice(0,MAX_STORIES).map(id=>
-     fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(r=>r.json())
-   ));
- }catch(e1){
-   console.warn("Firebase failed, switching to Algolia",e1);
-   try{
-     const alg=await fetch("https://hn.algolia.com/api/v1/search?tags=front_page")
-                  .then(r=>r.json());
-     stories=alg.hits.slice(0,MAX_STORIES).map(h=>({
-       id   :h.objectID,
-       title:h.title||"(no title)",
-       url  :h.url||`https://news.ycombinator.com/item?id=${h.objectID}`,
-       score:h.points||0
-     }));
-   }catch(e2){
-     console.error("Algolia failed",e2);
-     list.innerHTML=`<p style="padding:2rem">Couldn’t reach Hacker News.<br>
-       <small>${e2.message}</small><br><button id="retry">Retry</button></p>`;
-     retry.onclick=loadStories;
-     btnRefresh.disabled=false;btnRefresh.textContent="⟳";return;
-   }
- }
- render();vibrate(40);
- btnRefresh.disabled=false;btnRefresh.textContent="⟳";
+// ⚠️ replace your entire loadStories() with THIS
+async function loadStories () {
+  btnRefresh.disabled = true;
+  btnRefresh.textContent = "⏳";
+  list.innerHTML = "";
+
+  try {
+    // --- single source: Algolia front page ----------
+    const res = await fetch("https://hn.algolia.com/api/v1/search?tags=front_page");
+    if (!res.ok) throw new Error("HTTP "+res.status+" "+res.statusText);
+    const alg   = await res.json();
+
+    stories = alg.hits.slice(0, MAX_STORIES).map(h => ({
+      id   : h.objectID,
+      title: h.title || "(no title)",
+      url  : h.url   || `https://news.ycombinator.com/item?id=${h.objectID}`,
+      score: h.points|| 0
+    }));
+
+    render();
+    vibrate(30);
+  } catch (err) {
+    console.error(err);         // still visible if you someday open Web Inspector
+    list.innerHTML =
+      `<p style="padding:2rem">
+         Couldn’t load Hacker News:<br>
+         <code>${err.message}</code><br><br>
+         <button id="retry">Retry</button>
+       </p>`;
+    retry.onclick = loadStories;
+  } finally {
+    btnRefresh.disabled = false;
+    btnRefresh.textContent = "⟳";
+  }
 }
 
 //// render
