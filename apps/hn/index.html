@@ -1,7 +1,7 @@
-<!-- hn-plus.html  – v9.3  (dual‑source loader + v9.2 ui fixes) -->
+<!-- hn-plus.html  – v9.3.1  (dual‑source loader + v9.2 ui fixes) -->
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Hacker News Plus – v9.3</title>
+<title>Hacker News Plus – v9.3.1</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
 <style>
@@ -55,7 +55,7 @@ a.title{flex:1;font-size:1rem;font-weight:500;text-decoration:none;color:#000}
 </style>
 </head><body>
 
-<header>Hacker News Plus – v9.3</header>
+<header>Hacker News Plus – v9.3.1</header>
 
 <div id="toolbar">
   <button id="refresh" class="tbtn">⟳</button>
@@ -226,7 +226,10 @@ function wire(li){
 
     node.querySelector("#msum").onclick=()=>{closeSheet();summarize([stories[i]]);};
     node.querySelector("#mhide").onclick=()=>{closeSheet();hideOthers([li]);};
-    node.querySelector("#mcomments").onclick=()=>{window.open(\`https://news.ycombinator.com/item?id=\${stories[i].id}\`,'_blank');closeSheet();};
+    node.querySelector("#mcomments").onclick = () => {
+      window.open(`https://news.ycombinator.com/item?id=${stories[i].id}`, '_blank');
+      closeSheet();
+      };
     node.querySelector("#mremove").onclick=()=>{li.querySelector(".remove").click();closeSheet();};
 
     e.stopPropagation();
