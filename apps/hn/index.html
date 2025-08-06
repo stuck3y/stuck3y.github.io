@@ -1,7 +1,7 @@
-<!-- hn-plus.html  – v9.2  (stability pass) -->
+<!-- hn-plus.html  – v9.3  (dual‑source loader + v9.2 ui fixes) -->
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Hacker News Plus – v9.2</title>
+<title>Hacker News Plus – v9.3</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
 <style>
@@ -15,7 +15,7 @@ header{background:var(--orange);color:#fff;padding:.75rem 1.2rem;font-weight:600
 .tbtn{background:var(--orange);color:#fff;border:0;border-radius:var(--radius);
   width:38px;height:38px;font-size:1.55rem;display:flex;align-items:center;justify-content:center;
   cursor:pointer;transition:opacity var(--anim)}
-#refresh{font-size:1.7rem}          /* ← bigger ⟳ */
+#refresh{font-size:1.7rem}
 .tbtn:active{opacity:.7}#filter,#showAll{display:none}
 
 /* ---------- list & row ---------- */
@@ -55,7 +55,7 @@ a.title{flex:1;font-size:1rem;font-weight:500;text-decoration:none;color:#000}
 </style>
 </head><body>
 
-<header>Hacker News Plus – v9.2</header>
+<header>Hacker News Plus – v9.3</header>
 
 <div id="toolbar">
   <button id="refresh" class="tbtn">⟳</button>
@@ -80,9 +80,12 @@ a.title{flex:1;font-size:1rem;font-weight:500;text-decoration:none;color:#000}
 <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
 <script>
 /* ------------------------------------------------------------------
-   Data layer – Firebase (same as working v7)
+   Dual‑source loader  (Firebase + Algolia)  +  UI / sheet fixes
 -------------------------------------------------------------------*/
-const API_ROOT="https://hacker-news.firebaseio.com/v0", MAX_STORIES=30;
+const API_FB  = "https://hacker-news.firebaseio.com/v0",
+      API_ALG = "https://hn.algolia.com/api/v1/search?tags=front_page",
+      TIMEOUT = 6000,
+      MAX_STORIES = 30;
 
 const list=document.getElementById("stories"),fab=document.getElementById("fab");
 const btnRefresh=document.getElementById("refresh"),btnSelect=document.getElementById("select");
@@ -91,7 +94,7 @@ const toast=document.getElementById("toast");
 
 let stories=[],selectMode=false,filterActive=false,sortable;
 
-/* -------- helpers -------- */
+/* ---------- helpers ---------- */
 const vibrate=n=>{try{navigator.vibrate(n);}catch{}};
 const showToast=t=>{toast.textContent=t;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1400);};
 function modal(t,html){
@@ -102,7 +105,7 @@ function modal(t,html){
 }
 function copyText(id){navigator.clipboard.writeText(document.getElementById(id).value).then(()=>showToast("Copied"));}
 
-/* -------- sheet logic (fixed) -------- */
+/* ---------- sheet logic (stable) ---------- */
 let sheet=null,sheetTimeout=null,sheetDocHandler=null;
 function closeSheet(){
   clearTimeout(sheetTimeout);
@@ -120,23 +123,64 @@ function openSheet(dom,x,y){
   setTimeout(()=>document.addEventListener("click",sheetDocHandler,{once:true}));
 }
 
-/* -------- data load -------- */
+/* ---------- loader ---------- */
+function fetchWithTimeout(url, mapFn){
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),TIMEOUT);
+  return fetch(url,{signal:ctrl.signal})
+          .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+          .then(mapFn)
+          .finally(()=>clearTimeout(t));
+}
+function algoliaToStories(json){
+  return json.hits.slice(0,MAX_STORIES).map(h=>({
+    id:h.objectID,
+    title:h.title||"(no title)",
+    url:h.url||`https://news.ycombinator.com/item?id=${h.objectID}`,
+    score:h.points||0
+  }));
+}
+async function firebaseToStories(){
+  const ids = await fetchWithTimeout(`${API_FB}/topstories.json`, j=>j);
+  const items = await Promise.all(
+    ids.slice(0,MAX_STORIES)
+       .map(id=>fetchWithTimeout(`${API_FB}/item/${id}.json`, j=>j))
+  );
+  return items.map(it=>({
+    id:it.id,
+    title:it.title,
+    url:it.url||`https://news.ycombinator.com/item?id=${it.id}`,
+    score:it.score||0
+  }));
+}
+
 async function loadStories(){
+  btnRefresh.disabled=true; btnRefresh.textContent='⏳';
+  list.innerHTML="";
+
   try{
-    btnRefresh.disabled=true;btnRefresh.textContent='⏳';
-    const ids=await fetch(API_ROOT+"/topstories.json").then(r=>r.json());
-    stories=await Promise.all(
-      ids.slice(0,MAX_STORIES).map(id=>fetch(`${API_ROOT}/item/${id}.json`).then(r=>r.json()))
-    );
-    render();vibrate(50);
-  }catch{
-    list.innerHTML="<p style='padding:2rem'>Load failed.</p>";
+    /* ask both endpoints in parallel; first success wins */
+    stories=await Promise.any([
+      fetchWithTimeout(API_ALG, algoliaToStories),
+      firebaseToStories()
+    ]);
+    render(); vibrate(40);
+
+  }catch(err){
+    console.error(err);
+    list.innerHTML=`
+      <p style="padding:2rem">
+        Couldn’t load Hacker News:<br>
+        <code>${err instanceof AggregateError ? err.errors[0].message : err.message}</code><br><br>
+        <button id="retry">Retry</button>
+      </p>`;
+    list.querySelector("#retry").onclick=loadStories;
   }finally{
-    btnRefresh.disabled=false;btnRefresh.textContent='⟳';
+    btnRefresh.disabled=false; btnRefresh.textContent='⟳';
   }
 }
 
-/* -------- render list -------- */
+/* ---------- render ---------- */
 function render(){
   list.innerHTML="";
   stories.forEach((s,i)=>list.appendChild(makeItem(s,i)));
@@ -147,13 +191,12 @@ function render(){
   }
   updateUI();
 }
-
 function makeItem(s,i){
   const li=document.createElement("li");li.className="story";li.dataset.index=i;
   li.innerHTML=`
     <span class="drag-handle">☰</span>
     <label class="checkbox"><input type="checkbox"></label>
-    <a class="title" href="${s.url||`https://news.ycombinator.com/item?id=${s.id}`}" target="_blank">${s.title}</a>
+    <a class="title" href="${s.url}" target="_blank">${s.title}</a>
     <span class="points">${s.score}</span>
     <a class="comment" href="https://news.ycombinator.com/item?id=${s.id}" target="_blank">💬</a>
     <span class="menu-btn">⋯</span>
@@ -161,16 +204,15 @@ function makeItem(s,i){
   wire(li);return li;
 }
 
-/* -------- interactions -------- */
+/* ---------- interactions ---------- */
 function wire(li){
   const mc=new Hammer(li);mc.get("swipe").set({direction:Hammer.DIRECTION_HORIZONTAL,velocity:0.2});
   mc.on("swipeleft",()=>li.querySelector(".swipe-delete").style.right="0");
   mc.on("swiperight",()=>li.querySelector(".swipe-delete").style.right="-80px");
 
   li.querySelector(".remove").onclick=()=>{
-    stories.splice(li.dataset.index,1);li.remove();updateUI();vibrate(30);
+    stories.splice(li.dataset.index,1);li.remove();updateUI();vibrate(25);
   };
-
   li.querySelector("input").addEventListener("change",updateUI);
 
   li.querySelector(".menu-btn").onclick=e=>{
@@ -191,12 +233,12 @@ function wire(li){
   };
 }
 
-/* -------- select & filter -------- */
+/* ---------- select & filter ---------- */
 btnSelect.onclick=()=>{
   selectMode=!selectMode;
   list.classList.toggle("selecting",selectMode);
   if(!selectMode) list.querySelectorAll("input").forEach(cb=>cb.checked=false);
-  updateUI();vibrate(20);
+  updateUI();vibrate(18);
 };
 function selectedLis(){return [...list.children].filter(li=>li.querySelector("input").checked);}
 btnFilter.onclick=()=>hideOthers(selectedLis());
@@ -215,12 +257,12 @@ function updateUI(){
   btnShowAll.style.display=filterActive?"inline-block":"none";
 }
 
-/* -------- summarize -------- */
+/* ---------- summary prompts ---------- */
 function buildPrompt(t,u){
   return `• 5 concise bullet points summarizing "${t}".\n`+
          "• Add an analogy or concrete scenario to make the idea clear.\n"+
          "• One sentence on why this could be interesting or significant.\n"+
-         `URL: ${u||"N/A"}`;
+         `URL: ${u}`;
 }
 function summarize(arr){
   const txt=arr.map(a=>`**${a.title}**\n${buildPrompt(a.title,a.url)}`).join("\n\n");
@@ -229,7 +271,7 @@ function summarize(arr){
      <button class="copy-btn" onclick="copyText('copyBox')">Copy 📋</button>`);
 }
 
-/* -------- boot -------- */
+/* ---------- boot ---------- */
 btnRefresh.onclick=loadStories;
 loadStories();
 </script>
