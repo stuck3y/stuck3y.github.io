@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Brain Dumper – Minimal UI</title>
+<style>
+  :root { --bg:#0b0b0c; --card:#141417; --muted:#8b8b95; --fg:#f4f4f8; --acc:#84a9ff; --ok:#84ffb2; --warn:#ffd27a; --chip:#1e1e24; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font: 16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif; }
+  .wrap { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+  h1 { font-size: 24px; margin: 0 0 12px; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .card { background: var(--card); border: 1px solid #23232a; border-radius: 10px; padding: 12px; }
+  .controls { display:grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:10px; }
+  label.cb { display:flex; gap:8px; align-items:center; background:var(--chip); padding:8px 10px; border-radius:8px; border:1px solid #2a2a33; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; }
+  .chip { background:var(--chip); border:1px solid #2a2a33; padding:2px 8px; border-radius:100px; font-size:12px; color:var(--muted); }
+  .tabs { display:flex; gap:8px; }
+  .tab { padding:8px 12px; border-radius:8px; border:1px solid #2a2a33; background:var(--chip); color:var(--fg); cursor:pointer; }
+  .tab.active { outline:2px solid var(--acc); }
+  .cols { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+  @media (max-width:980px){ .cols { grid-template-columns: 1fr; } }
+  .meta { color:var(--muted); font-size:12px; }
+  .list { display:flex; flex-direction:column; gap:8px; }
+  .task { display:grid; grid-template-columns: auto 1fr auto; gap:10px; align-items:center; background:#111114; border:1px solid #22222a; padding:8px 10px; border-radius:10px; }
+  .task.done { opacity:.42; text-decoration: line-through; }
+  .badge { padding:2px 6px; border-radius: 100px; font-size: 11px; border:1px solid #2a2a33; color:var(--muted); }
+  .eta { color:#b7f0c2; font-variant-numeric: tabular-nums; }
+  .group { margin-top:10px; }
+  details summary { cursor:pointer; color:var(--muted); }
+  .divider { height:1px; background:#24242b; margin:10px 0; }
+  .kudos { color:var(--muted); font-size:12px; }
+  .filter { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  select, button, input[type="checkbox"] { cursor:pointer; }
+  button { background:#1c1c22; color:var(--fg); border:1px solid #2a2a33; border-radius:8px; padding:8px 10px; }
+  button:focus { outline:2px solid var(--acc); outline-offset:2px; }
+  .tiny { font-size:12px; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Brain Dumper</h1>
+  <div class="row">
+    <div class="tabs">
+      <button class="tab active" id="tab-plain">Plain</button>
+      <button class="tab" id="tab-opt">Optimized</button>
+    </div>
+    <div class="chips" id="stats"></div>
+  </div>
+
+  <div class="card" style="margin-top:10px;">
+    <div class="controls">
+      <label class="cb"><input type="checkbox" id="opt-byType" checked> Batch by type</label>
+      <label class="cb"><input type="checkbox" id="opt-byArea" checked> Cluster by area</label>
+      <label class="cb"><input type="checkbox" id="opt-parallel" checked> Parallelize background</label>
+      <label class="cb"><input type="checkbox" id="opt-errands" checked> Combine errands</label>
+      <div class="filter">
+        <span class="tiny">Filter area:</span>
+        <select id="filter-area"></select>
+        <span class="tiny">Filter type:</span>
+        <select id="filter-type"></select>
+        <button id="clear-filters">Clear filters</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cols" style="margin-top:12px;">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <strong id="list-title">Today – Plain order</strong>
+        <span class="meta" id="totals"></span>
+      </div>
+      <div class="divider"></div>
+      <div class="list" id="task-list"></div>
+    </div>
+
+    <div class="card">
+      <details open>
+        <summary>Timeline preview</summary>
+        <div id="timeline" class="list" style="margin-top:8px;"></div>
+      </details>
+      <div class="divider"></div>
+      <div class="kudos">Tip: click a task to toggle done; state is saved locally.</div>
+    </div>
+  </div>
+
+  <details class="card" style="margin-top:12px;">
+    <summary>Show raw JSON</summary>
+    <pre id="raw" style="white-space:pre-wrap;"></pre>
+  </details>
+
+  <p class="kudos" style="margin-top:8px;">Minimal demo – no libraries, pure HTML/CSS/JS. Optimizer is deterministic and local.</p>
+</div>
+
+<script>
+/*** 1) EMBED YOUR JSON HERE ***/
+const PLAN = /* paste-friendly */ {
+  "tasks": [
+    {"title":"Organize shoes by the front door","eta_minutes":10,"priority":3,"meta":{"area":"entry","type":"tidy"}},
+    {"title":"Clear and wipe brown desk","eta_minutes":10,"priority":3,"meta":{"area":"living","type":"tidy"}},
+    {"title":"Move clothes from chair to bed","eta_minutes":3,"priority":2,"meta":{"area":"bedroom","type":"laundry_prep"}},
+    {"title":"Box pizza boxes and clear counter","eta_minutes":8,"priority":2,"meta":{"area":"kitchen","type":"trash"}},
+    {"title":"Wipe food counter","eta_minutes":5,"priority":2,"meta":{"area":"kitchen","type":"cleaning"},"depends_on":["Box pizza boxes and clear counter"]},
+    {"title":"Dishes: unload, load, start dishwasher","eta_minutes":12,"priority":1,"meta":{"area":"kitchen","type":"cleaning","can_run_in_background":true},"subtasks":[{"title":"Unload dishwasher","eta_minutes":5},{"title":"Load dishwasher","eta_minutes":5},{"title":"Start dishwasher (runs in background)","eta_minutes":2}]},
+    {"title":"Put laptop away","eta_minutes":2,"priority":3,"meta":{"area":"living","type":"tidy"}},
+    {"title":"Clean John's closet","eta_minutes":20,"priority":4,"meta":{"area":"bedroom","type":"organize"}},
+    {"title":"Put vacuum away","eta_minutes":2,"priority":3,"meta":{"area":"closet","type":"tidy"}},
+    {"title":"Straighten toy area","eta_minutes":10,"priority":3,"meta":{"area":"living","type":"organize"}},
+    {"title":"Put Tonie back","eta_minutes":1,"priority":2,"meta":{"area":"kids_room","type":"tidy"}},
+    {"title":"Take out house trash (kitchen, sofa, laundry, bathrooms)","eta_minutes":12,"priority":2,"meta":{"area":"house","type":"trash"},"subtasks":[{"title":"Kitchen and sofa trash","eta_minutes":5},{"title":"Laundry room trash","eta_minutes":3},{"title":"Boys bathroom trash","eta_minutes":2},{"title":"John's bathroom trash","eta_minutes":2}]},
+    {"title":"Gather loose clothes by laundry room","eta_minutes":4,"priority":2,"meta":{"area":"laundry","type":"laundry_prep"}},
+    {"title":"Boys breakfast (Charlie toast, Jonah toast/plate)","eta_minutes":15,"priority":2,"meta":{"area":"kitchen","type":"family"}},
+    {"title":"Purge old food from fridge","eta_minutes":10,"priority":3,"meta":{"area":"kitchen","type":"cleaning"}},
+    {"title":"Open windows","eta_minutes":5,"priority":3,"meta":{"area":"house","type":"tidy"}},
+    {"title":"Drink water","eta_minutes":1,"priority":1,"meta":{"area":"kitchen","type":"health"}},
+    {"title":"Sit on porch (reset)","eta_minutes":5,"priority":5,"meta":{"area":"porch","type":"wellbeing"}},
+    {"title":"Return tape measure to its spot","eta_minutes":2,"priority":3,"meta":{"area":"garage","type":"tidy"}},
+    {"title":"Clear floor in bedroom","eta_minutes":10,"priority":3,"meta":{"area":"bedroom","type":"tidy"}},
+    {"title":"Set PlayStation to Rest Mode","eta_minutes":1,"priority":4,"meta":{"area":"living","type":"tidy"}},
+    {"title":"Put wipes back in bedroom drawer","eta_minutes":2,"priority":3,"meta":{"area":"bedroom","type":"tidy"}},
+    {"title":"Put new sheets on bed","eta_minutes":10,"priority":3,"meta":{"area":"bedroom","type":"housekeeping"}},
+    {"title":"Line up loads of laundry","eta_minutes":5,"priority":2,"meta":{"area":"laundry","type":"laundry_prep"}},
+    {"title":"Run laundry loads","eta_minutes":5,"priority":1,"meta":{"area":"laundry","type":"laundry","can_run_in_background":true},"notes":"Setup time ~5m per load; each cycle ~45-60m running in background"},
+    {"title":"Foundation Training","eta_minutes":12,"priority":4,"meta":{"area":"living","type":"exercise"}},
+    {"title":"Check blood pressure","eta_minutes":3,"priority":1,"meta":{"area":"bedroom","type":"health"}},
+    {"title":"Morning devotional","eta_minutes":10,"priority":2,"meta":{"area":"quiet","type":"spiritual"}},
+    {"title":"List out budget items","eta_minutes":10,"priority":3,"meta":{"area":"desk","type":"finance"}},
+    {"title":"Check Wells Fargo negative balance","eta_minutes":3,"priority":1,"meta":{"area":"desk","type":"finance"}},
+    {"title":"Call New American Funding (if open)","eta_minutes":5,"priority":2,"meta":{"area":"desk","type":"finance"},"notes":"If closed now, schedule call for later"},
+    {"title":"Get a matcha from Starbucks","eta_minutes":20,"priority":5,"meta":{"area":"out","type":"errand","external_trip":true}},
+    {"title":"Haircut tonight (scheduled)","eta_minutes":1,"priority":9,"meta":{"area":"out","type":"schedule"},"notes":"Placeholder/reminder for later"}
+  ],
+  "suggested_order": [
+    "Drink water","Check Wells Fargo negative balance","Dishes: unload, load, start dishwasher","Run laundry loads","Line up loads of laundry","Box pizza boxes and clear counter","Wipe food counter","Boys breakfast (Charlie toast, Jonah toast/plate)","Take out house trash (kitchen, sofa, laundry, bathrooms)","Move clothes from chair to bed","Gather loose clothes by laundry room","Organize shoes by the front door","Clear and wipe brown desk","Put laptop away","Straighten toy area","Set PlayStation to Rest Mode","Open windows","Purge old food from fridge","Put Tonie back","Return tape measure to its spot","Clear floor in bedroom","Put wipes back in bedroom drawer","Put new sheets on bed","Clean John's closet","Morning devotional","Foundation Training","List out budget items","Call New American Funding (if open)","Get a matcha from Starbucks","Haircut tonight (scheduled)"
+  ]
+};
+
+/*** 2) STATE (done toggles persist) ***/
+const KEY_DONE = "brain_dumper_done_v1";
+const doneSet = new Set(JSON.parse(localStorage.getItem(KEY_DONE) || "[]"));
+function toggleDone(title) {
+  if (doneSet.has(title)) doneSet.delete(title); else doneSet.add(title);
+  localStorage.setItem(KEY_DONE, JSON.stringify([...doneSet]));
+  render();
+}
+
+/*** 3) HELPERS ***/
+function sumETA(tasks) { return tasks.reduce((a,t)=>a+(t.eta_minutes||0),0); }
+function mins(n){ return `${n}m`; }
+function uniq(arr){ return [...new Set(arr)].filter(Boolean).sort(); }
+function fmt(h,m){ return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`; }
+
+/*** 4) FILTER OPTIONS (area/type) ***/
+function buildFilters(tasks) {
+  const areas = ["(any)", ...uniq(tasks.map(t=>t.meta?.area))];
+  const types = ["(any)", ...uniq(tasks.map(t=>t.meta?.type))];
+  const areaSel = document.getElementById("filter-area");
+  const typeSel = document.getElementById("filter-type");
+  areaSel.innerHTML = areas.map(a=>`<option>${a}</option>`).join("");
+  typeSel.innerHTML = types.map(t=>`<option>${t}</option>`).join("");
+}
+
+/*** 5) PLAIN ORDER (use suggested_order) ***/
+function plainOrder(plan){
+  const byTitle = Object.fromEntries(plan.tasks.map(t=>[t.title,t]));
+  const inOrder = plan.suggested_order.map(tt=>byTitle[tt]).filter(Boolean);
+  // append any missing tasks at end
+  const missing = plan.tasks.filter(t=>!inOrder.includes(t));
+  return [...inOrder, ...missing];
+}
+
+/*** 6) OPTIMIZER (deterministic, local) ***/
+function topoByDeps(tasks){
+  // simple: honor depends_on by filtering until all predecessors selected
+  const byTitle = new Map(tasks.map(t=>[t.title,t]));
+  const out = [];
+  const visited = new Set();
+  let changed = true;
+  while (out.length < tasks.length && changed){
+    changed = false;
+    for (const t of tasks){
+      if (visited.has(t.title)) continue;
+      const deps = (t.depends_on||[]).filter(Boolean);
+      if (deps.every(d => out.find(x=>x.title===d))){
+        out.push(t); visited.add(t.title); changed = true;
+      }
+    }
+  }
+  // fall back to remaining in input order
+  for (const t of tasks) if(!visited.has(t.title)) out.push(t);
+  return out;
+}
+
+function clusterByArea(arr){
+  const groups = {};
+  for (const t of arr){
+    const a = t.meta?.area || "other";
+    (groups[a] ||= []).push(t);
+  }
+  // stable deterministic area ordering (alpha)
+  return Object.keys(groups).sort().flatMap(a=>groups[a]);
+}
+
+function scoreTask(t, ctx){
+  const eta = t.eta_minutes ?? 30;
+  const p = (t.priority ?? 5) - 5; // center around 0
+  const momentum = ctx.momentum * (eta <= 10 ? -2 : eta <= 20 ? -1 : +1);
+  const sameArea = ctx.byArea && t.meta?.area === ctx.currentArea ? -2 : 0;
+  const sameType = ctx.byType && t.meta?.type === ctx.lastType ? -1 : 0;
+  const travel = ctx.errands && t.meta?.external_trip ? +3 : 0;
+  const speed = ctx.speed * (eta <= 20 ? -1 : 0);
+  return p + momentum + sameArea + sameType + travel;
+}
+
+function optimize(tasks, opts){
+  const ready = topoByDeps(tasks);
+  const bg = opts.parallel ? ready.filter(t=>t.meta?.can_run_in_background) : [];
+  let fg = ready.filter(t=>!t.meta?.can_run_in_background);
+
+  if (opts.errands){
+    const errands = fg.filter(t=>t.meta?.external_trip);
+    const stay = fg.filter(t=>!t.meta?.external_trip);
+    fg = [...stay, ...clusterByArea(errands)];
+  }
+  // greedy pick: maintain streaks for area/type
+  const ordered = [];
+  let currentArea = null, lastType = null;
+  let pool = fg.slice();
+  while (pool.length){
+    pool.sort((a,b)=> scoreTask(a, {...opts,currentArea,lastType}) - scoreTask(b, {...opts,currentArea,lastType}));
+    const next = pool.shift();
+    ordered.push(next);
+    currentArea = next.meta?.area ?? currentArea;
+    lastType = next.meta?.type ?? lastType;
+  }
+  return { backgroundKickoff: bg, ordered };
+}
+
+/*** 7) TIMELINE (simple preview) ***/
+function buildTimeline(fg, bg, startAt="09:00"){
+  const [h0,m0] = startAt.split(":").map(Number);
+  let h=h0, m=m0;
+  function add(min){ m+=min; while(m>=60){m-=60;h++;} }
+  const lines = [];
+  // background: only show setup minutes at T0
+  for (const t of bg){
+    const setup = t.eta_minutes||0;
+    if (setup>0){
+      lines.push(`${fmt(h,m)} Start ${t.title} (setup ${mins(setup)}; runs in background)`);
+    }
+  }
+  // foreground sequential
+  for (const t of fg){
+    lines.push(`${fmt(h,m)} ${t.title} (${mins(t.eta_minutes||0)})`);
+    add(t.eta_minutes||0);
+  }
+  return lines;
+}
+
+/*** 8) RENDER ***/
+function render(){
+  const tabPlain = document.getElementById("tab-plain").classList.contains("active");
+  const listTitle = document.getElementById("list-title");
+  const taskList = document.getElementById("task-list");
+  const totals = document.getElementById("totals");
+  const timeline = document.getElementById("timeline");
+  const stats = document.getElementById("stats");
+
+  const byArea = document.getElementById("opt-byType").checked; // typo? keep var names readable below
+  const byType = document.getElementById("opt-byType").checked;
+  const clusterArea = document.getElementById("opt-byArea").checked;
+  const parallel = document.getElementById("opt-parallel").checked;
+  const errands = document.getElementById("opt-errands").checked;
+
+  // filter
+  const fa = document.getElementById("filter-area").value;
+  const ft = document.getElementById("filter-type").value;
+  const areaFilter = fa && fa!=="(any)" ? fa : null;
+  const typeFilter = ft && ft!=="(any)" ? ft : null;
+
+  // base order
+  const base = tabPlain ? plainOrder(PLAN) : optimize(PLAN.tasks, {
+    byArea: clusterArea,
+    byType: byType,
+    parallel: parallel,
+    errands: errands,
+    speed: 1, momentum: 1
+  });
+
+  let fgTasks, bgTasks;
+  if (tabPlain) {
+    fgTasks = base;
+    bgTasks = [];
+    listTitle.textContent = "Today – Plain order";
+  } else {
+    fgTasks = base.ordered;
+    bgTasks = base.backgroundKickoff;
+    listTitle.textContent = "Today – Optimized order";
+  }
+
+  // apply filters
+  function passFilter(t){
+    if (areaFilter && (t.meta?.area !== areaFilter)) return false;
+    if (typeFilter && (t.meta?.type !== typeFilter)) return false;
+    return true;
+  }
+  const fg = fgTasks.filter(passFilter);
+  const bg = bgTasks.filter(passFilter);
+
+  // stats chips
+  const all = PLAN.tasks;
+  const totalETA = sumETA(fg) + sumETA(bg);
+  stats.innerHTML = `
+    <span class="chip">Tasks: ${all.length}</span>
+    <span class="chip">Shown: ${fg.length + bg.length}</span>
+    <span class="chip">ETA (active): ${mins(sumETA(fg))}${bg.length?` + BG ${mins(sumETA(bg))}`:""}</span>
+  `;
+
+  // totals line
+  totals.textContent = `Active: ${mins(sumETA(fg))}${bg.length?` • Background setup: ${mins(sumETA(bg))}`:""}`;
+
+  // list render (bg kickoff + fg sequence)
+  const items = [];
+  for (const t of bg){
+    items.push(taskRow(t, /*bg*/true));
+  }
+  for (const t of fg){
+    items.push(taskRow(t, /*bg*/false));
+  }
+  taskList.innerHTML = items.join("");
+
+  // timeline
+  const lines = buildTimeline(fg, bg, "09:00");
+  timeline.innerHTML = lines.map(l=>`<div class="meta">${l}</div>`).join("");
+
+  // raw JSON (collapsible)
+  document.getElementById("raw").textContent = JSON.stringify(PLAN, null, 2);
+}
+
+function taskRow(t, isBg){
+  const done = doneSet.has(t.title);
+  const area = t.meta?.area || "--";
+  const type = t.meta?.type || "--";
+  const bg = isBg ? `<span class="badge">background</span>` : "";
+  const deps = (t.depends_on && t.depends_on.length) ? `<span class="badge">needs: ${t.depends_on.join(", ")}</span>` : "";
+  const subs = (t.subtasks && t.subtasks.length)
+    ? `<div class="meta">• ${t.subtasks.map(s=>`${s.title} (${mins(s.eta_minutes||0)})`).join(" • ")}</div>`
+    : "";
+  return `
+    <div class="task ${done?"done":""}" onclick="toggleDone(${JSON.stringify(t.title)})" title="Click to toggle done">
+      <div><input type="checkbox" ${done?"checked":""} onclick="event.stopPropagation(); toggleDone(${JSON.stringify(t.title)})"/></div>
+      <div>
+        <div><strong>${t.title}</strong> ${bg} ${deps}</div>
+        <div class="meta">area: ${area} • type: ${type}</div>
+        ${subs}
+      </div>
+      <div class="eta">${mins(t.eta_minutes||0)}</div>
+    </div>
+  `;
+}
+
+/*** 9) INIT ***/
+document.getElementById("tab-plain").addEventListener("click", e=>{
+  document.getElementById("tab-plain").classList.add("active");
+  document.getElementById("tab-opt").classList.remove("active");
+  render();
+});
+document.getElementById("tab-opt").addEventListener("click", e=>{
+  document.getElementById("tab-opt").classList.add("active");
+  document.getElementById("tab-plain").classList.remove("active");
+  render();
+});
+["opt-byType","opt-byArea","opt-parallel","opt-errands"].forEach(id=>{
+  document.getElementById(id).addEventListener("change", render);
+});
+document.getElementById("clear-filters").addEventListener("click", ()=>{
+  document.getElementById("filter-area").selectedIndex = 0;
+  document.getElementById("filter-type").selectedIndex = 0;
+  render();
+});
+
+buildFilters(PLAN.tasks);
+render();
+</script>
+</body>
+</html>
