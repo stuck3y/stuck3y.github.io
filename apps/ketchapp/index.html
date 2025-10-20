@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ketchapp - Pomodoro Timer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .timer-display {
+            font-size: 5rem;
+            font-weight: 700;
+            color: #333;
+            margin: 2rem 0;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.05em;
+        }
+
+        .mode-indicator {
+            font-size: 1.1rem;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .pomodoro-count {
+            display: inline-flex;
+            gap: 0.3rem;
+            margin-bottom: 2rem;
+        }
+
+        .tomato {
+            width: 24px;
+            height: 24px;
+            font-size: 24px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        button {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            flex: 1;
+            max-width: 150px;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .mode-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .mode-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .stats {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 480px) {
+            .timer-display {
+                font-size: 4rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍅 Ketchapp</h1>
+        <p class="subtitle">Stay focused, one tomato at a time</p>
+
+        <div class="mode-indicator" id="modeIndicator">Work</div>
+
+        <div class="timer-display" id="timerDisplay">25:00</div>
+
+        <div class="pomodoro-count" id="pomodoroCount"></div>
+
+        <div class="controls">
+            <button class="btn-primary" id="startBtn">Start</button>
+            <button class="btn-secondary" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="work">Work</button>
+            <button class="mode-btn" data-mode="short">Short Break</button>
+            <button class="mode-btn" data-mode="long">Long Break</button>
+        </div>
+
+        <div class="stats">
+            <div>Completed today: <strong id="completedCount">0</strong></div>
+        </div>
+    </div>
+
+    <script>
+        const WORK_TIME = 25 * 60;
+        const SHORT_BREAK = 5 * 60;
+        const LONG_BREAK = 15 * 60;
+        const POMODOROS_UNTIL_LONG_BREAK = 4;
+
+        let timeRemaining = WORK_TIME;
+        let isRunning = false;
+        let currentMode = 'work';
+        let pomodorosCompleted = 0;
+        let totalCompleted = 0;
+        let intervalId = null;
+
+        const timerDisplay = document.getElementById('timerDisplay');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const modeIndicator = document.getElementById('modeIndicator');
+        const pomodoroCount = document.getElementById('pomodoroCount');
+        const completedCount = document.getElementById('completedCount');
+        const modeBtns = document.querySelectorAll('.mode-btn');
+
+        // Load saved data
+        function loadData() {
+            const saved = localStorage.getItem('ketchapp-data');
+            if (saved) {
+                const data = JSON.parse(saved);
+                const today = new Date().toDateString();
+                if (data.date === today) {
+                    totalCompleted = data.completed || 0;
+                    completedCount.textContent = totalCompleted;
+                }
+            }
+        }
+
+        // Save data
+        function saveData() {
+            const data = {
+                date: new Date().toDateString(),
+                completed: totalCompleted
+            };
+            localStorage.setItem('ketchapp-data', JSON.stringify(data));
+        }
+
+        // Format time
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Update display
+        function updateDisplay() {
+            timerDisplay.textContent = formatTime(timeRemaining);
+            updatePomodoroCount();
+        }
+
+        // Update pomodoro count
+        function updatePomodoroCount() {
+            pomodoroCount.innerHTML = '';
+            for (let i = 0; i < pomodorosCompleted; i++) {
+                const tomato = document.createElement('span');
+                tomato.className = 'tomato';
+                tomato.textContent = '🍅';
+                pomodoroCount.appendChild(tomato);
+            }
+        }
+
+        // Set mode
+        function setMode(mode) {
+            currentMode = mode;
+            isRunning = false;
+            startBtn.textContent = 'Start';
+
+            // Update active button
+            modeBtns.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+
+            // Set time based on mode
+            switch(mode) {
+                case 'work':
+                    timeRemaining = WORK_TIME;
+                    modeIndicator.textContent = 'Work';
+                    break;
+                case 'short':
+                    timeRemaining = SHORT_BREAK;
+                    modeIndicator.textContent = 'Short Break';
+                    break;
+                case 'long':
+                    timeRemaining = LONG_BREAK;
+                    modeIndicator.textContent = 'Long Break';
+                    break;
+            }
+
+            updateDisplay();
+        }
+
+        // Start/pause timer
+        function toggleTimer() {
+            if (isRunning) {
+                isRunning = false;
+                startBtn.textContent = 'Start';
+                clearInterval(intervalId);
+            } else {
+                isRunning = true;
+                startBtn.textContent = 'Pause';
+                intervalId = setInterval(tick, 1000);
+            }
+        }
+
+        // Timer tick
+        function tick() {
+            if (timeRemaining > 0) {
+                timeRemaining--;
+                updateDisplay();
+            } else {
+                completeTimer();
+            }
+        }
+
+        // Complete timer
+        function completeTimer() {
+            isRunning = false;
+            clearInterval(intervalId);
+            startBtn.textContent = 'Start';
+
+            // Play sound
+            playNotificationSound();
+
+            // Show notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Ketchapp Timer Complete!', {
+                    body: currentMode === 'work' ? 'Time for a break!' : 'Back to work!',
+                    icon: '🍅'
+                });
+            }
+
+            // Update stats and auto-switch mode
+            if (currentMode === 'work') {
+                pomodorosCompleted++;
+                totalCompleted++;
+                completedCount.textContent = totalCompleted;
+                saveData();
+
+                if (pomodorosCompleted % POMODOROS_UNTIL_LONG_BREAK === 0) {
+                    setMode('long');
+                } else {
+                    setMode('short');
+                }
+            } else {
+                if (currentMode === 'long') {
+                    pomodorosCompleted = 0;
+                }
+                setMode('work');
+            }
+        }
+
+        // Play notification sound
+        function playNotificationSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // Reset timer
+        function resetTimer() {
+            isRunning = false;
+            clearInterval(intervalId);
+            startBtn.textContent = 'Start';
+            setMode(currentMode);
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', toggleTimer);
+        resetBtn.addEventListener('click', resetTimer);
+
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!isRunning) {
+                    setMode(btn.dataset.mode);
+                }
+            });
+        });
+
+        // Request notification permission
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
+        // Update page title with timer
+        setInterval(() => {
+            if (isRunning) {
+                document.title = `${formatTime(timeRemaining)} - Ketchapp`;
+            } else {
+                document.title = 'Ketchapp - Pomodoro Timer';
+            }
+        }, 1000);
+
+        // Initialize
+        loadData();
+        updateDisplay();
+    </script>
+</body>
+</html>
