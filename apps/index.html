@@ -123,9 +123,12 @@
 
         .apps-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 2rem;
             margin-bottom: 3rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .app-card {
@@ -197,17 +200,10 @@
         }
 
         /* App-specific colors */
-        .app-food { --gradient-start: #ff6b6b; --gradient-end: #ee5a6f; }
         .app-ketchapp { --gradient-start: #f093fb; --gradient-end: #f5576c; }
-        .app-merrychat { --gradient-start: #4facfe; --gradient-end: #00f2fe; }
+        .app-food { --gradient-start: #ff6b6b; --gradient-end: #ee5a6f; }
         .app-nottodo { --gradient-start: #fa709a; --gradient-end: #fee140; }
         .app-hn { --gradient-start: #ff6b00; --gradient-end: #ff8800; }
-        .app-pac { --gradient-start: #ffd89b; --gradient-end: #19547b; }
-        .app-pac-pixi { --gradient-start: #667eea; --gradient-end: #764ba2; }
-        .app-pac-simple { --gradient-start: #f093fb; --gradient-end: #f5576c; }
-        .app-pac-ultimate { --gradient-start: #4facfe; --gradient-end: #00f2fe; }
-        .app-brain { --gradient-start: #a8edea; --gradient-end: #fed6e3; }
-        .app-closet { --gradient-start: #ff9a9e; --gradient-end: #fecfef; }
 
         .dock {
             position: fixed;
@@ -293,8 +289,9 @@
 
         @media (max-width: 768px) {
             .apps-grid {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                grid-template-columns: repeat(2, 1fr);
                 gap: 1.5rem;
+                max-width: 400px;
             }
 
             .app-icon {
@@ -322,7 +319,7 @@
 
         @media (max-width: 480px) {
             .apps-grid {
-                grid-template-columns: repeat(4, 1fr);
+                grid-template-columns: repeat(2, 1fr);
                 gap: 1rem;
             }
 
@@ -345,7 +342,7 @@
     <div class="container">
         <div class="header">
             <h1>Jon's Apps</h1>
-            <p>A collection of useful tools and games</p>
+            <p>Essential productivity tools</p>
         </div>
 
         <div class="search-bar">
@@ -353,14 +350,6 @@
         </div>
 
         <div class="apps-grid" id="appsGrid">
-            <!-- Food App -->
-            <a href="/apps/food/" class="app-card" data-name="food decision helper">
-                <div class="app-icon app-food">
-                    <span>🍕</span>
-                </div>
-                <div class="app-name">Food Helper</div>
-            </a>
-
             <!-- Ketchapp -->
             <a href="/apps/ketchapp/" class="app-card" data-name="ketchapp pomodoro timer focus">
                 <div class="app-icon app-ketchapp">
@@ -369,12 +358,12 @@
                 <div class="app-name">Ketchapp</div>
             </a>
 
-            <!-- Merry Chat -->
-            <a href="/apps/merrychat/" class="app-card" data-name="merrychat messaging chat">
-                <div class="app-icon app-merrychat">
-                    <span>💬</span>
+            <!-- Food App -->
+            <a href="/apps/food/" class="app-card" data-name="food decision helper">
+                <div class="app-icon app-food">
+                    <span>🍕</span>
                 </div>
-                <div class="app-name">Merry Chat</div>
+                <div class="app-name">Food Helper</div>
             </a>
 
             <!-- Not To Do -->
@@ -391,54 +380,6 @@
                     <span>📰</span>
                 </div>
                 <div class="app-name">HN Plus</div>
-            </a>
-
-            <!-- Pac-Man Classic -->
-            <a href="/apps/pac/" class="app-card" data-name="pac man pacman game classic">
-                <div class="app-icon app-pac">
-                    <span>👻</span>
-                </div>
-                <div class="app-name">Pac-Man</div>
-            </a>
-
-            <!-- Pac-Man Pixi -->
-            <a href="/apps/pac_pixi/" class="app-card" data-name="pac man pacman game pixi">
-                <div class="app-icon app-pac-pixi">
-                    <span>🕹️</span>
-                </div>
-                <div class="app-name">Pac Pixi</div>
-            </a>
-
-            <!-- Pac-Man Simple -->
-            <a href="/apps/pac_simple/" class="app-card" data-name="pac man pacman game simple safari">
-                <div class="app-icon app-pac-simple">
-                    <span>👾</span>
-                </div>
-                <div class="app-name">Pac Simple</div>
-            </a>
-
-            <!-- Pac-Man Ultimate -->
-            <a href="/apps/pac_ultimate/" class="app-card" data-name="pac man pacman game ultimate advanced">
-                <div class="app-icon app-pac-ultimate">
-                    <span>🎮</span>
-                </div>
-                <div class="app-name">Pac Ultimate</div>
-            </a>
-
-            <!-- Brain Dumper -->
-            <a href="/apps/bd.html" class="app-card" data-name="brain dumper tasks optimization errand">
-                <div class="app-icon app-brain">
-                    <span>🧠</span>
-                </div>
-                <div class="app-name">Brain Dumper</div>
-            </a>
-
-            <!-- Closet Tracker -->
-            <a href="/closet/" class="app-card" data-name="closet gaming tracker wishlist">
-                <div class="app-icon app-closet">
-                    <span>🎯</span>
-                </div>
-                <div class="app-name">Closet</div>
             </a>
         </div>
 
@@ -459,14 +400,14 @@
                     <span>🍕</span>
                 </div>
             </a>
-            <a href="/apps/pac/" class="app-card">
-                <div class="app-icon app-pac">
-                    <span>👻</span>
+            <a href="/apps/not-to-do/" class="app-card">
+                <div class="app-icon app-nottodo">
+                    <span>🚫</span>
                 </div>
             </a>
-            <a href="https://github.com/stuck3y" class="app-card" target="_blank">
-                <div class="app-icon" style="--gradient-start: #24292e; --gradient-end: #000000;">
-                    <span>🐙</span>
+            <a href="/apps/hn/" class="app-card">
+                <div class="app-icon app-hn">
+                    <span>📰</span>
                 </div>
             </a>
         </div>
