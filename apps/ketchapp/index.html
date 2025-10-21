@@ -753,6 +753,7 @@
             }
 
             updateDisplay();
+            saveData();
             syncToFirebase();
         }
 
@@ -769,6 +770,7 @@
             }
 
             updateDisplay();
+            saveData();
             syncToFirebase();
         }
 
@@ -777,8 +779,9 @@
                 timeRemaining--;
                 updateDisplay();
 
-                // Sync every 5 seconds while running
+                // Save and sync every 5 seconds while running
                 if (timeRemaining % 5 === 0) {
+                    saveData();
                     syncToFirebase();
                 }
             } else {
@@ -813,6 +816,7 @@
             clearInterval(intervalId);
             startBtn.textContent = 'Start';
             setMode(currentMode);
+            saveData();
         }
 
         function stopSession() {
@@ -822,6 +826,7 @@
             currentTask = '';
             taskInput.value = '';
             setMode('work');
+            saveData();
         }
 
         function playNotificationSound() {
@@ -901,12 +906,20 @@
             }).join('');
         }
 
-        // Local storage
+        // Local storage with full state persistence
         function saveData() {
             const data = {
                 completedToday: completedToday,
                 plannedSessions: plannedSessions,
-                date: new Date().toDateString()
+                date: new Date().toDateString(),
+                // Timer state
+                timerState: {
+                    isRunning: isRunning,
+                    currentMode: currentMode,
+                    timeRemaining: timeRemaining,
+                    currentTask: currentTask,
+                    lastUpdate: Date.now()
+                }
             };
             localStorage.setItem('ketchapp-data', JSON.stringify(data));
         }
@@ -917,12 +930,45 @@
                 const data = JSON.parse(saved);
                 const today = new Date().toDateString();
 
+                // Load completed count and sessions
                 if (data.date === today) {
                     completedToday = data.completedToday || 0;
+                } else {
+                    completedToday = 0;
                 }
 
                 plannedSessions = data.plannedSessions || [];
                 renderPlannedSessions(plannedSessions, plannedList, false);
+
+                // Restore timer state
+                if (data.timerState && data.date === today) {
+                    const state = data.timerState;
+                    currentMode = state.currentMode || 'work';
+                    currentTask = state.currentTask || '';
+
+                    if (state.isRunning && state.lastUpdate) {
+                        // Calculate elapsed time since last save
+                        const elapsedSeconds = Math.floor((Date.now() - state.lastUpdate) / 1000);
+                        timeRemaining = Math.max(0, state.timeRemaining - elapsedSeconds);
+
+                        if (timeRemaining > 0) {
+                            // Resume the timer
+                            isRunning = true;
+                            startBtn.textContent = 'Pause';
+                            taskInput.value = currentTask;
+                            intervalId = setInterval(tick, 1000);
+                        } else {
+                            // Timer completed while away
+                            timeRemaining = 0;
+                            completeTimer();
+                        }
+                    } else {
+                        // Timer was paused
+                        timeRemaining = state.timeRemaining || WORK_TIME;
+                        taskInput.value = currentTask;
+                    }
+                }
+
                 updateDisplay();
             }
         }
@@ -943,6 +989,7 @@
         taskInput.addEventListener('input', () => {
             currentTask = taskInput.value.trim();
             if (isRunning) {
+                saveData();
                 syncToFirebase();
             }
         });
