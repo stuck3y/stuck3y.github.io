@@ -205,72 +205,9 @@
         .app-nottodo { --gradient-start: #fa709a; --gradient-end: #fee140; }
         .app-hn { --gradient-start: #ff6b00; --gradient-end: #ff8800; }
 
-        .dock {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 1rem;
-            display: flex;
-            justify-content: center;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .dock-container {
-            display: flex;
-            gap: 1rem;
-            padding: 0.75rem 1.5rem;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 25px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .dock .app-card {
-            margin: 0;
-        }
-
-        .dock .app-icon {
-            width: 60px;
-            height: 60px;
-            margin-bottom: 0;
-        }
-
-        .dock .app-icon span {
-            font-size: 2rem;
-        }
-
-        .dock .app-name {
-            display: none;
-        }
-
-        .page-dots {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin: 2rem 0;
-        }
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.5);
-            transition: all 0.3s ease;
-        }
-
-        .dot.active {
-            background: white;
-            width: 20px;
-            border-radius: 4px;
-        }
-
         .footer {
             text-align: center;
-            padding: 2rem 1rem 120px;
+            padding: 2rem 1rem 3rem;
             color: white;
             opacity: 0.8;
         }
@@ -304,16 +241,6 @@
 
             .header p {
                 font-size: 1rem;
-            }
-
-            .dock-container {
-                gap: 0.75rem;
-                padding: 0.5rem 1rem;
-            }
-
-            .dock .app-icon {
-                width: 50px;
-                height: 50px;
             }
         }
 
@@ -382,35 +309,6 @@
                 <div class="app-name">HN Plus</div>
             </a>
         </div>
-
-        <div class="page-dots">
-            <div class="dot active"></div>
-        </div>
-    </div>
-
-    <div class="dock">
-        <div class="dock-container">
-            <a href="/apps/ketchapp/" class="app-card">
-                <div class="app-icon app-ketchapp">
-                    <span>🍅</span>
-                </div>
-            </a>
-            <a href="/apps/food/" class="app-card">
-                <div class="app-icon app-food">
-                    <span>🍕</span>
-                </div>
-            </a>
-            <a href="/apps/not-to-do/" class="app-card">
-                <div class="app-icon app-nottodo">
-                    <span>🚫</span>
-                </div>
-            </a>
-            <a href="/apps/hn/" class="app-card">
-                <div class="app-icon app-hn">
-                    <span>📰</span>
-                </div>
-            </a>
-        </div>
     </div>
 
     <div class="footer">
@@ -458,19 +356,6 @@
 
                 card.addEventListener('mouseleave', function() {
                     this.style.transform = 'translateY(0) scale(1)';
-                });
-            });
-        }
-
-        // Parallax effect on mouse move (desktop only)
-        if (window.matchMedia('(min-width: 768px)').matches) {
-            document.addEventListener('mousemove', (e) => {
-                const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
-                const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
-
-                appCards.forEach((card, index) => {
-                    const speed = (index % 3 + 1) * 0.5;
-                    card.style.transform = `translate(${moveX * speed}px, ${moveY * speed}px)`;
                 });
             });
         }
