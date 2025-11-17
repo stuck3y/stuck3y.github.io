@@ -1,0 +1,27 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.product-item {
+    margin-bottom: 20px;
+}
+
+button {
+    margin-top: 10px;
+}
+
+input, select {
+    margin-right: 10px;
+}
+
+.selected-links {
+    list-style-type: none;
+    padding: 0;
+}
+
+.iframe-container {
+    margin-top: 20px;
+    border: 1px solid #ccc;
+    padding: 10px;
+}

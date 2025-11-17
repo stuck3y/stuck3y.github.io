@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Wishlist</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>My Product Wishlist</h1>
+    
+    <div id="product-list">
+        <div id="product-template" class="product-item" style="display:none;">
+            <input type="text" class="product-name" placeholder="Product name" />
+            <select class="search-engine">
+                <option value="google">Google</option>
+                <option value="amazon">Amazon</option>
+            </select>
+            <button class="search-btn">Search</button>
+            
+            <div class="iframe-container" style="display:none;">
+                <iframe class="search-results-iframe" width="100%" height="500px"></iframe>
+            </div>
+
+            <button class="add-links-btn">Add Selected Links</button>
+            <ul class="selected-links"></ul>
+        </div>
+    </div>
+
+    <button id="add-product-btn">Add Product</button>
+
+    <script src="app.js"></script>
+</body>
+</html>

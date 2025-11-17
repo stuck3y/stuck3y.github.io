@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PixiPac – Theme-able Pac-Man Scaffold</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    html,body{margin:0;height:100%;display:flex;justify-content:center;align-items:center;background:#0b0b0b;font-family:system-ui,sans-serif}
+    #themeLabel{position:fixed;top:8px;right:8px;color:#fff;font-size:12px;user-select:none}
+  </style>
+</head>
+<body>
+  <div id="themeLabel"></div>
+
+  <script type="module">
+    // Use PixiJS v8 ESM bundle (resolves on jsDelivr)
+    import * as PIXI from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
+
+    (async ()=>{
+
+    /* ───────────────── CONSTANTS ───────────────── */
+    const TILE=20, SPEED=6;           // tile size in px, tiles per second
+    const MAP=`############################\n#............##............#\n#.####.#####.##.#####.####.#\n#o####.#####.##.#####.####o#\n#.####.#####.##.#####.####.#\n#............##............#\n#.####.##.########.##.####.#\n#......##....##....##......#\n######.##### ## #####.######\n     #.##### ## #####.#     \n     #.##   G  G   ##.#     \n######.## ###--### ##.######\n#P..........................#\n######.## ######## ##.######\n     #.##          ##.#     \n######.## ######## ##.######\n#............##............#\n#.####.#####.##.#####.####.#\n#o..##................##..o#\n###.##.##.########.##.##.###\n#......##....##....##......#\n#.##########.##.##########.#\n#..........................#\n############################`;
+    const rows=MAP.split('\n');
+    const ROWS=rows.length, COLS=rows[0].length;
+
+    /* ───────────────── PIXI APP ───────────────── */
+    const app = new PIXI.Application();
+    await app.init({ width: COLS*TILE, height: ROWS*TILE, background: 0x001825, antialias: false });
+    document.body.appendChild(app.canvas);
+
+    /* ───────────────── THEMES ───────────────── */
+    const THEMES=[
+      {name:'Ocean', pacTint:0xff7e29, road:0x0d2633, wall:0x00334d},
+      {name:'Cars',  pacTint:0xff0000, road:0x2b2b2b, wall:0x333333}
+    ];
+    let themeIndex=1; // default to Cars
+    function curTheme(){return THEMES[themeIndex];}
+    const themeLabel=document.getElementById('themeLabel');
+    function updateThemeLabel(){themeLabel.textContent=`Theme: ${curTheme().name} (press T)`;}
+    updateThemeLabel();
+
+    /* ───────────────── BOARD RENDER ───────────────── */
+    const boardContainer=new PIXI.Container();
+    app.stage.addChild(boardContainer);
+
+    // Pre-render static tiles once for performance
+    for(let y=0;y<ROWS;y++){
+      for(let x=0;x<COLS;x++){
+        const ch=rows[y][x];
+        if(ch==='#'){
+          const g=new PIXI.Graphics();
+          g.beginFill(curTheme().wall).drawRect(0,0,TILE,TILE).endFill();
+          g.x=x*TILE;g.y=y*TILE;boardContainer.addChild(g);
+        } else {
+          const g=new PIXI.Graphics();
+          g.beginFill(curTheme().road).drawRect(0,0,TILE,TILE).endFill();
+          g.x=x*TILE;g.y=y*TILE;boardContainer.addChild(g);
+        }
+      }
+    }
+
+    /* ───────────────── GAME STATE ───────────────── */
+    const board=rows.map(r=>[...r]);
+    const pac={tileX:0,tileY:0,dirX:0,dirY:0,nextX:0,nextY:0,graphic:null};
+    const ghosts=[];
+    let score=0,lives=3,dots=0,fright=0;
+    const POWER_MS=5000,GHOST_SPEED=3;
+
+    // Parse map for starting position
+    for(let y=0;y<ROWS;y++){
+      for(let x=0;x<COLS;x++){
+        const ch=board[y][x];
+        if(ch==='P'){pac.tileX=x;pac.tileY=y;board[y][x]='.';console.log('Pac start:',x,y);}
+        else if(ch==='G'){
+          const id=ghosts.length;
+          ghosts.push({id,tileX:x,tileY:y,dirX:0,dirY:0,startX:x,startY:y,frightened:false,graphic:null,color:curTheme().name==='Cars'?[0x2e7d32,0x0051ff,0x0066ff,0xffdd00][id%4]:[0xe98eff,0x9effff,0xffb3ff,0xb5b3ff][id%4]});
+          board[y][x]='.';
+          console.log('Ghost',id,'start:',x,y);
+        }
+        else if(ch==='.'||ch==='o') dots++;
+      }
+    }
+
+    /* ───────────────── PAC GRAPHIC ───────────────── */
+    // Create simple colored rectangle for Pac (Safari-compatible)
+    const pacTexture=PIXI.Texture.WHITE;
+    const pacG=new PIXI.Sprite(pacTexture);
+    function drawPacShape(){
+      pacG.tint=curTheme().pacTint;
+      pacG.width=TILE*0.8;
+      pacG.height=TILE*0.8;
+      pacG.anchor.set(0.5);
+      console.log('Pac redrawn, tint:',pacG.tint.toString(16));
+    }
+    drawPacShape();
+    pacG.x=pac.tileX*TILE+TILE/2;
+    pacG.y=pac.tileY*TILE+TILE/2;
+    console.log('Pac positioned at:',pacG.x,pacG.y,'tile:',pac.tileX,pac.tileY);
+    app.stage.addChild(pacG);
+    pac.graphic=pacG;
+
+    /* ───────────────── PELLETS ───────────────── */
+    const pelletsContainer=new PIXI.Container();
+    app.stage.addChild(pelletsContainer);
+    
+    for(let y=0;y<ROWS;y++){
+      for(let x=0;x<COLS;x++){
+        const ch=rows[y][x];
+        if(ch==='.'){
+          const dot=new PIXI.Sprite(PIXI.Texture.WHITE);
+          dot.tint=0xffe66d;
+          dot.width=dot.height=TILE*0.15;
+          dot.anchor.set(0.5);
+          dot.x=x*TILE+TILE/2;dot.y=y*TILE+TILE/2;
+          pelletsContainer.addChild(dot);
+        }
+        else if(ch==='o'){
+          const pellet=new PIXI.Sprite(PIXI.Texture.WHITE);
+          pellet.tint=0xff9e3d;
+          pellet.width=pellet.height=TILE*0.4;
+          pellet.anchor.set(0.5);
+          pellet.x=x*TILE+TILE/2;pellet.y=y*TILE+TILE/2;
+          pelletsContainer.addChild(pellet);
+        }
+      }
+    }
+
+    /* ───────────────── GHOSTS ───────────────── */
+    const ghostsContainer=new PIXI.Container();
+    app.stage.addChild(ghostsContainer);
+    
+    ghosts.forEach(g=>{
+      // Create simple colored rectangle for Ghost (Safari-compatible)
+      const ghostG=new PIXI.Sprite(PIXI.Texture.WHITE);
+      function drawGhostShape(){
+        ghostG.tint=g.frightened?0x2ec4b6:g.color;
+        ghostG.width=TILE*0.7;
+        ghostG.height=TILE*0.7;
+        ghostG.anchor.set(0.5);
+        console.log('Ghost',g.id,'redrawn, tint:',ghostG.tint.toString(16));
+      }
+      drawGhostShape();
+      ghostG.x=g.tileX*TILE+TILE/2;
+      ghostG.y=g.tileY*TILE+TILE/2;
+      console.log('Ghost',g.id,'positioned at:',ghostG.x,ghostG.y,'tile:',g.tileX,g.tileY);
+      ghostsContainer.addChild(ghostG);
+      g.graphic=ghostG;
+      g.drawShape=drawGhostShape;
+    });
+
+    /* ───────────────── INPUT ───────────────── */
+    const keys={};
+    window.addEventListener('keydown',e=>{
+      keys[e.key]=true;
+      if(e.key==='t'||e.key==='T') switchTheme();
+      if(e.key==='r'||e.key==='R') restart();
+    });
+    window.addEventListener('keyup',e=>{keys[e.key]=false;});
+
+    function switchTheme(){
+      themeIndex=(themeIndex+1)%THEMES.length;
+      updateThemeLabel();
+      drawPacShape();
+      // recolor board tiles and ghosts
+      boardContainer.children.forEach(child=>{
+        const g=child; // Graphics
+        const localX=g.x/TILE, localY=g.y/TILE;
+        const ch=board[localY][localX];
+        g.tint= ch==='#' ? curTheme().wall : curTheme().road;
+      });
+      ghosts.forEach((g,i)=>{
+        g.color=curTheme().name==='Cars'?[0x2e7d32,0x0051ff,0x0066ff,0xffdd00][i%4]:[0xe98eff,0x9effff,0xffb3ff,0xb5b3ff][i%4];
+        g.drawShape();
+      });
+    }
+
+    function restart(){
+      // Reset game state
+      score=0;lives=3;fright=0;
+      board.length=0;
+      board.push(...rows.map(r=>[...r]));
+      dots=0;
+      
+      // Recount dots and reset positions
+      for(let y=0;y<ROWS;y++){
+        for(let x=0;x<COLS;x++){
+          const ch=board[y][x];
+          if(ch==='P'){pac.tileX=x;pac.tileY=y;board[y][x]='.';pac.dirX=pac.dirY=0;}
+          else if(ch==='G'){board[y][x]='.';}
+          else if(ch==='.'||ch==='o') dots++;
+        }
+      }
+      
+      // Reset ghost positions
+      ghosts.forEach(g=>{
+        g.tileX=g.startX;g.tileY=g.startY;g.dirX=g.dirY=0;g.frightened=false;
+        g.graphic.x=alignPixel(g.tileX);g.graphic.y=alignPixel(g.tileY);
+        g.drawShape();
+      });
+      
+      // Reset pac position
+      pac.graphic.x=alignPixel(pac.tileX);pac.graphic.y=alignPixel(pac.tileY);
+      
+      // Recreate pellets
+      pelletsContainer.removeChildren();
+      for(let y=0;y<ROWS;y++){
+        for(let x=0;x<COLS;x++){
+          const ch=rows[y][x];
+          if(ch==='.'){
+            const dot=new PIXI.Sprite(PIXI.Texture.WHITE);
+            dot.tint=0xffe66d;
+            dot.width=dot.height=TILE*0.15;
+            dot.anchor.set(0.5);
+            dot.x=x*TILE+TILE/2;dot.y=y*TILE+TILE/2;
+            pelletsContainer.addChild(dot);
+          }
+          else if(ch==='o'){
+            const pellet=new PIXI.Sprite(PIXI.Texture.WHITE);
+            pellet.tint=0xff9e3d;
+            pellet.width=pellet.height=TILE*0.4;
+            pellet.anchor.set(0.5);
+            pellet.x=x*TILE+TILE/2;pellet.y=y*TILE+TILE/2;
+            pelletsContainer.addChild(pellet);
+          }
+        }
+      }
+      
+      updateUI();
+    }
+
+    /* ───────────────── UI ───────────────── */
+    const uiText=new PIXI.Text('',{fontFamily:'monospace',fontSize:14,fill:0xffffff});
+    uiText.x=10;uiText.y=10;
+    app.stage.addChild(uiText);
+    function updateUI(){uiText.text=`SCORE ${score}  LIVES ${lives}  DOTS ${dots}`;}
+    updateUI();
+
+    /* ───────────────── HELPERS ───────────────── */
+    const pass=(x,y)=>board[y] && board[y][x] && board[y][x]!=='#';
+    const dist=(a,b)=>Math.hypot((a.tileX||a.x/TILE)-b.tileX,(a.tileY||a.y/TILE)-b.tileY);
+
+    function alignPixel(val){return val*TILE+TILE/2;}
+
+    /* ───────────────── GAME LOOP ───────────────── */
+    app.ticker.add((delta)=>{
+      // delta is frames since last tick (usually 1)
+      handleInput();
+      movePac(delta);
+      moveGhosts(delta);
+      checkCollisions();
+      updateFright(delta);
+    });
+
+    function handleInput(){
+      if(keys['ArrowUp']||keys['w']) {pac.dirX=0;pac.dirY=-1;}
+      else if(keys['ArrowDown']||keys['s']) {pac.dirX=0;pac.dirY=1;}
+      else if(keys['ArrowLeft']||keys['a']) {pac.dirX=-1;pac.dirY=0;}
+      else if(keys['ArrowRight']||keys['d']) {pac.dirX=1;pac.dirY=0;}
+    }
+
+    function movePac(delta){
+      // If at tile centre and next tile is passable → commit move
+      const atCenter=(pac.graphic.x - TILE/2)%TILE===0 && (pac.graphic.y- TILE/2)%TILE===0;
+      if(atCenter){
+        const nx=pac.tileX+pac.dirX, ny=pac.tileY+pac.dirY;
+        if(pass(nx,ny)) {pac.tileX=nx; pac.tileY=ny;}
+      }
+      // Interpolate toward tile position
+      pac.graphic.x += ((alignPixel(pac.tileX)-pac.graphic.x)/(TILE/SPEED))*delta;
+      pac.graphic.y += ((alignPixel(pac.tileY)-pac.graphic.y)/(TILE/SPEED))*delta;
+
+      // Wrap horizontally
+      if(pac.tileX<0){pac.tileX=COLS-1;pac.graphic.x=alignPixel(pac.tileX);} else if(pac.tileX>=COLS){pac.tileX=0;pac.graphic.x=alignPixel(pac.tileX);}    
+    }
+
+    function moveGhosts(delta){
+      ghosts.forEach(g=>{
+        const atCenter=(g.graphic.x-TILE/2)%TILE===0 && (g.graphic.y-TILE/2)%TILE===0;
+        if(atCenter){
+          // Simple AI: pick random valid direction, avoid reversing
+          const dirs=[[0,-1],[0,1],[-1,0],[1,0]].filter(([dx,dy])=>pass(g.tileX+dx,g.tileY+dy)&&!(dx===-g.dirX&&dy===-g.dirY));
+          const choice=dirs[Math.floor(Math.random()*dirs.length)]||[0,-1];
+          [g.dirX,g.dirY]=choice;
+        }
+        const speed=g.frightened?GHOST_SPEED*0.7:GHOST_SPEED;
+        g.graphic.x += ((alignPixel(g.tileX)-g.graphic.x)/(TILE/speed))*delta;
+        g.graphic.y += ((alignPixel(g.tileY)-g.graphic.y)/(TILE/speed))*delta;
+        
+        // Update tile position
+        if(atCenter){
+          g.tileX+=g.dirX;g.tileY+=g.dirY;
+          // Wrap horizontally
+          if(g.tileX<0){g.tileX=COLS-1;g.graphic.x=alignPixel(g.tileX);} 
+          else if(g.tileX>=COLS){g.tileX=0;g.graphic.x=alignPixel(g.tileX);}
+        }
+      });
+    }
+
+    function checkCollisions(){
+      // Pellet collection
+      const cx=Math.round(pac.tileX),cy=Math.round(pac.tileY);
+      const cell=board[cy]?board[cy][cx]:'#';
+      if(cell==='.'||cell==='o'){
+        board[cy][cx]=' ';
+        score+=cell==='o'?50:10;
+        dots--;
+        updateUI();
+        
+        // Remove pellet graphic
+        const pelletToRemove=pelletsContainer.children.find(p=>Math.abs(p.x-cx*TILE-TILE/2)<1&&Math.abs(p.y-cy*TILE-TILE/2)<1);
+        if(pelletToRemove)pelletsContainer.removeChild(pelletToRemove);
+        
+        // Power pellet effect
+        if(cell==='o'){
+          fright=POWER_MS;
+          ghosts.forEach(g=>{g.frightened=true;g.drawShape();});
+        }
+        
+        if(dots===0){
+          uiText.text='YOU WIN! Press R to restart';
+          return;
+        }
+      }
+      
+      // Ghost collision
+      ghosts.forEach(g=>{
+        if(dist(pac,g)<0.7){
+          if(g.frightened){
+            score+=200;
+            g.tileX=g.startX;g.tileY=g.startY;
+            g.graphic.x=alignPixel(g.tileX);g.graphic.y=alignPixel(g.tileY);
+            g.frightened=false;g.drawShape();
+            updateUI();
+          } else {
+            lives--;
+            updateUI();
+            if(lives<=0){
+              uiText.text='GAME OVER! Press R to restart';
+            } else {
+              // Reset pac position
+              pac.tileX=pac.tileY=13;pac.dirX=pac.dirY=0;
+              pac.graphic.x=alignPixel(pac.tileX);pac.graphic.y=alignPixel(pac.tileY);
+            }
+          }
+        }
+      });
+    }
+
+    function updateFright(delta){
+      if(fright>0){
+        fright-=delta*16.67; // ~60fps assumption
+        if(fright<=0){
+          ghosts.forEach(g=>{g.frightened=false;g.drawShape();});
+        }
+      }
+    }
+
+    })();
+  </script>
+</body>
+</html> 

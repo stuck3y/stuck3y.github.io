@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What to Eat?</title>
+    <link rel="stylesheet" href="styles.css"> 
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+
+</head>
+<body>
+    <div id="app" class="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 p-4">
+        <div class="max-w-md mx-auto">
+            <div class="bg-white rounded-3xl shadow-xl p-8 mt-8">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">What to Eat? 🍽️</h1>
+                    <p class="text-gray-600">Let's figure it out together!</p>
+                </div>
+
+                <div id="question-section">
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <span id="question-counter" class="text-sm text-gray-500"></span>
+                            <button id="back-btn" class="p-2 rounded-lg hover:bg-gray-100 transition-colors hidden">
+                                <i data-lucide="chevron-left" class="w-5 h-5 text-gray-600"></i>
+                            </button>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div id="progress-bar" class="bg-gradient-to-r from-orange-400 to-red-400 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="text-center mb-8">
+                        <h2 id="question-text" class="text-xl font-semibold text-gray-800"></h2>
+                    </div>
+                    <div id="options-grid" class="grid grid-cols-2 gap-4"></div>
+                </div>
+
+                <div id="results-section" class="text-center hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Perfect! Try one of these:</h2>
+                    <div id="food-suggestions" class="space-y-3 mb-6">
+                        </div>
+                    <div class="space-y-3">
+                        <button id="show-more-btn" class="w-full bg-gradient-to-r from-blue-400 to-blue-500 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-shadow hidden">
+                            See More Options
+                        </button>
+                        <button id="start-over-btn" class="w-full bg-gradient-to-r from-orange-400 to-red-400 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-shadow">
+                            Start Over
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4">
+                        Tap any suggestion to search for it on your favorite food app!
+                    </p>
+                  <p class="text-sm text-gray-500 mt-6 italic">Made with ❤️ for Wen</p>
+                    <div id="local-suggestions" class="mt-6">
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="food.js"></script>
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Jon's Apps</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, -30px); }
+        }
+
+        .status-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 1rem 1.5rem 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .time {
+            letter-spacing: 0.05em;
+        }
+
+        .status-icons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            min-height: calc(100vh - 200px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .search-bar {
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-bar input:focus {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-bottom: 3rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .app-card {
+            text-decoration: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .app-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .app-card:active {
+            transform: scale(0.95);
+        }
+
+        .app-icon {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 22%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+        }
+
+        .app-icon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
+        }
+
+        .app-icon span {
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .app-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0 0.5rem;
+        }
+
+        .app-description {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            text-align: center;
+            margin-top: 0.25rem;
+        }
+
+        /* App-specific colors */
+        .app-ketchapp { --gradient-start: #f093fb; --gradient-end: #f5576c; }
+        .app-food { --gradient-start: #ff6b6b; --gradient-end: #ee5a6f; }
+        .app-nottodo { --gradient-start: #fa709a; --gradient-end: #fee140; }
+        .app-hn { --gradient-start: #ff6b00; --gradient-end: #ff8800; }
+
+        .footer {
+            text-align: center;
+            padding: 2rem 1rem 3rem;
+            color: white;
+            opacity: 0.8;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .footer a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .apps-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+                max-width: 400px;
+            }
+
+            .app-icon {
+                font-size: 3rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header p {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .apps-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .app-name {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-bar">
+        <div class="time" id="time">9:41</div>
+        <div class="status-icons">
+            <span>📶</span>
+            <span>📡</span>
+            <span>🔋</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Jon's Apps</h1>
+            <p>Essential productivity tools</p>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" placeholder="Search apps..." id="searchInput">
+        </div>
+
+        <div class="apps-grid" id="appsGrid">
+            <!-- Ketchapp -->
+            <a href="/apps/ketchapp/" class="app-card" data-name="ketchapp pomodoro timer focus">
+                <div class="app-icon app-ketchapp">
+                    <span>🍅</span>
+                </div>
+                <div class="app-name">Ketchapp</div>
+            </a>
+
+            <!-- Food App -->
+            <a href="/apps/food/" class="app-card" data-name="food decision helper">
+                <div class="app-icon app-food">
+                    <span>🍕</span>
+                </div>
+                <div class="app-name">Food Helper</div>
+            </a>
+
+            <!-- Not To Do -->
+            <a href="/apps/not-to-do/" class="app-card" data-name="not to do list tasks">
+                <div class="app-icon app-nottodo">
+                    <span>🚫</span>
+                </div>
+                <div class="app-name">Not-To-Do</div>
+            </a>
+
+            <!-- Hacker News Plus -->
+            <a href="/apps/hn/" class="app-card" data-name="hacker news reader hn tech">
+                <div class="app-icon app-hn">
+                    <span>📰</span>
+                </div>
+                <div class="app-name">HN Plus</div>
+            </a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <a href="mailto:contact@jonsdata.com">Contact</a>
+        <a href="https://github.com/stuck3y" target="_blank">GitHub</a>
+    </div>
+
+    <script>
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('time').textContent = `${hours}:${minutes}`;
+        }
+        updateTime();
+        setInterval(updateTime, 60000);
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const appsGrid = document.getElementById('appsGrid');
+        const appCards = appsGrid.querySelectorAll('.app-card');
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+
+            appCards.forEach(card => {
+                const appName = card.getAttribute('data-name').toLowerCase();
+                const cardName = card.querySelector('.app-name').textContent.toLowerCase();
+
+                if (appName.includes(searchTerm) || cardName.includes(searchTerm)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Add hover effects for desktop
+        if (window.matchMedia('(hover: hover)').matches) {
+            appCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-10px) scale(1.05)';
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        }
+    </script>
+</body>
+</html>

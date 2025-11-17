@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Not-Todo List</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        input {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: #333;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1rem;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #555;
+        }
+
+        .list {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .empty {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+
+        .item {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: opacity 0.2s;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item.done {
+            opacity: 0.4;
+        }
+
+        .item-text {
+            flex: 1;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .item.done .item-text {
+            text-decoration: line-through;
+        }
+
+        .checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .checkbox.checked {
+            background: #333;
+            border-color: #333;
+        }
+
+        .checkbox.checked::after {
+            content: '✓';
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+        }
+
+        .remove {
+            padding: 5px 10px;
+            background: #ff5252;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .remove:hover {
+            background: #ff3838;
+        }
+
+        .clear-all {
+            margin-top: 20px;
+            width: 100%;
+            background: #666;
+        }
+
+        .clear-all:hover {
+            background: #777;
+        }
+				.credit {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.85rem;
+            color: #999;
+            font-style: italic;
+            letter-spacing: 0.5px;
+        }
+
+        .credit span {
+            color: #666;
+            font-weight: 500;
+            font-style: normal;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Not-Todo List</h1>
+        <p class="subtitle">Things to actively avoid doing today</p>
+        
+        <div class="input-area">
+            <input 
+                type="text" 
+                id="input" 
+                placeholder="What should you NOT do?"
+                autocomplete="off"
+            >
+            <button onclick="addItem()">Add</button>
+        </div>
+
+        <div class="list" id="list">
+            <div class="empty">Your not-todo list is empty. Add things to avoid!</div>
+        </div>
+				
+    </div>
+		<div class="credit">invented by <span>Owen Carson Stuckey</span></div>
+    </div>
+
+    <script>
+        let items = [];
+
+        function render() {
+            const list = document.getElementById('list');
+            
+            if (items.length === 0) {
+                list.innerHTML = '<div class="empty">Your not-todo list is empty. Add things to avoid!</div>';
+                return;
+            }
+
+            list.innerHTML = items.map((item, i) => `
+                <div class="item ${item.done ? 'done' : ''}">
+                    <div 
+                        class="checkbox ${item.done ? 'checked' : ''}" 
+                        onclick="toggle(${i})"
+                    ></div>
+                    <div class="item-text">${item.text}</div>
+                    <button class="remove" onclick="remove(${i})">Remove</button>
+                </div>
+            `).join('');
+
+            if (items.length > 0) {
+                list.innerHTML += '<button class="clear-all" onclick="clearAll()">Clear All</button>';
+            }
+        }
+
+        function addItem() {
+            const input = document.getElementById('input');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            items.push({ text, done: false });
+            input.value = '';
+            render();
+        }
+
+        function toggle(index) {
+            items[index].done = !items[index].done;
+            render();
+        }
+
+        function remove(index) {
+            items.splice(index, 1);
+            render();
+        }
+
+        function clearAll() {
+            items = [];
+            render();
+        }
+
+        // Enter key support
+        document.getElementById('input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addItem();
+        });
+
+        // Initial render
+        render();
+    </script>
+</body>
+</html>

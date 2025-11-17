@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Pixar Pac‑Theme Switcher</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <style>
+    html,body{margin:0;height:100%;display:flex;justify-content:center;align-items:center;background:#000d18;font-family:'Press Start 2P',cursive;color:#fff;overflow:hidden}
+    #ui{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:40px;font-size:12px;pointer-events:none;z-index:2}
+    #theme{position:absolute;top:10px;right:10px;font-size:10px;pointer-events:none}
+    canvas{background:#001825;border:3px solid #1abc9c;border-radius:6px;image-rendering:pixelated}
+    .mob{display:none}
+    @media(max-width:768px){#ui{font-size:10px}.mob{display:grid;position:absolute;bottom:30px;left:50%;transform:translateX(-50%);grid-template-columns:repeat(3,60px);grid-gap:10px}.mob button{background:#0a3d55;border:2px solid #1abc9c;border-radius:50%;height:60px;width:60px;color:#fff;font-size:20px}.mob button:active{transform:translateY(2px)}#up{grid-column:2}#left{grid-column:1;grid-row:2}#right{grid-column:3;grid-row:2}#down{grid-column:2;grid-row:3}}
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div id="ui"><span id="score">SCORE 0</span><span id="lives">LIVES 3</span></div>
+  <div id="theme">THEME: Ocean</div>
+  <div class="mob">
+    <button id="up">▲</button><button id="left">◀</button><button id="right">▶</button><button id="down">▼</button>
+  </div>
+
+  <script type="module">
+    /* Pixar Pac‑Man with theme switching
+       – Press T to toggle between "Ocean" (Nemo vs Jellyfish) and "Cars" (Lightning vs Rivals)
+       – Safari‑friendly, self‑contained single file for GitHub Pages
+    */
+
+    const TILE=20,SPEED=6,GHOST_SPEED=4,POWER_MS=7000;
+    const MAP=`############################
+#............##............#
+#.####.#####.##.#####.####.#
+#o####.#####.##.#####.####o#
+#.####.#####.##.#####.####.#
+#............##............#
+#.####.##.########.##.####.#
+#......##....##....##......#
+######.##### ## #####.######
+     #.##### ## #####.#     
+     #.##   G  G   ##.#     
+######.## ###--### ##.######
+#P..........................#
+######.## ######## ##.######
+     #.##          ##.#     
+######.## ######## ##.######
+#............##............#
+#.####.#####.##.#####.####.#
+#o..##................##..o#
+###.##.##.########.##.##.###
+#......##....##....##......#
+#.##########.##.##########.#
+#..........................#
+############################`;
+
+    /* ── Canvas setup ───────────────────────────── */
+    const rows=MAP.split('\n'),ROWS=rows.length,COLS=rows[0].length;
+    const cvs=document.getElementById('c'),ctx=cvs.getContext('2d');
+    cvs.width=COLS*TILE;cvs.height=ROWS*TILE;
+
+    /* ── Game state ─────────────────────────────── */
+    let board=[],dots=0,score=0,lives=3,fright=0,run=true;
+    const pac={x:0,y:0,dx:0,dy:0,nx:0,ny:0,anim:0};
+    const ghosts=[];
+
+    /* ── THEMES ─────────────────────────────────── */
+    const THEMES=[
+      {name:"Ocean",
+        pacColor:'#ff7e29',
+        ghostColors:['#e98eff','#9effff','#ffb3ff','#b5b3ff'],
+        drawPac(o){drawClownFish(o);},
+        drawGhost(g){drawJelly(g);} },
+      {name:"Cars",
+        pacColor:'#ff0000',
+        ghostColors:['#2e7d32','#0051ff','#0066ff','#ffdd00'], // Chick (green), Jackson (blue), King (royal), Dinoco yellow
+        drawPac(o){drawCar(o,'#ff0000','95');},
+        drawGhost(g){const labels=['86','20','43','51']; drawCar(g,g.color,labels[g.id%labels.length]);} }
+    ];
+    let themeIndex=0;
+    const curTheme=()=>THEMES[themeIndex];
+    document.getElementById('theme').textContent=`THEME: ${curTheme().name}`;
+
+    /* ── Map parsing ────────────────────────────── */
+    function initMap(){const t=curTheme();rows.forEach((row,y)=>{const arr=[];[...row].forEach((ch,x)=>{switch(ch){case'P':pac.x=x;pac.y=y;arr.push(' ');break;case'G':const id=ghosts.length;ghosts.push({id,x,y,dx:0,dy:0,startX:x,startY:y,fr:false,color:t.ghostColors[id%t.ghostColors.length]});arr.push(' ');break;default:arr.push(ch);if(ch==='.'||ch==='o')dots++;}});board.push(arr);});}
+    initMap();
+
+    /* ── Helpers ────────────────────────────────── */
+    const tile=(x,y)=>{x=Math.round(x);y=Math.round(y);return (board[y]&&board[y][x])||'#'};
+    const pass=(x,y)=>tile(x,y)!=='#';
+    const center=(v,eps=0.02)=>Math.abs(v-Math.round(v))<eps;
+    const wrap=o=>{if(o.x<-1)o.x=COLS-1;if(o.x>COLS)o.x=0};
+    const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+    const setDir=(nx,ny)=>{pac.nx=nx;pac.ny=ny};
+
+    /* ── Controls ───────────────────────────────── */
+    document.addEventListener('keydown',e=>{
+      if(e.key==='t'||e.key==='T'){switchTheme();return;}
+      if(!run&&e.key==='Enter')return reset();
+      switch(e.key){case'ArrowUp':case'w':setDir(0,-1);break;case'ArrowDown':case's':setDir(0,1);break;case'ArrowLeft':case'a':setDir(-1,0);break;case'ArrowRight':case'd':setDir(1,0);break;}});
+    ['up','down','left','right'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>setDir(id==='left'?-1:id==='right'?1:0,id==='up'?-1:id==='down'?1:0)));
+
+    function switchTheme(){themeIndex=(themeIndex+1)%THEMES.length;document.getElementById('theme').textContent=`THEME: ${curTheme().name}`;reset();}
+
+    /* ── UI ─────────────────────────────────────── */
+    const uiS=document.getElementById('score'),uiL=document.getElementById('lives');
+    const COL={wall:'#00334d',dot:'#ffe66d',pellet:'#ff9e3d',fr:'#2ec4b6'};
+    function hud(){uiS.textContent=`SCORE ${score}`;uiL.textContent=`LIVES ${lives}`;}
+
+    /* ── Game update ───────────────────────────── */
+    function update(dt){
+      // Pac movement
+      if(center(pac.x)&&center(pac.y)&&pass(pac.x+pac.nx,pac.y+pac.ny)){pac.dx=pac.nx;pac.dy=pac.ny;}
+      if(pac.dx!==0||pac.dy!==0){
+        const nextX=Math.round(pac.x+pac.dx*0.51);
+        const nextY=Math.round(pac.y+pac.dy*0.51);
+        if(tile(nextX,nextY)==='#')pac.dx=pac.dy=0;
+      }
+      pac.x+=pac.dx*dt*SPEED;pac.y+=pac.dy*dt*SPEED;wrap(pac);pac.anim+=dt*10;
+
+      // Pellets
+      const cx=Math.round(pac.x),cy=Math.round(pac.y),cell=tile(cx,cy);
+      if(cell==='.'||cell==='o'){board[cy][cx]=' ';score+=cell==='o'?50:10;dots--;hud();if(cell==='o'){fright=POWER_MS;ghosts.forEach(g=>g.fr=true);} }
+      if(dots===0){end(true);return;}
+      if(fright>0){fright-=dt*1000;if(fright<=0)ghosts.forEach(g=>g.fr=false);}
+
+      // Ghosts
+      ghosts.forEach(g=>{
+        if(center(g.x)&&center(g.y)){
+          const opts=[[0,-1],[0,1],[-1,0],[1,0]].filter(([dx,dy])=>pass(g.x+dx,g.y+dy)&&!(dx===-g.dx&&dy===-g.dy));
+          const choice=opts[Math.floor(Math.random()*opts.length)]||[0,-1];[g.dx,g.dy]=choice;}
+        const sp=g.fr?GHOST_SPEED*0.75:GHOST_SPEED;
+        g.x+=g.dx*dt*sp;g.y+=g.dy*dt*sp;wrap(g);
+        if(dist(g,pac)<0.7){g.fr?ghostEat(g):crash();}
+      });
+    }
+    function ghostEat(g){score+=200;g.x=g.startX;g.y=g.startY;g.fr=false;hud();}
+    function crash(){lives--;hud();if(lives<=0)end(false);else{pac.x=pac.y=0;pac.dx=pac.dy=pac.nx=pac.ny=0;}}
+
+    function end(win){run=false;ctx.fillStyle='#000c';ctx.fillRect(0,0,cvs.width,cvs.height);ctx.fillStyle='#ffe66d';ctx.textAlign='center';ctx.font='28px "Press Start 2P"';ctx.fillText(win?'YOU WIN!':'GAME OVER',cvs.width/2,cvs.height/2-20);ctx.font='14px "Press Start 2P"';ctx.fillText(`SCORE ${score}`,cvs.width/2,cvs.height/2+10);ctx.fillText('Press Enter',cvs.width/2,cvs.height/2+35);}  
+
+    function reset(){board=[];dots=score=0;lives=3;ghosts.length=0;fright=0;run=true;initMap();hud();last=performance.now();requestAnimationFrame(loop);}  
+
+    /* ── Drawing helpers ───────────────────────── */
+    function dot(x,y,r,c){ctx.fillStyle=c;ctx.beginPath();ctx.arc(x*TILE+TILE/2,y*TILE+TILE/2,r,0,6.283);ctx.fill();}
+
+    function drawClownFish(o){ctx.save();ctx.translate((o.x+0.5)*TILE,(o.y+0.5)*TILE);ctx.rotate(Math.atan2(o.dy||0.001,o.dx));const bl=TILE*0.9,bh=TILE*0.6,w=Math.abs(Math.sin(o.anim))*TILE*0.05;ctx.fillStyle='#ff7e29';ctx.beginPath();ctx.ellipse(0,0,bl/2,bh/2+w,0,0,6.283);ctx.fill();ctx.fillStyle='#fff';ctx.fillRect(-bl*0.15,-bh*0.3,bl*0.1,bh*0.6);ctx.fillRect(bl*0.05,-bh*0.3,bl*0.1,bh*0.6);ctx.fillStyle='#000';ctx.beginPath();ctx.arc(bl*0.25,-bh*0.1,TILE*0.07,0,6.283);ctx.fill();ctx.fillStyle='#ff7e29';ctx.beginPath();ctx.moveTo(-bl/2,0);ctx.lineTo(-bl/2-TILE*0.3,bh*0.3);ctx.lineTo(-bl/2-TILE*0.3,-bh*0.3);ctx.closePath();ctx.fill();ctx.restore();}
+
+    function drawJelly(g){ctx.save();ctx.translate((g.x+0.5)*TILE,(g.y+0.5)*TILE);const r=TILE*0.4;ctx.fillStyle=g.fr?COL.fr:g.color;ctx.beginPath();ctx.arc(0,0,r,Math.PI,0);ctx.lineTo(r,0);ctx.lineTo(-r,0);ctx.closePath();ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=ctx.fillStyle;for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(i*r*0.5,0);ctx.lineTo(i*r*0.5,TILE*0.4+Math.sin(performance.now()/200+i)*4);ctx.stroke();}ctx.restore();}
+
+    function drawCar(o,clr,num){ctx.save();ctx.translate((o.x+0.5)*TILE,(o.y+0.5)*TILE);ctx.rotate(Math.atan2(o.dy||0.001,o.dx));const w=TILE*0.9,h=TILE*0.55;ctx.fillStyle=clr;ctx.fillRect(-w/2,-h/2,w,h);ctx.fillStyle='#fff';ctx.fillRect(-w*0.25,-h*0.3,w*0.5,h*0.15);ctx.fillStyle='#000';ctx.beginPath();ctx.arc(-w*0.25,h*0.5-TILE*0.1,TILE*0.15,0,6.283);ctx.arc(w*0.25,h*0.5-TILE*0.1,TILE*0.15,0,6.283);ctx.fill();ctx.fillStyle='#fff';ctx.font='6px "Press Start 2P"';ctx.textAlign='center';ctx.fillText(num,0,2);ctx.restore();}
+
+    /* ── Rendering ─────────────────────────────── */
+    function render(){ctx.fillStyle=COL.wall;ctx.fillRect(0,0,cvs.width,cvs.height);for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){const t=board[y][x];if(t==='#'){ctx.fillStyle=COL.wall;ctx.fillRect(x*TILE,y*TILE,TILE,TILE);}else if(t==='.')dot(x,y,TILE*0.1,COL.dot);else if(t==='o')dot(x,y,TILE*0.25,COL.pellet);}curTheme().drawPac(pac);ghosts.forEach(curTheme().drawGhost);}  
+
+    /* ── Loop ───────────────────────────────────── */
+    let last=performance.now();function loop(t){if(!run)return;const dt=(t-last)/1000;last=t;update(dt);render();requestAnimationFrame(loop);}hud();requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
