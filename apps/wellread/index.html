@@ -44,7 +44,7 @@
 –safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-- { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+- { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 
 html, body {
 font-family: var(–sans);
@@ -202,9 +202,14 @@ font-weight: 600;
 cursor: pointer;
 margin-top: 16px;
 transition: all 0.2s;
+-webkit-appearance: none;
+appearance: none;
 }
 .begin-btn:active { transform: scale(0.98); opacity: 0.9; }
 .begin-btn:disabled { opacity: 0.4; cursor: default; }
+
+/* Safari tap fix — all interactive elements */
+button, .study-card, .history-card { cursor: pointer; -webkit-appearance: none; }
 
 /* ===== RECENT STUDIES ===== */
 .section-label {
@@ -579,6 +584,85 @@ margin-top: 6px;
 .mt-16 { margin-top: 16px; }
 .mb-20 { margin-bottom: 20px; }
 .hidden { display: none !important; }
+
+/* ===== COMPLETION SUMMARY ===== */
+.summary-header {
+text-align: center;
+padding: 24px 0 20px;
+}
+.summary-header .check {
+width: 56px;
+height: 56px;
+background: var(–success);
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+margin: 0 auto 16px;
+}
+.summary-header .check svg { width: 28px; height: 28px; color: white; }
+.summary-header h2 {
+font-family: var(–serif);
+font-size: 26px;
+font-weight: 500;
+}
+.summary-header p {
+font-size: 14px;
+color: var(–text-secondary);
+margin-top: 4px;
+}
+.summary-section {
+margin-bottom: 16px;
+}
+.summary-section-label {
+font-size: 12px;
+font-weight: 600;
+text-transform: uppercase;
+letter-spacing: 0.8px;
+padding: 6px 12px;
+border-radius: 8px;
+display: inline-block;
+margin-bottom: 10px;
+}
+.summary-section-label.obs { background: var(–observation-bg); color: var(–observation); }
+.summary-section-label.int { background: var(–interpretation-bg); color: var(–interpretation); }
+.summary-section-label.app { background: var(–application-bg); color: var(–application); }
+.summary-entry {
+background: var(–bg-card);
+border-radius: var(–radius-md);
+padding: 14px 16px;
+box-shadow: var(–shadow-sm);
+margin-bottom: 8px;
+}
+.summary-entry h4 {
+font-size: 13px;
+font-weight: 600;
+color: var(–text-secondary);
+margin-bottom: 6px;
+}
+.summary-entry p {
+font-family: var(–serif);
+font-size: 15px;
+line-height: 1.6;
+color: var(–text-primary);
+white-space: pre-wrap;
+}
+.summary-done-btn {
+width: 100%;
+padding: 16px;
+background: var(–accent);
+color: white;
+border: none;
+border-radius: var(–radius-md);
+font-family: var(–sans);
+font-size: 16px;
+font-weight: 600;
+cursor: pointer;
+margin-top: 12px;
+margin-bottom: 24px;
+-webkit-appearance: none;
+}
+.summary-done-btn:active { transform: scale(0.98); }
 </style>
 
 </head>
@@ -663,6 +747,20 @@ margin-top: 6px;
   <div id="history-list"></div>
 </div>
 
+<!-- ===== SUMMARY SCREEN ===== -->
+
+<div id="screen-summary" class="screen">
+  <div class="summary-header animate-fade-up">
+    <div class="check">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2 id="summary-ref"></h2>
+    <p>Study complete</p>
+  </div>
+  <div id="summary-content"></div>
+  <button class="summary-done-btn" id="summary-done-btn">Done</button>
+</div>
+
 <!-- ===== TAB BAR ===== -->
 
 <nav class="tab-bar">
@@ -725,9 +823,9 @@ const STUDY_PROMPTS = {
     {
       id: 'obs-questions',
       title: 'Ask the Six Key Questions',
-      description: 'Who? What? Where? When? Why? How? — Go through each one. Not all will apply, but the discipline of asking forces careful observation.',
+      description: 'Who? What? Where? When? Why? Wherefore? — Go through each one. "Wherefore" means "for what purpose?" It digs into intent and design. Not all will apply, but the discipline of asking forces careful observation.',
       bookRef: 'Ch. 7',
-      placeholder: 'Work through: Who, What, Where, When, Why, How…'
+      placeholder: 'Work through: Who, What, Where, When, Why, Wherefore…'
     },
     {
       id: 'obs-structure',
@@ -817,7 +915,7 @@ const STUDY_PROMPTS = {
 const REVIEW_CARDS = [
   { q: 'What are the three steps of the inductive Bible study method?', a: 'Observation (What do I see?), Interpretation (What does it mean?), Application (How does it work in my life?).', ref: 'Ch. 1–3' },
   { q: 'Why does Hendricks say you must observe BEFORE interpreting?', a: 'Because most errors in Bible study come from jumping to meaning before carefully seeing what the text actually says. Observation is the foundation.', ref: 'Ch. 4' },
-  { q: 'What are the six interrogative questions to ask of any passage?', a: 'Who? What? Where? When? Why? How? These force you to slow down and see what\'s actually in the text.', ref: 'Ch. 7' },
+  { q: 'What are the six interrogative questions to ask of any passage?', a: 'Who? What? Where? When? Why? Wherefore? ("Wherefore" means "for what purpose?" — it gets at intent and design.)', ref: 'Ch. 7' },
   { q: 'What should you look for when observing connecting words?', a: 'Words like therefore, but, because, so that, if/then, and for. They reveal the logical structure and flow of the argument.', ref: 'Ch. 5' },
   { q: 'Name at least 4 things to look for during Observation.', a: 'Repetition, contrasts, comparisons, connecting words, key words, lists, cause/effect, questions asked, figures of speech, and the overall structure.', ref: 'Ch. 6' },
   { q: 'What does Hendricks mean by "things that are emphasized"?', a: 'The author signals importance through repetition, proportion (amount of space given), placement (beginning or end), and stated purpose.', ref: 'Ch. 6' },
@@ -888,6 +986,9 @@ function showScreen(name) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   const tab = document.querySelector(`.tab-btn[data-screen="${name}"]`);
   if (tab) tab.classList.add('active');
+  // Hide tab bar on study and summary screens
+  document.querySelector('.tab-bar').style.display = (name === 'study' || name === 'summary') ? 'none' : 'flex';
+  document.body.style.paddingBottom = (name === 'study' || name === 'summary') ? '20px' : 'calc(72px + var(--safe-bottom))';
   state.currentScreen = name;
   window.scrollTo(0, 0);
 
@@ -896,8 +997,91 @@ function showScreen(name) {
   if (name === 'history') renderHistory();
 }
 
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => showScreen(btn.dataset.screen));
+// Event delegation for tab bar
+document.querySelector('.tab-bar').addEventListener('click', function(e) {
+  const btn = e.target.closest('.tab-btn');
+  if (btn) showScreen(btn.dataset.screen);
+});
+
+// Event delegation for the entire document — handles all dynamic elements
+document.addEventListener('click', function(e) {
+  // Study cards on home
+  const studyCard = e.target.closest('[data-action="open-study"]');
+  if (studyCard) {
+    openStudy(studyCard.dataset.studyId);
+    return;
+  }
+
+  // History cards
+  const historyCard = e.target.closest('[data-action="open-history"]');
+  if (historyCard) {
+    openStudy(historyCard.dataset.studyId);
+    return;
+  }
+
+  // Delete study
+  const deleteBtn = e.target.closest('[data-action="delete-study"]');
+  if (deleteBtn) {
+    e.stopPropagation();
+    deleteStudy(deleteBtn.dataset.studyId);
+    return;
+  }
+
+  // Phase tabs
+  const phaseTab = e.target.closest('.phase-tab');
+  if (phaseTab) {
+    goPhase(phaseTab.dataset.phase);
+    return;
+  }
+
+  // Phase nav buttons
+  const phaseNav = e.target.closest('[data-action="go-phase"]');
+  if (phaseNav) {
+    goPhase(phaseNav.dataset.phase);
+    return;
+  }
+
+  // Complete study
+  const completeBtn = e.target.closest('[data-action="complete-study"]');
+  if (completeBtn) {
+    completeStudy();
+    return;
+  }
+
+  // Review buttons
+  const revealBtn = e.target.closest('[data-action="reveal"]');
+  if (revealBtn) {
+    revealAnswer();
+    return;
+  }
+
+  const reviewNext = e.target.closest('[data-action="review-next"]');
+  if (reviewNext) {
+    nextReviewCard(reviewNext.dataset.knew === 'true');
+    return;
+  }
+
+  const restartReview = e.target.closest('[data-action="restart-review"]');
+  if (restartReview) {
+    initReview();
+    return;
+  }
+
+  // Toggle passage
+  const togglePass = e.target.closest('#toggle-passage-btn');
+  if (togglePass) {
+    const txt = document.getElementById('study-passage-text');
+    txt.classList.toggle('expanded');
+    togglePass.textContent = txt.classList.contains('expanded') ? 'Show less' : 'Show more';
+    return;
+  }
+
+  // Summary done
+  const summaryDone = e.target.closest('#summary-done-btn');
+  if (summaryDone) {
+    showScreen('home');
+    return;
+  }
 });
 
 
@@ -909,11 +1093,12 @@ const passageRefInput = document.getElementById('passage-ref');
 const passageTextInput = document.getElementById('passage-text');
 const beginBtn = document.getElementById('begin-study-btn');
 
-passageRefInput.addEventListener('input', () => {
+passageRefInput.addEventListener('input', function() {
   beginBtn.disabled = !passageRefInput.value.trim();
 });
 
-beginBtn.addEventListener('click', () => {
+beginBtn.addEventListener('click', function(e) {
+  e.preventDefault();
   const ref = passageRefInput.value.trim();
   const text = passageTextInput.value.trim();
   if (!ref) return;
@@ -948,7 +1133,7 @@ function renderHome() {
 
   container.classList.remove('hidden');
   list.innerHTML = inProgress.slice(0, 5).map((s, i) => `
-    <div class="study-card animate-fade-up" style="animation-delay: ${i * 0.04}s" onclick="openStudy('${s.id}')">
+    <div class="study-card animate-fade-up" style="animation-delay: ${i * 0.04}s" data-action="open-study" data-study-id="${s.id}">
       <div class="study-card-left">
         <h3>${escapeHtml(s.ref)}</h3>
         <p>${formatDate(s.createdAt)}</p>
@@ -967,6 +1152,13 @@ function openStudy(id) {
   const study = state.studies.find(s => s.id === id);
   if (!study) return;
 
+  // If completed, show summary view
+  if (study.completedAt) {
+    state.currentStudy = study;
+    showSummary(study);
+    return;
+  }
+
   state.currentStudy = study;
   state.currentPhase = study.phase || 'observation';
 
@@ -980,10 +1172,6 @@ function openStudy(id) {
     if (study.text.length > 200) {
       toggleBtn.classList.remove('hidden');
       toggleBtn.textContent = 'Show more';
-      toggleBtn.onclick = () => {
-        passageTextEl.classList.toggle('expanded');
-        toggleBtn.textContent = passageTextEl.classList.contains('expanded') ? 'Show less' : 'Show more';
-      };
     } else {
       toggleBtn.classList.add('hidden');
       passageTextEl.classList.add('expanded');
@@ -999,7 +1187,8 @@ function openStudy(id) {
   // Hide tab for study, show back
 }
 
-document.getElementById('study-back-btn').addEventListener('click', () => {
+document.getElementById('study-back-btn').addEventListener('click', function(e) {
+  e.preventDefault();
   saveCurrentResponses();
   showScreen('home');
 });
@@ -1062,13 +1251,13 @@ const idx = phases.indexOf(phase);
 
 let btns = ‘’;
 if (idx > 0) {
-btns += `<button class="phase-nav-btn secondary" onclick="goPhase('${phases[idx-1]}')">← ${capitalize(phases[idx-1])}</button>`;
+btns += `<button class="phase-nav-btn secondary" data-action="go-phase" data-phase="${phases[idx-1]}">← ${capitalize(phases[idx-1])}</button>`;
 }
 if (idx < phases.length - 1) {
-btns += `<button class="phase-nav-btn primary" onclick="goPhase('${phases[idx+1]}')">${capitalize(phases[idx+1])} →</button>`;
+btns += `<button class="phase-nav-btn primary" data-action="go-phase" data-phase="${phases[idx+1]}">${capitalize(phases[idx+1])} →</button>`;
 }
 if (idx === phases.length - 1) {
-btns += `<button class="phase-nav-btn complete-btn" onclick="completeStudy()">Complete Study ✓</button>`;
+btns += `<button class="phase-nav-btn complete-btn" data-action="complete-study">Complete Study ✓</button>`;
 }
 navContainer.innerHTML = btns;
 }
@@ -1081,10 +1270,6 @@ saveStudies();
 renderPhase();
 window.scrollTo({ top: 0, behavior: ‘smooth’ });
 }
-
-document.querySelectorAll(’.phase-tab’).forEach(tab => {
-tab.addEventListener(‘click’, () => goPhase(tab.dataset.phase));
-});
 
 function saveCurrentResponses() {
 if (!state.currentStudy) return;
@@ -1099,7 +1284,43 @@ saveCurrentResponses();
 state.currentStudy.completedAt = new Date().toISOString();
 state.currentStudy.phase = ‘complete’;
 saveStudies();
-showScreen(‘home’);
+showSummary(state.currentStudy);
+}
+
+function showSummary(study) {
+document.getElementById(‘summary-ref’).textContent = study.ref;
+
+const phases = [
+{ key: ‘observation’, label: ‘Observation’, cls: ‘obs’, prompts: STUDY_PROMPTS.observation },
+{ key: ‘interpretation’, label: ‘Interpretation’, cls: ‘int’, prompts: STUDY_PROMPTS.interpretation },
+{ key: ‘application’, label: ‘Application’, cls: ‘app’, prompts: STUDY_PROMPTS.application }
+];
+
+let html = ‘’;
+phases.forEach((phase, pi) => {
+const entries = phase.prompts
+.filter(p => study.responses[p.id] && study.responses[p.id].trim())
+.map(p => `<div class="summary-entry animate-fade-up" style="animation-delay: ${pi * 0.08 + 0.05}s"> <h4>${p.title}</h4> <p>${escapeHtml(study.responses[p.id])}</p> </div>`).join(’’);
+
+```
+if (entries) {
+  html += `
+    <div class="summary-section animate-fade-up" style="animation-delay: ${pi * 0.08}s">
+      <span class="summary-section-label ${phase.cls}">${phase.label}</span>
+      ${entries}
+    </div>
+  `;
+}
+```
+
+});
+
+if (!html) {
+html = ‘<p style="text-align:center;color:var(--text-tertiary);padding:24px;">No notes recorded.</p>’;
+}
+
+document.getElementById(‘summary-content’).innerHTML = html;
+showScreen(‘summary’);
 }
 
 // ============================================================
@@ -1127,7 +1348,7 @@ const progress = document.getElementById(‘review-progress’);
 
 if (state.reviewIndex >= state.reviewOrder.length) {
 container.innerHTML = `<div class="review-card animate-scale-in"> <div class="question">You've been through all the cards! 🎉</div> <p style="color:var(--text-secondary);margin-top:8px;">Tap below to shuffle and go again.</p> </div>`;
-btnsContainer.innerHTML = `<button class="review-btn next" onclick="initReview()" style="width:100%">Shuffle & Restart</button>`;
+btnsContainer.innerHTML = `<button class="review-btn next" data-action="restart-review" style="width:100%">Shuffle & Restart</button>`;
 progress.textContent = ‘’;
 return;
 }
@@ -1142,9 +1363,9 @@ container.innerHTML = `<div class="review-card animate-scale-in"> <div class="qu
 `: ''}`;
 
 if (!state.reviewShowAnswer) {
-btnsContainer.innerHTML = `<button class="review-btn reveal" onclick="revealAnswer()" style="width:100%">Reveal Answer</button>`;
+btnsContainer.innerHTML = `<button class="review-btn reveal" data-action="reveal" style="width:100%">Reveal Answer</button>`;
 } else {
-btnsContainer.innerHTML = `<div class="review-btns"> <button class="review-btn didnt" onclick="nextReviewCard(false)">Didn't know</button> <button class="review-btn knew" onclick="nextReviewCard(true)">Knew it</button> </div>`;
+btnsContainer.innerHTML = `<div class="review-btns"> <button class="review-btn didnt" data-action="review-next" data-knew="false">Didn't know</button> <button class="review-btn knew" data-action="review-next" data-knew="true">Knew it</button> </div>`;
 }
 }
 
@@ -1187,7 +1408,7 @@ return;
 
 list.innerHTML = all.map((s, i) => {
 const preview = getPreview(s);
-return `<div class="history-card animate-fade-up" style="animation-delay: ${i * 0.03}s" onclick="openStudy('${s.id}')"> <div class="history-card-top"> <h3>${escapeHtml(s.ref)}</h3> <span class="study-card-phase phase-${s.completedAt ? 'complete' : s.phase}">${s.completedAt ? 'Complete' : capitalize(s.phase)}</span> </div> <div style="display:flex;justify-content:space-between;align-items:center;"> <span class="date">${formatDate(s.createdAt)}</span> <button class="delete-study-btn" onclick="event.stopPropagation();deleteStudy('${s.id}')">Delete</button> </div> ${preview ?`<p class="preview mt-8">${escapeHtml(preview)}</p>`: ''} </div>`;
+return `<div class="history-card animate-fade-up" style="animation-delay: ${i * 0.03}s" data-action="open-history" data-study-id="${s.id}"> <div class="history-card-top"> <h3>${escapeHtml(s.ref)}</h3> <span class="study-card-phase phase-${s.completedAt ? 'complete' : s.phase}">${s.completedAt ? 'Complete' : capitalize(s.phase)}</span> </div> <div style="display:flex;justify-content:space-between;align-items:center;"> <span class="date">${formatDate(s.createdAt)}</span> <button class="delete-study-btn" data-action="delete-study" data-study-id="${s.id}">Delete</button> </div> ${preview ?`<p class="preview mt-8">${escapeHtml(preview)}</p>`: ''} </div>`;
 }).join(’’);
 }
 
