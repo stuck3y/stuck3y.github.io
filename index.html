@@ -5,132 +5,191 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jon's Data Company</title>
     <style>
-        :root {
-            --primary-color: #2563eb;
-            --accent-color: #4f46e5;
-            --background-color: #f9fafb;
-            --text-color: #1f2937;
-            --subtle-color: #6b7280;
-        }
-        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #fafafa;
             min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 800px;
-            text-align: center;
-        }
-        
-        .logo {
-            margin-bottom: 2rem;
-            font-size: 3rem;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            color: var(--subtle-color);
-        }
-        
-        .links {
-            margin-top: 3rem;
-        }
-        
-        .link {
-            display: inline-block;
-            margin: 0 10px;
-            padding: 8px 20px;
-            background-color: var(--primary-color);
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: 500;
-            transition: background-color 0.3s ease;
-        }
-        
-        .link:hover {
-            background-color: var(--accent-color);
-        }
-
-        .projects {
-            display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-top: 2rem;
-        }
-        
-        .project-card {
-            background-color: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            width: 150px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .project-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 7px 15px rgba(0,0,0,0.1);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
         }
 
-        .project-title {
-            font-weight: 600;
-            margin-bottom: 5px;
+        /* Subtle animated background gradient */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at 30% 20%, rgba(102, 126, 234, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(118, 75, 162, 0.05) 0%, transparent 50%);
+            animation: subtle-shift 20s ease-in-out infinite;
+            pointer-events: none;
         }
 
-        @media (max-width: 600px) {
-            .logo {
-                font-size: 2rem;
+        @keyframes subtle-shift {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-5%, -5%) rotate(5deg); }
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-container {
+            margin-bottom: 2rem;
+            animation: fade-in-up 0.8s ease-out;
+        }
+
+        .logo {
+            max-width: 200px;
+            height: auto;
+            display: inline-block;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+            animation: fade-in-up 0.8s ease-out 0.1s both;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: #666;
+            margin-bottom: 4rem;
+            font-weight: 400;
+            line-height: 1.6;
+            animation: fade-in-up 0.8s ease-out 0.2s both;
+        }
+
+        .links {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            animation: fade-in-up 0.8s ease-out 0.3s both;
+        }
+
+        .link {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        .link:hover {
+            color: #667eea;
+        }
+
+        .link:hover::after {
+            width: 100%;
+        }
+
+        @keyframes fade-in-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
             }
-            
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
             h1 {
-                font-size: 1.8rem;
+                font-size: 2.25rem;
             }
-            
-            .projects {
+
+            .subtitle {
+                font-size: 1.1rem;
+            }
+
+            .links {
                 flex-direction: column;
-                align-items: center;
+                gap: 1rem;
             }
-            
-            .project-card {
-                width: 80%;
-                max-width: 250px;
+
+            .logo {
+                max-width: 160px;
             }
         }
+
+        /* Floating particles effect */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0.3;
+            animation: float-particle 20s infinite;
+        }
+
+        @keyframes float-particle {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 0.2;
+            }
+            50% {
+                transform: translate(100px, -100px) rotate(180deg);
+                opacity: 0.4;
+            }
+        }
+
+        .particle:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { top: 60%; left: 80%; animation-delay: 5s; }
+        .particle:nth-child(3) { top: 80%; left: 20%; animation-delay: 10s; }
     </style>
 </head>
 <body>
+    <div class="particle" style="color: #667eea; font-size: 2rem;">●</div>
+    <div class="particle" style="color: #764ba2; font-size: 1.5rem;">●</div>
+    <div class="particle" style="color: #f093fb; font-size: 1rem;">●</div>
+
     <div class="container">
-        <div class="logo"><img src="logo.png" /></div>
+        <div class="logo-container">
+            <img src="jdc_logo.png" alt="Jon's Data Company" class="logo">
+        </div>
+
         <h1>Jon's Data Company</h1>
-        <p>Building something amazing. Stay tuned.</p>
-        
-        
+
+        <p class="subtitle">
+            Building innovative tools and experiences.
+        </p>
+
         <div class="links">
-            <a href="mailto:contact@example.com" class="link">Contact</a>
-            <a href="https://github.com/stuck3y" class="link">GitHub</a>
+            <a href="mailto:contact@jonsdata.com" class="link">Contact</a>
+            <a href="https://github.com/stuck3y" target="_blank" class="link">GitHub</a>
         </div>
     </div>
 </body>
