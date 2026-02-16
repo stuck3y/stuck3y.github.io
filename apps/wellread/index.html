@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -8,752 +7,219 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Well Read">
 <meta name="theme-color" content="#F5F0EB">
-<title>Well Read 1.001</title>
-<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiV2VsbCBSZWFkIiwic2hvcnRfbmFtZSI6IldlbGwgUmVhZCIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjRjVGMEVCIiwidGhlbWVfY29sb3IiOiIjRjVGMEVCIn0=">
+<title>Well Read</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,300;1,6..72,400&family=DM+Sans:wght@400;500;600&display=swap');
 
 :root {
-–bg: #F5F0EB;
-–bg-card: #FFFFFF;
-–bg-elevated: #FDFCFA;
-–text-primary: #1A1613;
-–text-secondary: #6B5E52;
-–text-tertiary: #9C8E80;
-–accent: #8B6B4A;
-–accent-light: #C4A882;
-–accent-bg: #F0E8DE;
-–border: #E8E0D6;
-–border-light: #F0EBE5;
-–observation: #5B7B6A;
-–observation-bg: #EDF4EF;
-–interpretation: #6A6B8A;
-–interpretation-bg: #EDEDF4;
-–application: #8A6A5B;
-–application-bg: #F4EDEB;
-–success: #5B7B6A;
-–shadow-sm: 0 1px 3px rgba(26,22,19,0.04);
-–shadow-md: 0 4px 12px rgba(26,22,19,0.06);
-–shadow-lg: 0 8px 24px rgba(26,22,19,0.08);
-–radius-sm: 10px;
-–radius-md: 14px;
-–radius-lg: 20px;
-–serif: ‘Newsreader’, Georgia, serif;
-–sans: ‘DM Sans’, -apple-system, BlinkMacSystemFont, sans-serif;
-–safe-top: env(safe-area-inset-top, 0px);
-–safe-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: #F5F0EB;
+  --bg-card: #FFFFFF;
+  --bg-elevated: #FDFCFA;
+  --text-primary: #1A1613;
+  --text-secondary: #6B5E52;
+  --text-tertiary: #9C8E80;
+  --accent: #8B6B4A;
+  --accent-light: #C4A882;
+  --accent-bg: #F0E8DE;
+  --border: #E8E0D6;
+  --border-light: #F0EBE5;
+  --observation: #5B7B6A;
+  --observation-bg: #EDF4EF;
+  --interpretation: #6A6B8A;
+  --interpretation-bg: #EDEDF4;
+  --application: #8A6A5B;
+  --application-bg: #F4EDEB;
+  --success: #5B7B6A;
+  --shadow-sm: 0 1px 3px rgba(26,22,19,0.04);
+  --shadow-md: 0 4px 12px rgba(26,22,19,0.06);
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --serif: 'Newsreader', Georgia, serif;
+  --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-- { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+html, body { font-family:var(--sans); background:var(--bg); color:var(--text-primary); min-height:100dvh; overscroll-behavior:none; -webkit-font-smoothing:antialiased; }
+body { padding-top:var(--safe-top); padding-bottom:calc(72px + var(--safe-bottom)); }
+button { cursor:pointer; -webkit-appearance:none; appearance:none; }
 
-html, body {
-font-family: var(–sans);
-background: var(–bg);
-color: var(–text-primary);
-min-height: 100dvh;
-overscroll-behavior: none;
--webkit-font-smoothing: antialiased;
-}
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes scaleIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
+.animate-fade-up { animation:fadeUp 0.4s ease-out both; }
+.animate-scale-in { animation:scaleIn 0.3s ease-out both; }
 
-body { padding-top: var(–safe-top); padding-bottom: calc(72px + var(–safe-bottom)); }
+.tab-bar { position:fixed; bottom:0; left:0; right:0; display:flex; justify-content:space-around; align-items:center; background:rgba(255,255,255,0.88); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top:1px solid var(--border-light); padding:8px 0 calc(8px + var(--safe-bottom)); z-index:100; }
+.tab-btn { display:flex; flex-direction:column; align-items:center; gap:2px; background:none; border:none; font-family:var(--sans); font-size:10px; font-weight:500; color:var(--text-tertiary); padding:4px 16px; transition:color 0.2s; }
+.tab-btn.active { color:var(--accent); }
+.tab-btn svg { width:24px; height:24px; }
 
-/* ===== ANIMATIONS ===== */
-@keyframes fadeUp {
-from { opacity: 0; transform: translateY(12px); }
-to { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeIn {
-from { opacity: 0; }
-to { opacity: 1; }
-}
-@keyframes slideIn {
-from { opacity: 0; transform: translateX(20px); }
-to { opacity: 1; transform: translateX(0); }
-}
-@keyframes scaleIn {
-from { opacity: 0; transform: scale(0.95); }
-to { opacity: 1; transform: scale(1); }
-}
+.screen { display:none; padding:20px; max-width:520px; margin:0 auto; }
+.screen.active { display:block; }
+.screen-header { padding:16px 0 20px; }
+.screen-header h1 { font-family:var(--serif); font-size:32px; font-weight:500; letter-spacing:-0.5px; }
+.screen-header p { font-size:15px; color:var(--text-secondary); margin-top:4px; line-height:1.4; }
 
-.animate-fade-up { animation: fadeUp 0.4s ease-out both; }
-.animate-fade-in { animation: fadeIn 0.3s ease-out both; }
-.animate-slide-in { animation: slideIn 0.35s ease-out both; }
-.animate-scale-in { animation: scaleIn 0.3s ease-out both; }
+.passage-input-card { background:var(--bg-card); border-radius:var(--radius-lg); padding:24px; box-shadow:var(--shadow-md); margin-bottom:20px; }
+.passage-input-card label { font-size:13px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.8px; display:block; margin-bottom:10px; }
+.passage-ref-input { width:100%; font-family:var(--serif); font-size:20px; border:none; background:none; color:var(--text-primary); outline:none; padding:8px 0; border-bottom:2px solid var(--border); transition:border-color 0.2s; }
+.passage-ref-input:focus { border-color:var(--accent); }
+.passage-ref-input::placeholder { color:var(--text-tertiary); }
+.passage-text-input { width:100%; font-family:var(--serif); font-size:16px; line-height:1.6; border:none; background:var(--bg); color:var(--text-primary); outline:none; padding:14px 16px; border-radius:var(--radius-md); resize:none; min-height:100px; margin-top:14px; }
+.passage-text-input:focus { box-shadow:inset 0 0 0 2px var(--accent-light); }
+.passage-text-input::placeholder { color:var(--text-tertiary); }
+.begin-btn { width:100%; padding:16px; background:var(--accent); color:white; border:none; border-radius:var(--radius-md); font-family:var(--sans); font-size:16px; font-weight:600; margin-top:16px; }
+.begin-btn:active { transform:scale(0.98); opacity:0.9; }
+.begin-btn:disabled { opacity:0.4; }
+.section-label { font-size:13px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:12px; }
 
-/* ===== TAB BAR ===== */
-.tab-bar {
-position: fixed;
-bottom: 0;
-left: 0;
-right: 0;
-display: flex;
-justify-content: space-around;
-align-items: center;
-background: rgba(255,255,255,0.88);
-backdrop-filter: blur(20px);
--webkit-backdrop-filter: blur(20px);
-border-top: 1px solid var(–border-light);
-padding: 8px 0 calc(8px + var(–safe-bottom));
-z-index: 100;
-}
+.study-card { background:var(--bg-card); border-radius:var(--radius-md); padding:16px 18px; box-shadow:var(--shadow-sm); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+.study-card:active { transform:scale(0.98); background:var(--bg-elevated); }
+.study-card-left h3 { font-family:var(--serif); font-size:18px; font-weight:500; }
+.study-card-left p { font-size:13px; color:var(--text-tertiary); margin-top:3px; }
+.study-card-phase { font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap; }
+.phase-observation { background:var(--observation-bg); color:var(--observation); }
+.phase-interpretation { background:var(--interpretation-bg); color:var(--interpretation); }
+.phase-application { background:var(--application-bg); color:var(--application); }
+.phase-complete { background:var(--accent-bg); color:var(--accent); }
 
-.tab-btn {
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 2px;
-background: none;
-border: none;
-font-family: var(–sans);
-font-size: 10px;
-font-weight: 500;
-color: var(–text-tertiary);
-cursor: pointer;
-padding: 4px 16px;
-transition: color 0.2s;
-}
-.tab-btn.active { color: var(–accent); }
-.tab-btn svg { width: 24px; height: 24px; transition: transform 0.2s; }
-.tab-btn.active svg { transform: scale(1.08); }
+.study-nav { display:flex; align-items:center; padding:12px 0; }
+.back-btn { background:none; border:none; color:var(--accent); font-size:16px; font-weight:500; font-family:var(--sans); display:flex; align-items:center; gap:4px; padding:4px 0; }
+.back-btn svg { width:20px; height:20px; }
 
-/* ===== SCREENS ===== */
-.screen { display: none; padding: 20px; max-width: 520px; margin: 0 auto; }
-.screen.active { display: block; }
+.study-passage-display { background:var(--bg-card); border-radius:var(--radius-lg); padding:20px 22px; box-shadow:var(--shadow-sm); margin-bottom:20px; border-left:3px solid var(--accent-light); }
+.study-passage-display h2 { font-family:var(--serif); font-size:22px; font-weight:500; margin-bottom:8px; }
+.study-passage-display .passage-text { font-family:var(--serif); font-size:15px; line-height:1.7; color:var(--text-secondary); font-style:italic; max-height:120px; overflow-y:auto; }
+.study-passage-display .passage-text.expanded { max-height:none; }
+.toggle-passage { background:none; border:none; color:var(--accent); font-size:13px; font-weight:500; margin-top:6px; font-family:var(--sans); }
 
-/* ===== HEADER ===== */
-.screen-header {
-padding: 16px 0 20px;
-}
-.screen-header h1 {
-font-family: var(–serif);
-font-size: 32px;
-font-weight: 500;
-letter-spacing: -0.5px;
-color: var(–text-primary);
-}
-.screen-header p {
-font-size: 15px;
-color: var(–text-secondary);
-margin-top: 4px;
-line-height: 1.4;
-}
+.phase-tabs { display:flex; gap:6px; margin-bottom:20px; background:var(--bg-card); padding:4px; border-radius:var(--radius-md); box-shadow:var(--shadow-sm); }
+.phase-tab { flex:1; padding:10px 8px; border:none; border-radius:var(--radius-sm); font-family:var(--sans); font-size:13px; font-weight:600; background:none; color:var(--text-tertiary); transition:all 0.25s; text-align:center; }
+.phase-tab.active-observation { background:var(--observation-bg); color:var(--observation); }
+.phase-tab.active-interpretation { background:var(--interpretation-bg); color:var(--interpretation); }
+.phase-tab.active-application { background:var(--application-bg); color:var(--application); }
 
-/* ===== HOME SCREEN ===== */
-.passage-input-card {
-background: var(–bg-card);
-border-radius: var(–radius-lg);
-padding: 24px;
-box-shadow: var(–shadow-md);
-margin-bottom: 20px;
-}
-.passage-input-card label {
-font-size: 13px;
-font-weight: 600;
-color: var(–text-secondary);
-text-transform: uppercase;
-letter-spacing: 0.8px;
-display: block;
-margin-bottom: 10px;
-}
-.passage-ref-input {
-width: 100%;
-font-family: var(–serif);
-font-size: 20px;
-border: none;
-background: none;
-color: var(–text-primary);
-outline: none;
-padding: 8px 0;
-border-bottom: 2px solid var(–border);
-transition: border-color 0.2s;
-}
-.passage-ref-input:focus { border-color: var(–accent); }
-.passage-ref-input::placeholder { color: var(–text-tertiary); }
+.prompt-card { background:var(--bg-card); border-radius:var(--radius-md); padding:18px 20px; box-shadow:var(--shadow-sm); margin-bottom:12px; animation:fadeUp 0.35s ease-out both; }
+.prompt-card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+.prompt-card h3 { font-family:var(--sans); font-size:15px; font-weight:600; line-height:1.4; flex:1; }
+.prompt-card .book-ref { font-size:11px; color:var(--text-tertiary); font-weight:500; background:var(--bg); padding:3px 8px; border-radius:6px; white-space:nowrap; margin-left:10px; }
+.prompt-card p { font-size:14px; color:var(--text-secondary); line-height:1.5; margin-bottom:12px; }
+.prompt-response { width:100%; font-family:var(--serif); font-size:15px; line-height:1.6; border:1.5px solid var(--border); background:var(--bg); color:var(--text-primary); outline:none; padding:12px 14px; border-radius:var(--radius-sm); resize:none; min-height:72px; }
+.prompt-response:focus { border-color:var(--accent); }
+.prompt-response::placeholder { color:var(--text-tertiary); font-style:italic; }
 
-.passage-text-input {
-width: 100%;
-font-family: var(–serif);
-font-size: 16px;
-line-height: 1.6;
-border: none;
-background: var(–bg);
-color: var(–text-primary);
-outline: none;
-padding: 14px 16px;
-border-radius: var(–radius-md);
-resize: none;
-min-height: 100px;
-margin-top: 14px;
-transition: box-shadow 0.2s;
-}
-.passage-text-input:focus { box-shadow: inset 0 0 0 2px var(–accent-light); }
-.passage-text-input::placeholder { color: var(–text-tertiary); }
+.phase-nav-btns { display:flex; gap:10px; margin-top:8px; margin-bottom:20px; }
+.phase-nav-btn { flex:1; padding:14px; border-radius:var(--radius-md); font-family:var(--sans); font-size:15px; font-weight:600; border:none; }
+.phase-nav-btn:active { transform:scale(0.98); }
+.phase-nav-btn.secondary { background:var(--bg-card); color:var(--text-secondary); box-shadow:var(--shadow-sm); }
+.phase-nav-btn.primary { background:var(--accent); color:white; }
+.phase-nav-btn.complete-btn { background:var(--success); color:white; }
 
-.begin-btn {
-width: 100%;
-padding: 16px;
-background: var(–accent);
-color: white;
-border: none;
-border-radius: var(–radius-md);
-font-family: var(–sans);
-font-size: 16px;
-font-weight: 600;
-cursor: pointer;
-margin-top: 16px;
-transition: all 0.2s;
--webkit-appearance: none;
-appearance: none;
-}
-.begin-btn:active { transform: scale(0.98); opacity: 0.9; }
-.begin-btn:disabled { opacity: 0.4; cursor: default; }
+.review-card { background:var(--bg-card); border-radius:var(--radius-lg); padding:28px 24px; box-shadow:var(--shadow-md); text-align:center; margin-bottom:16px; min-height:200px; display:flex; flex-direction:column; justify-content:center; }
+.review-card .question { font-family:var(--serif); font-size:20px; line-height:1.5; margin-bottom:8px; }
+.review-card .book-ref { font-size:12px; color:var(--text-tertiary); font-weight:500; }
+.review-answer { background:var(--accent-bg); border-radius:var(--radius-md); padding:20px; margin-bottom:16px; animation:scaleIn 0.3s ease-out; }
+.review-answer p { font-family:var(--serif); font-size:16px; line-height:1.6; }
+.review-btns { display:flex; gap:10px; }
+.review-btn { flex:1; padding:14px; border-radius:var(--radius-md); font-family:var(--sans); font-size:15px; font-weight:600; border:none; }
+.review-btn:active { transform:scale(0.98); }
+.review-btn.reveal { background:var(--accent); color:white; }
+.review-btn.knew { background:var(--success); color:white; }
+.review-btn.didnt { background:var(--bg-card); color:var(--text-secondary); box-shadow:var(--shadow-sm); }
+.review-btn.next-btn { background:var(--accent); color:white; }
+.review-progress { text-align:center; font-size:13px; color:var(--text-tertiary); margin-bottom:20px; }
+.streak-display { background:var(--bg-card); border-radius:var(--radius-md); padding:16px 20px; box-shadow:var(--shadow-sm); display:flex; align-items:center; gap:14px; margin-bottom:20px; }
+.streak-number { font-family:var(--serif); font-size:36px; font-weight:600; color:var(--accent); line-height:1; }
+.streak-label { font-size:13px; color:var(--text-secondary); line-height:1.3; }
+.streak-label strong { color:var(--text-primary); display:block; font-size:14px; }
 
-/* Safari tap fix — all interactive elements */
-button, .study-card, .history-card { cursor: pointer; -webkit-appearance: none; }
+.empty-state { text-align:center; padding:48px 24px; color:var(--text-tertiary); }
+.empty-state p { font-size:15px; line-height:1.5; }
+.history-card { background:var(--bg-card); border-radius:var(--radius-md); padding:16px 18px; box-shadow:var(--shadow-sm); margin-bottom:10px; }
+.history-card:active { transform:scale(0.98); }
+.history-card-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.history-card h3 { font-family:var(--serif); font-size:18px; font-weight:500; }
+.history-card .date { font-size:12px; color:var(--text-tertiary); }
+.history-card .preview { font-size:13px; color:var(--text-secondary); line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-top:8px; }
+.delete-study-btn { background:none; border:none; color:#C0392B; font-size:13px; font-weight:500; padding:8px 0; font-family:var(--sans); }
 
-/* ===== RECENT STUDIES ===== */
-.section-label {
-font-size: 13px;
-font-weight: 600;
-color: var(–text-secondary);
-text-transform: uppercase;
-letter-spacing: 0.8px;
-margin-bottom: 12px;
-}
+.summary-header { text-align:center; padding:24px 0 20px; }
+.summary-check { width:56px; height:56px; background:var(--success); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
+.summary-check svg { width:28px; height:28px; color:white; }
+.summary-header h2 { font-family:var(--serif); font-size:26px; font-weight:500; }
+.summary-header p { font-size:14px; color:var(--text-secondary); margin-top:4px; }
+.summary-section { margin-bottom:16px; }
+.summary-section-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; padding:6px 12px; border-radius:8px; display:inline-block; margin-bottom:10px; }
+.summary-section-label.obs { background:var(--observation-bg); color:var(--observation); }
+.summary-section-label.int { background:var(--interpretation-bg); color:var(--interpretation); }
+.summary-section-label.app { background:var(--application-bg); color:var(--application); }
+.summary-entry { background:var(--bg-card); border-radius:var(--radius-md); padding:14px 16px; box-shadow:var(--shadow-sm); margin-bottom:8px; }
+.summary-entry h4 { font-size:13px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; }
+.summary-entry p { font-family:var(--serif); font-size:15px; line-height:1.6; white-space:pre-wrap; }
+.summary-done-btn { width:100%; padding:16px; background:var(--accent); color:white; border:none; border-radius:var(--radius-md); font-family:var(--sans); font-size:16px; font-weight:600; margin-top:12px; margin-bottom:24px; }
+.summary-done-btn:active { transform:scale(0.98); }
 
-.study-card {
-background: var(–bg-card);
-border-radius: var(–radius-md);
-padding: 16px 18px;
-box-shadow: var(–shadow-sm);
-margin-bottom: 10px;
-cursor: pointer;
-transition: all 0.2s;
-display: flex;
-justify-content: space-between;
-align-items: center;
-}
-.study-card:active { transform: scale(0.98); background: var(–bg-elevated); }
-.study-card-left h3 {
-font-family: var(–serif);
-font-size: 18px;
-font-weight: 500;
-}
-.study-card-left p {
-font-size: 13px;
-color: var(–text-tertiary);
-margin-top: 3px;
-}
-.study-card-phase {
-font-size: 11px;
-font-weight: 600;
-padding: 4px 10px;
-border-radius: 20px;
-text-transform: uppercase;
-letter-spacing: 0.5px;
-white-space: nowrap;
-}
-.phase-observation { background: var(–observation-bg); color: var(–observation); }
-.phase-interpretation { background: var(–interpretation-bg); color: var(–interpretation); }
-.phase-application { background: var(–application-bg); color: var(–application); }
-.phase-complete { background: var(–accent-bg); color: var(–accent); }
-
-/* ===== STUDY SCREEN ===== */
-.study-nav {
-display: flex;
-align-items: center;
-padding: 12px 0;
-gap: 12px;
-}
-.back-btn {
-background: none;
-border: none;
-cursor: pointer;
-color: var(–accent);
-font-size: 16px;
-font-weight: 500;
-font-family: var(–sans);
-display: flex;
-align-items: center;
-gap: 4px;
-padding: 4px 0;
-}
-.back-btn svg { width: 20px; height: 20px; }
-
-.study-passage-display {
-background: var(–bg-card);
-border-radius: var(–radius-lg);
-padding: 20px 22px;
-box-shadow: var(–shadow-sm);
-margin-bottom: 20px;
-border-left: 3px solid var(–accent-light);
-}
-.study-passage-display h2 {
-font-family: var(–serif);
-font-size: 22px;
-font-weight: 500;
-margin-bottom: 8px;
-}
-.study-passage-display .passage-text {
-font-family: var(–serif);
-font-size: 15px;
-line-height: 1.7;
-color: var(–text-secondary);
-font-style: italic;
-max-height: 120px;
-overflow-y: auto;
-}
-.study-passage-display .passage-text.expanded { max-height: none; }
-.toggle-passage {
-background: none;
-border: none;
-color: var(–accent);
-font-size: 13px;
-font-weight: 500;
-cursor: pointer;
-margin-top: 6px;
-font-family: var(–sans);
-}
-
-/* Phase tabs */
-.phase-tabs {
-display: flex;
-gap: 6px;
-margin-bottom: 20px;
-background: var(–bg-card);
-padding: 4px;
-border-radius: var(–radius-md);
-box-shadow: var(–shadow-sm);
-}
-.phase-tab {
-flex: 1;
-padding: 10px 8px;
-border: none;
-border-radius: var(–radius-sm);
-font-family: var(–sans);
-font-size: 13px;
-font-weight: 600;
-cursor: pointer;
-background: none;
-color: var(–text-tertiary);
-transition: all 0.25s;
-text-align: center;
-}
-.phase-tab.active-observation { background: var(–observation-bg); color: var(–observation); }
-.phase-tab.active-interpretation { background: var(–interpretation-bg); color: var(–interpretation); }
-.phase-tab.active-application { background: var(–application-bg); color: var(–application); }
-
-/* Prompt cards */
-.prompt-section { margin-bottom: 16px; }
-.prompt-card {
-background: var(–bg-card);
-border-radius: var(–radius-md);
-padding: 18px 20px;
-box-shadow: var(–shadow-sm);
-margin-bottom: 12px;
-animation: fadeUp 0.35s ease-out both;
-}
-.prompt-card-header {
-display: flex;
-justify-content: space-between;
-align-items: flex-start;
-margin-bottom: 10px;
-}
-.prompt-card h3 {
-font-family: var(–sans);
-font-size: 15px;
-font-weight: 600;
-color: var(–text-primary);
-line-height: 1.4;
-flex: 1;
-}
-.prompt-card .book-ref {
-font-size: 11px;
-color: var(–text-tertiary);
-font-weight: 500;
-background: var(–bg);
-padding: 3px 8px;
-border-radius: 6px;
-white-space: nowrap;
-margin-left: 10px;
-}
-.prompt-card p {
-font-size: 14px;
-color: var(–text-secondary);
-line-height: 1.5;
-margin-bottom: 12px;
-}
-.prompt-response {
-width: 100%;
-font-family: var(–serif);
-font-size: 15px;
-line-height: 1.6;
-border: 1.5px solid var(–border);
-background: var(–bg);
-color: var(–text-primary);
-outline: none;
-padding: 12px 14px;
-border-radius: var(–radius-sm);
-resize: none;
-min-height: 72px;
-transition: border-color 0.2s;
-}
-.prompt-response:focus { border-color: var(–accent); }
-.prompt-response::placeholder { color: var(–text-tertiary); font-style: italic; }
-
-.phase-nav-btns {
-display: flex;
-gap: 10px;
-margin-top: 8px;
-margin-bottom: 20px;
-}
-.phase-nav-btn {
-flex: 1;
-padding: 14px;
-border-radius: var(–radius-md);
-font-family: var(–sans);
-font-size: 15px;
-font-weight: 600;
-cursor: pointer;
-border: none;
-transition: all 0.2s;
-}
-.phase-nav-btn:active { transform: scale(0.98); }
-.phase-nav-btn.secondary {
-background: var(–bg-card);
-color: var(–text-secondary);
-box-shadow: var(–shadow-sm);
-}
-.phase-nav-btn.primary {
-background: var(–accent);
-color: white;
-}
-.phase-nav-btn.complete-btn {
-background: var(–success);
-color: white;
-}
-
-/* ===== REVIEW SCREEN ===== */
-.review-card {
-background: var(–bg-card);
-border-radius: var(–radius-lg);
-padding: 28px 24px;
-box-shadow: var(–shadow-md);
-text-align: center;
-margin-bottom: 16px;
-min-height: 200px;
-display: flex;
-flex-direction: column;
-justify-content: center;
-}
-.review-card .question {
-font-family: var(–serif);
-font-size: 20px;
-font-weight: 400;
-line-height: 1.5;
-color: var(–text-primary);
-margin-bottom: 8px;
-}
-.review-card .book-ref {
-font-size: 12px;
-color: var(–text-tertiary);
-font-weight: 500;
-}
-.review-answer {
-background: var(–accent-bg);
-border-radius: var(–radius-md);
-padding: 20px;
-margin-bottom: 16px;
-animation: scaleIn 0.3s ease-out;
-}
-.review-answer p {
-font-family: var(–serif);
-font-size: 16px;
-line-height: 1.6;
-color: var(–text-primary);
-}
-.review-btns {
-display: flex;
-gap: 10px;
-}
-.review-btn {
-flex: 1;
-padding: 14px;
-border-radius: var(–radius-md);
-font-family: var(–sans);
-font-size: 15px;
-font-weight: 600;
-cursor: pointer;
-border: none;
-transition: all 0.2s;
-}
-.review-btn:active { transform: scale(0.98); }
-.review-btn.reveal { background: var(–accent); color: white; }
-.review-btn.knew { background: var(–success); color: white; }
-.review-btn.didnt { background: var(–bg-card); color: var(–text-secondary); box-shadow: var(–shadow-sm); }
-.review-btn.next { background: var(–accent); color: white; }
-
-.review-progress {
-text-align: center;
-font-size: 13px;
-color: var(–text-tertiary);
-margin-bottom: 20px;
-}
-
-.streak-display {
-background: var(–bg-card);
-border-radius: var(–radius-md);
-padding: 16px 20px;
-box-shadow: var(–shadow-sm);
-display: flex;
-align-items: center;
-gap: 14px;
-margin-bottom: 20px;
-}
-.streak-number {
-font-family: var(–serif);
-font-size: 36px;
-font-weight: 600;
-color: var(–accent);
-line-height: 1;
-}
-.streak-label {
-font-size: 13px;
-color: var(–text-secondary);
-line-height: 1.3;
-}
-.streak-label strong { color: var(–text-primary); display: block; font-size: 14px; }
-
-/* ===== HISTORY SCREEN ===== */
-.empty-state {
-text-align: center;
-padding: 48px 24px;
-color: var(–text-tertiary);
-}
-.empty-state .icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
-.empty-state p { font-size: 15px; line-height: 1.5; }
-
-.history-card {
-background: var(–bg-card);
-border-radius: var(–radius-md);
-padding: 16px 18px;
-box-shadow: var(–shadow-sm);
-margin-bottom: 10px;
-cursor: pointer;
-transition: all 0.2s;
-}
-.history-card:active { transform: scale(0.98); }
-.history-card-top {
-display: flex;
-justify-content: space-between;
-align-items: center;
-margin-bottom: 6px;
-}
-.history-card h3 {
-font-family: var(–serif);
-font-size: 18px;
-font-weight: 500;
-}
-.history-card .date {
-font-size: 12px;
-color: var(–text-tertiary);
-}
-.history-card .preview {
-font-size: 13px;
-color: var(–text-secondary);
-line-height: 1.4;
-display: -webkit-box;
--webkit-line-clamp: 2;
--webkit-box-orient: vertical;
-overflow: hidden;
-}
-.delete-study-btn {
-background: none;
-border: none;
-color: #C0392B;
-font-size: 13px;
-font-weight: 500;
-cursor: pointer;
-padding: 8px 0;
-font-family: var(–sans);
-margin-top: 6px;
-}
-
-/* ===== UTILITY ===== */
-.mt-8 { margin-top: 8px; }
-.mt-16 { margin-top: 16px; }
-.mb-20 { margin-bottom: 20px; }
-.hidden { display: none !important; }
-
-/* ===== COMPLETION SUMMARY ===== */
-.summary-header {
-text-align: center;
-padding: 24px 0 20px;
-}
-.summary-header .check {
-width: 56px;
-height: 56px;
-background: var(–success);
-border-radius: 50%;
-display: flex;
-align-items: center;
-justify-content: center;
-margin: 0 auto 16px;
-}
-.summary-header .check svg { width: 28px; height: 28px; color: white; }
-.summary-header h2 {
-font-family: var(–serif);
-font-size: 26px;
-font-weight: 500;
-}
-.summary-header p {
-font-size: 14px;
-color: var(–text-secondary);
-margin-top: 4px;
-}
-.summary-section {
-margin-bottom: 16px;
-}
-.summary-section-label {
-font-size: 12px;
-font-weight: 600;
-text-transform: uppercase;
-letter-spacing: 0.8px;
-padding: 6px 12px;
-border-radius: 8px;
-display: inline-block;
-margin-bottom: 10px;
-}
-.summary-section-label.obs { background: var(–observation-bg); color: var(–observation); }
-.summary-section-label.int { background: var(–interpretation-bg); color: var(–interpretation); }
-.summary-section-label.app { background: var(–application-bg); color: var(–application); }
-.summary-entry {
-background: var(–bg-card);
-border-radius: var(–radius-md);
-padding: 14px 16px;
-box-shadow: var(–shadow-sm);
-margin-bottom: 8px;
-}
-.summary-entry h4 {
-font-size: 13px;
-font-weight: 600;
-color: var(–text-secondary);
-margin-bottom: 6px;
-}
-.summary-entry p {
-font-family: var(–serif);
-font-size: 15px;
-line-height: 1.6;
-color: var(–text-primary);
-white-space: pre-wrap;
-}
-.summary-done-btn {
-width: 100%;
-padding: 16px;
-background: var(–accent);
-color: white;
-border: none;
-border-radius: var(–radius-md);
-font-family: var(–sans);
-font-size: 16px;
-font-weight: 600;
-cursor: pointer;
-margin-top: 12px;
-margin-bottom: 24px;
--webkit-appearance: none;
-}
-.summary-done-btn:active { transform: scale(0.98); }
+.hidden { display:none !important; }
 </style>
-
 </head>
 <body>
 
-<!-- ===== HOME SCREEN ===== -->
-
 <div id="screen-home" class="screen active">
-  <div class="screen-header animate-fade-up">
-    <h1>Well Read</h1>
-    <p>Study the Word with method and care.</p>
-  </div>
-
-  <div class="passage-input-card animate-fade-up" style="animation-delay: 0.05s">
+  <div class="screen-header animate-fade-up"><h1>Well Read</h1><p>Study the Word with method and care.</p></div>
+  <div class="passage-input-card animate-fade-up" style="animation-delay:0.05s">
     <label>New Study</label>
     <input type="text" class="passage-ref-input" id="passage-ref" placeholder="e.g. John 3:1-17" autocomplete="off">
-    <textarea class="passage-text-input" id="passage-text" placeholder="Paste the passage text here (optional but recommended)…"></textarea>
+    <textarea class="passage-text-input" id="passage-text" placeholder="Paste the passage text here (optional but recommended)..."></textarea>
     <button class="begin-btn" id="begin-study-btn" disabled>Begin Study</button>
   </div>
-
   <div id="recent-studies" class="hidden">
     <div class="section-label">Continue</div>
     <div id="recent-studies-list"></div>
   </div>
 </div>
 
-<!-- ===== STUDY SCREEN ===== -->
-
 <div id="screen-study" class="screen">
   <div class="study-nav">
     <button class="back-btn" id="study-back-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
       Back
     </button>
   </div>
-
-  <div class="study-passage-display animate-fade-up" id="study-passage-display">
+  <div class="study-passage-display animate-fade-up">
     <h2 id="study-passage-ref"></h2>
     <div class="passage-text" id="study-passage-text"></div>
     <button class="toggle-passage hidden" id="toggle-passage-btn">Show more</button>
   </div>
-
-  <div class="phase-tabs animate-fade-up" style="animation-delay: 0.05s">
-    <button class="phase-tab" data-phase="observation" id="tab-observation">Observe</button>
-    <button class="phase-tab" data-phase="interpretation" id="tab-interpretation">Interpret</button>
-    <button class="phase-tab" data-phase="application" id="tab-application">Apply</button>
+  <div class="phase-tabs animate-fade-up" style="animation-delay:0.05s">
+    <button class="phase-tab" data-phase="observation">Observe</button>
+    <button class="phase-tab" data-phase="interpretation">Interpret</button>
+    <button class="phase-tab" data-phase="application">Apply</button>
   </div>
-
   <div id="prompts-container"></div>
-
   <div class="phase-nav-btns" id="phase-nav-btns"></div>
 </div>
 
-<!-- ===== REVIEW SCREEN ===== -->
-
 <div id="screen-review" class="screen">
-  <div class="screen-header animate-fade-up">
-    <h1>Review</h1>
-    <p>Sharpen the method. Keep it fresh.</p>
-  </div>
-
-  <div id="review-streak" class="streak-display animate-fade-up" style="animation-delay: 0.05s">
+  <div class="screen-header animate-fade-up"><h1>Review</h1><p>Sharpen the method. Keep it fresh.</p></div>
+  <div class="streak-display animate-fade-up" style="animation-delay:0.05s">
     <div class="streak-number" id="streak-count">0</div>
-    <div class="streak-label">
-      <strong>Cards reviewed today</strong>
-      Keep the techniques sharp
-    </div>
+    <div class="streak-label"><strong>Cards reviewed today</strong>Keep the techniques sharp</div>
   </div>
-
   <div class="review-progress" id="review-progress"></div>
   <div id="review-card-container"></div>
   <div id="review-btns-container"></div>
 </div>
 
-<!-- ===== HISTORY SCREEN ===== -->
-
 <div id="screen-history" class="screen">
-  <div class="screen-header animate-fade-up">
-    <h1>History</h1>
-    <p>Past studies to revisit.</p>
-  </div>
+  <div class="screen-header animate-fade-up"><h1>History</h1><p>Past studies to revisit.</p></div>
   <div id="history-list"></div>
 </div>
 
-<!-- ===== SUMMARY SCREEN ===== -->
-
 <div id="screen-summary" class="screen">
   <div class="summary-header animate-fade-up">
-    <div class="check">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-    </div>
+    <div class="summary-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
     <h2 id="summary-ref"></h2>
     <p>Study complete</p>
   </div>
@@ -761,714 +227,269 @@ margin-bottom: 24px;
   <button class="summary-done-btn" id="summary-done-btn">Done</button>
 </div>
 
-<!-- ===== TAB BAR ===== -->
-
 <nav class="tab-bar">
   <button class="tab-btn active" data-screen="home">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9l8-5.5L20 9v10a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9l8-5.5L20 9v10a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"></path></svg>
     Study
   </button>
   <button class="tab-btn" data-screen="review">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 7v10M12 7v10M16 7v10"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"></rect><path d="M8 7v10M12 7v10M16 7v10"></path></svg>
     Review
   </button>
   <button class="tab-btn" data-screen="history">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
     History
   </button>
 </nav>
 
 <script>
-// ============================================================
-// LBTB DATA — Hendricks' Inductive Method
-// ============================================================
+(function() {
+  "use strict";
 
-const STUDY_PROMPTS = {
-  observation: [
-    {
-      id: 'obs-read-multiple',
-      title: 'Read It Again (and Again)',
-      description: 'Read the passage at least 3 times. Each time, jot down something new you notice. The goal is to see what\'s actually there before jumping to meaning.',
-      bookRef: 'Ch. 4–6',
-      placeholder: 'What did you notice on each reading?'
-    },
-    {
-      id: 'obs-key-words',
-      title: 'What Are the Key Words?',
-      description: 'Identify the most important words — the ones the passage can\'t do without. Look for terms that carry theological weight or are central to the author\'s point.',
-      bookRef: 'Ch. 8',
-      placeholder: 'List the key words you see…'
-    },
-    {
-      id: 'obs-repetition',
-      title: 'What Is Repeated?',
-      description: 'Repetition is the author\'s way of saying "this matters." Look for repeated words, phrases, ideas, or patterns.',
-      bookRef: 'Ch. 6',
-      placeholder: 'What words, phrases, or ideas are repeated?'
-    },
-    {
-      id: 'obs-contrasts',
-      title: 'Are There Contrasts or Comparisons?',
-      description: 'Authors often make their point by setting things side by side — light vs. dark, flesh vs. spirit, wise vs. foolish. What is being compared or contrasted?',
-      bookRef: 'Ch. 6',
-      placeholder: 'List any contrasts or comparisons…'
-    },
-    {
-      id: 'obs-connectives',
-      title: 'What Connecting Words Do You See?',
-      description: 'Words like "therefore," "but," "because," "so that," and "if…then" are the joints of the passage. They reveal the logic and flow of the argument.',
-      bookRef: 'Ch. 5',
-      placeholder: 'List connecting words and what they link…'
-    },
-    {
-      id: 'obs-questions',
-      title: 'Ask the Six Key Questions',
-      description: 'Who? What? Where? When? Why? Wherefore? — Go through each one. "Wherefore" means "for what purpose?" It digs into intent and design. Not all will apply, but the discipline of asking forces careful observation.',
-      bookRef: 'Ch. 7',
-      placeholder: 'Work through: Who, What, Where, When, Why, Wherefore…'
-    },
-    {
-      id: 'obs-structure',
-      title: 'What Is the Structure?',
-      description: 'How is the passage organized? Is it a narrative with a beginning, middle, end? A logical argument? A list? A chiasm? Try to outline the basic flow.',
-      bookRef: 'Ch. 9',
-      placeholder: 'Describe the passage structure or outline it…'
-    }
-  ],
-  interpretation: [
-    {
-      id: 'int-context',
-      title: 'What Is the Context?',
-      description: 'Context is king. What comes before and after this passage? What\'s the book\'s overall argument or story? Never read a verse in isolation.',
-      bookRef: 'Ch. 15',
-      placeholder: 'Describe the surrounding context…'
-    },
-    {
-      id: 'int-cross-ref',
-      title: 'Do Other Scriptures Shed Light?',
-      description: 'Let Scripture interpret Scripture. Are there parallel passages, cross-references, or other places where the same theme, word, or idea appears?',
-      bookRef: 'Ch. 16',
-      placeholder: 'List cross-references and what they clarify…'
-    },
-    {
-      id: 'int-culture',
-      title: 'What Is the Historical/Cultural Background?',
-      description: 'What would the original audience have understood that you might miss? Consider customs, geography, politics, and social realities of the time.',
-      bookRef: 'Ch. 17',
-      placeholder: 'What historical or cultural background is relevant?'
-    },
-    {
-      id: 'int-genre',
-      title: 'What Is the Literary Genre?',
-      description: 'Is this narrative, poetry, prophecy, epistle, wisdom, apocalyptic? Each genre has its own rules for interpretation. Don\'t read a psalm like a legal contract.',
-      bookRef: 'Ch. 18',
-      placeholder: 'What genre is this and how does that shape your reading?'
-    },
-    {
-      id: 'int-author-intent',
-      title: 'What Did the Author Mean?',
-      description: 'The goal of interpretation is to discover the author\'s intended meaning to the original audience. Not what it means to you — what did it mean to them?',
-      bookRef: 'Ch. 14',
-      placeholder: 'What was the author communicating to the original audience?'
-    },
-    {
-      id: 'int-summary',
-      title: 'State the Meaning in One Sentence',
-      description: 'If you can\'t say it simply, you may not understand it yet. Boil the passage down to one clear sentence that captures the main point.',
-      bookRef: 'Ch. 19',
-      placeholder: 'The main point of this passage is…'
-    }
-  ],
-  application: [
-    {
-      id: 'app-spacepets',
-      title: 'Scan for Application Categories',
-      description: 'Use the SPACEPETS grid: Is there a Sin to avoid? Promise to claim? Attitude to change? Command to obey? Example to follow? Prayer to pray? Error to avoid? Truth to believe? Something to praise God for?',
-      bookRef: 'Ch. 22',
-      placeholder: 'Which categories apply? Write them out…'
-    },
-    {
-      id: 'app-personal',
-      title: 'How Does This Apply to YOUR Life?',
-      description: 'Application must be personal, practical, and specific. Not "people should love more" but "I need to show patience with [specific person] this week by [specific action]."',
-      bookRef: 'Ch. 21',
-      placeholder: 'Write a specific, personal application…'
-    },
-    {
-      id: 'app-measurable',
-      title: 'Make It Measurable',
-      description: 'Hendricks insists: vague application is no application. What will you do? When? How will you know you\'ve done it? Write it so you could check it off.',
-      bookRef: 'Ch. 23',
-      placeholder: 'What specifically will you do and when?'
-    },
-    {
-      id: 'app-accountable',
-      title: 'Who Will You Share This With?',
-      description: 'Application sticks when it\'s shared. Who in your life can ask you about this? A spouse, friend, small group? Name them.',
-      bookRef: 'Ch. 23',
-      placeholder: 'Who will you share this application with?'
-    }
-  ]
-};
-
-// Review flashcards — techniques from the book
-const REVIEW_CARDS = [
-  { q: 'What are the three steps of the inductive Bible study method?', a: 'Observation (What do I see?), Interpretation (What does it mean?), Application (How does it work in my life?).', ref: 'Ch. 1–3' },
-  { q: 'Why does Hendricks say you must observe BEFORE interpreting?', a: 'Because most errors in Bible study come from jumping to meaning before carefully seeing what the text actually says. Observation is the foundation.', ref: 'Ch. 4' },
-  { q: 'What are the six interrogative questions to ask of any passage?', a: 'Who? What? Where? When? Why? Wherefore? ("Wherefore" means "for what purpose?" — it gets at intent and design.)', ref: 'Ch. 7' },
-  { q: 'What should you look for when observing connecting words?', a: 'Words like therefore, but, because, so that, if/then, and for. They reveal the logical structure and flow of the argument.', ref: 'Ch. 5' },
-  { q: 'Name at least 4 things to look for during Observation.', a: 'Repetition, contrasts, comparisons, connecting words, key words, lists, cause/effect, questions asked, figures of speech, and the overall structure.', ref: 'Ch. 6' },
-  { q: 'What does Hendricks mean by "things that are emphasized"?', a: 'The author signals importance through repetition, proportion (amount of space given), placement (beginning or end), and stated purpose.', ref: 'Ch. 6' },
-  { q: 'Why is context called "king" in interpretation?', a: 'Because the meaning of any verse depends on the verses around it, the chapter, the book, and the whole of Scripture. Ignoring context leads to misinterpretation.', ref: 'Ch. 15' },
-  { q: 'What does "let Scripture interpret Scripture" mean?', a: 'When a passage is unclear, look to clearer passages on the same subject. The Bible is its own best commentary.', ref: 'Ch. 16' },
-  { q: 'Why does genre matter in interpretation?', a: 'Different genres (narrative, poetry, prophecy, epistle, etc.) follow different literary rules. You can\'t interpret a psalm the same way you interpret a Pauline argument.', ref: 'Ch. 18' },
-  { q: 'What is the goal of interpretation according to Hendricks?', a: 'To discover the author\'s original intended meaning to the original audience. It\'s not "what does it mean to me" but "what did it mean to them."', ref: 'Ch. 14' },
-  { q: 'What does SPACEPETS stand for?', a: 'Sin to avoid, Promise to claim, Attitude to change, Command to obey, Example to follow, Prayer to pray, Error to avoid, Truth to believe, Something to praise God for.', ref: 'Ch. 22' },
-  { q: 'What makes application effective according to Hendricks?', a: 'It must be personal (not abstract), practical (not theoretical), specific (not vague), and measurable (you can check whether you did it).', ref: 'Ch. 21–23' },
-  { q: 'Why does Hendricks emphasize reading a passage multiple times?', a: 'Because each reading reveals something new. The first reading gives the big picture, subsequent readings reveal details, patterns, and things you initially missed.', ref: 'Ch. 4' },
-  { q: 'What is the difference between an observation and an interpretation?', a: 'Observation says "I see X in the text." Interpretation says "X means Y." You must see it clearly before you can say what it means.', ref: 'Ch. 3' },
-  { q: 'Why does Hendricks say to study books of the Bible, not just verses?', a: 'Because books are the basic unit of communication. Studying isolated verses without understanding the whole book leads to taking things out of context.', ref: 'Ch. 10' },
-  { q: 'What role does historical/cultural background play in interpretation?', a: 'It helps you understand what the original audience would have understood — customs, geography, politics, social realities — that modern readers might miss.', ref: 'Ch. 17' }
-];
-
-
-// ============================================================
-// STATE
-// ============================================================
-
-let state = {
-  currentScreen: 'home',
-  currentStudy: null,
-  currentPhase: 'observation',
-  reviewIndex: 0,
-  reviewShowAnswer: false,
-  reviewedToday: 0,
-  reviewOrder: [],
-  studies: []
-};
-
-function loadState() {
-  try {
-    const saved = localStorage.getItem('wellread_studies');
-    if (saved) state.studies = JSON.parse(saved);
-    const reviewed = localStorage.getItem('wellread_reviewed_today');
-    const reviewDate = localStorage.getItem('wellread_review_date');
-    const today = new Date().toDateString();
-    if (reviewDate === today && reviewed) {
-      state.reviewedToday = parseInt(reviewed);
-    } else {
-      state.reviewedToday = 0;
-    }
-  } catch(e) { console.error('Load error:', e); }
-}
-
-function saveStudies() {
-  try {
-    localStorage.setItem('wellread_studies', JSON.stringify(state.studies));
-  } catch(e) { console.error('Save error:', e); }
-}
-
-function saveReviewCount() {
-  try {
-    localStorage.setItem('wellread_reviewed_today', state.reviewedToday.toString());
-    localStorage.setItem('wellread_review_date', new Date().toDateString());
-  } catch(e) {}
-}
-
-
-// ============================================================
-// NAVIGATION
-// ============================================================
-
-function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(`screen-${name}`).classList.add('active');
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  const tab = document.querySelector(`.tab-btn[data-screen="${name}"]`);
-  if (tab) tab.classList.add('active');
-  // Hide tab bar on study and summary screens
-  document.querySelector('.tab-bar').style.display = (name === 'study' || name === 'summary') ? 'none' : 'flex';
-  document.body.style.paddingBottom = (name === 'study' || name === 'summary') ? '20px' : 'calc(72px + var(--safe-bottom))';
-  state.currentScreen = name;
-  window.scrollTo(0, 0);
-
-  if (name === 'home') renderHome();
-  if (name === 'review') initReview();
-  if (name === 'history') renderHistory();
-}
-
-// Event delegation for tab bar
-document.querySelector('.tab-bar').addEventListener('click', function(e) {
-  const btn = e.target.closest('.tab-btn');
-  if (btn) showScreen(btn.dataset.screen);
-});
-
-// Event delegation for the entire document — handles all dynamic elements
-document.addEventListener('click', function(e) {
-  // Study cards on home
-  const studyCard = e.target.closest('[data-action="open-study"]');
-  if (studyCard) {
-    openStudy(studyCard.dataset.studyId);
-    return;
-  }
-
-  // History cards
-  const historyCard = e.target.closest('[data-action="open-history"]');
-  if (historyCard) {
-    openStudy(historyCard.dataset.studyId);
-    return;
-  }
-
-  // Delete study
-  const deleteBtn = e.target.closest('[data-action="delete-study"]');
-  if (deleteBtn) {
-    e.stopPropagation();
-    deleteStudy(deleteBtn.dataset.studyId);
-    return;
-  }
-
-  // Phase tabs
-  const phaseTab = e.target.closest('.phase-tab');
-  if (phaseTab) {
-    goPhase(phaseTab.dataset.phase);
-    return;
-  }
-
-  // Phase nav buttons
-  const phaseNav = e.target.closest('[data-action="go-phase"]');
-  if (phaseNav) {
-    goPhase(phaseNav.dataset.phase);
-    return;
-  }
-
-  // Complete study
-  const completeBtn = e.target.closest('[data-action="complete-study"]');
-  if (completeBtn) {
-    completeStudy();
-    return;
-  }
-
-  // Review buttons
-  const revealBtn = e.target.closest('[data-action="reveal"]');
-  if (revealBtn) {
-    revealAnswer();
-    return;
-  }
-
-  const reviewNext = e.target.closest('[data-action="review-next"]');
-  if (reviewNext) {
-    nextReviewCard(reviewNext.dataset.knew === 'true');
-    return;
-  }
-
-  const restartReview = e.target.closest('[data-action="restart-review"]');
-  if (restartReview) {
-    initReview();
-    return;
-  }
-
-  // Toggle passage
-  const togglePass = e.target.closest('#toggle-passage-btn');
-  if (togglePass) {
-    const txt = document.getElementById('study-passage-text');
-    txt.classList.toggle('expanded');
-    togglePass.textContent = txt.classList.contains('expanded') ? 'Show less' : 'Show more';
-    return;
-  }
-
-  // Summary done
-  const summaryDone = e.target.closest('#summary-done-btn');
-  if (summaryDone) {
-    showScreen('home');
-    return;
-  }
-});
-
-
-// ============================================================
-// HOME SCREEN
-// ============================================================
-
-const passageRefInput = document.getElementById('passage-ref');
-const passageTextInput = document.getElementById('passage-text');
-const beginBtn = document.getElementById('begin-study-btn');
-
-passageRefInput.addEventListener('input', function() {
-  beginBtn.disabled = !passageRefInput.value.trim();
-});
-
-beginBtn.addEventListener('click', function(e) {
-  e.preventDefault();
-  const ref = passageRefInput.value.trim();
-  const text = passageTextInput.value.trim();
-  if (!ref) return;
-
-  const study = {
-    id: Date.now().toString(),
-    ref,
-    text,
-    phase: 'observation',
-    responses: {},
-    createdAt: new Date().toISOString(),
-    completedAt: null
+  var STUDY_PROMPTS = {
+    observation: [
+      { id:"obs-read-multiple", title:"Read It Again (and Again)", description:"Read the passage at least 3 times. Each time, jot down something new you notice. The goal is to see what is actually there before jumping to meaning.", bookRef:"Ch. 4\u20136", placeholder:"What did you notice on each reading?" },
+      { id:"obs-key-words", title:"What Are the Key Words?", description:"Identify the most important words \u2014 the ones the passage cannot do without. Look for terms that carry theological weight or are central to the author\u2019s point.", bookRef:"Ch. 8", placeholder:"List the key words you see\u2026" },
+      { id:"obs-repetition", title:"What Is Repeated?", description:"Repetition is the author\u2019s way of saying \u201Cthis matters.\u201D Look for repeated words, phrases, ideas, or patterns.", bookRef:"Ch. 6", placeholder:"What words, phrases, or ideas are repeated?" },
+      { id:"obs-contrasts", title:"Are There Contrasts or Comparisons?", description:"Authors often make their point by setting things side by side \u2014 light vs. dark, flesh vs. spirit, wise vs. foolish. What is being compared or contrasted?", bookRef:"Ch. 6", placeholder:"List any contrasts or comparisons\u2026" },
+      { id:"obs-connectives", title:"What Connecting Words Do You See?", description:"Words like \u201Ctherefore,\u201D \u201Cbut,\u201D \u201Cbecause,\u201D \u201Cso that,\u201D and \u201Cif\u2026then\u201D are the joints of the passage. They reveal the logic and flow of the argument.", bookRef:"Ch. 5", placeholder:"List connecting words and what they link\u2026" },
+      { id:"obs-questions", title:"Ask the Six Key Questions", description:"Who? What? Where? When? Why? Wherefore? \u2014 Go through each one. \u201CWherefore\u201D means \u201Cfor what purpose?\u201D It digs into intent and design. Not all will apply, but the discipline of asking forces careful observation.", bookRef:"Ch. 7", placeholder:"Work through: Who, What, Where, When, Why, Wherefore\u2026" },
+      { id:"obs-structure", title:"What Is the Structure?", description:"How is the passage organized? Is it a narrative with a beginning, middle, end? A logical argument? A list? A chiasm? Try to outline the basic flow.", bookRef:"Ch. 9", placeholder:"Describe the passage structure or outline it\u2026" }
+    ],
+    interpretation: [
+      { id:"int-context", title:"What Is the Context?", description:"Context is king. What comes before and after this passage? What is the book\u2019s overall argument or story? Never read a verse in isolation.", bookRef:"Ch. 15", placeholder:"Describe the surrounding context\u2026" },
+      { id:"int-cross-ref", title:"Do Other Scriptures Shed Light?", description:"Let Scripture interpret Scripture. Are there parallel passages, cross-references, or other places where the same theme, word, or idea appears?", bookRef:"Ch. 16", placeholder:"List cross-references and what they clarify\u2026" },
+      { id:"int-culture", title:"What Is the Historical/Cultural Background?", description:"What would the original audience have understood that you might miss? Consider customs, geography, politics, and social realities of the time.", bookRef:"Ch. 17", placeholder:"What historical or cultural background is relevant?" },
+      { id:"int-genre", title:"What Is the Literary Genre?", description:"Is this narrative, poetry, prophecy, epistle, wisdom, apocalyptic? Each genre has its own rules for interpretation. Do not read a psalm like a legal contract.", bookRef:"Ch. 18", placeholder:"What genre is this and how does that shape your reading?" },
+      { id:"int-author-intent", title:"What Did the Author Mean?", description:"The goal of interpretation is to discover the author\u2019s intended meaning to the original audience. Not what it means to you \u2014 what did it mean to them?", bookRef:"Ch. 14", placeholder:"What was the author communicating to the original audience?" },
+      { id:"int-summary", title:"State the Meaning in One Sentence", description:"If you cannot say it simply, you may not understand it yet. Boil the passage down to one clear sentence that captures the main point.", bookRef:"Ch. 19", placeholder:"The main point of this passage is\u2026" }
+    ],
+    application: [
+      { id:"app-spacepets", title:"Scan for Application Categories", description:"Use the SPACEPETS grid: Is there a Sin to avoid? Promise to claim? Attitude to change? Command to obey? Example to follow? Prayer to pray? Error to avoid? Truth to believe? Something to praise God for?", bookRef:"Ch. 22", placeholder:"Which categories apply? Write them out\u2026" },
+      { id:"app-personal", title:"How Does This Apply to YOUR Life?", description:"Application must be personal, practical, and specific. Not \u201Cpeople should love more\u201D but \u201CI need to show patience with [specific person] this week by [specific action].\u201D", bookRef:"Ch. 21", placeholder:"Write a specific, personal application\u2026" },
+      { id:"app-measurable", title:"Make It Measurable", description:"Hendricks insists: vague application is no application. What will you do? When? How will you know you have done it? Write it so you could check it off.", bookRef:"Ch. 23", placeholder:"What specifically will you do and when?" },
+      { id:"app-accountable", title:"Who Will You Share This With?", description:"Application sticks when it is shared. Who in your life can ask you about this? A spouse, friend, small group? Name them.", bookRef:"Ch. 23", placeholder:"Who will you share this application with?" }
+    ]
   };
 
-  state.studies.unshift(study);
-  saveStudies();
-  passageRefInput.value = '';
-  passageTextInput.value = '';
-  beginBtn.disabled = true;
-  openStudy(study.id);
-});
+  var REVIEW_CARDS = [
+    { q:"What are the three steps of the inductive Bible study method?", a:"Observation (What do I see?), Interpretation (What does it mean?), Application (How does it work in my life?).", ref:"Ch. 1\u20133" },
+    { q:"Why does Hendricks say you must observe BEFORE interpreting?", a:"Because most errors in Bible study come from jumping to meaning before carefully seeing what the text actually says.", ref:"Ch. 4" },
+    { q:"What are the six interrogative questions to ask of any passage?", a:"Who? What? Where? When? Why? Wherefore? (\u201CWherefore\u201D means \u201Cfor what purpose?\u201D)", ref:"Ch. 7" },
+    { q:"What should you look for when observing connecting words?", a:"Words like therefore, but, because, so that, if/then. They reveal the logical structure and flow.", ref:"Ch. 5" },
+    { q:"Name at least 4 things to look for during Observation.", a:"Repetition, contrasts, comparisons, connecting words, key words, lists, cause/effect, questions, figures of speech, structure.", ref:"Ch. 6" },
+    { q:"What does Hendricks mean by \u201Cthings that are emphasized\u201D?", a:"Importance signaled through repetition, proportion (space given), placement (beginning/end), and stated purpose.", ref:"Ch. 6" },
+    { q:"Why is context called \u201Cking\u201D in interpretation?", a:"Because the meaning of any verse depends on the verses around it, the chapter, the book, and the whole of Scripture.", ref:"Ch. 15" },
+    { q:"What does \u201Clet Scripture interpret Scripture\u201D mean?", a:"When a passage is unclear, look to clearer passages on the same subject. The Bible is its own best commentary.", ref:"Ch. 16" },
+    { q:"Why does genre matter in interpretation?", a:"Different genres follow different literary rules. You cannot interpret a psalm the same way you interpret a Pauline argument.", ref:"Ch. 18" },
+    { q:"What is the goal of interpretation according to Hendricks?", a:"To discover the author\u2019s original intended meaning to the original audience.", ref:"Ch. 14" },
+    { q:"What does SPACEPETS stand for?", a:"Sin to avoid, Promise to claim, Attitude to change, Command to obey, Example to follow, Prayer to pray, Error to avoid, Truth to believe, Something to praise God for.", ref:"Ch. 22" },
+    { q:"What makes application effective according to Hendricks?", a:"It must be personal, practical, specific, and measurable.", ref:"Ch. 21\u201323" },
+    { q:"Why does Hendricks emphasize reading a passage multiple times?", a:"Because each reading reveals something new. The first gives the big picture; subsequent readings reveal details and patterns.", ref:"Ch. 4" },
+    { q:"What is the difference between an observation and an interpretation?", a:"Observation says \u201CI see X in the text.\u201D Interpretation says \u201CX means Y.\u201D See it before you explain it.", ref:"Ch. 3" },
+    { q:"Why study books of the Bible, not just verses?", a:"Books are the basic unit of communication. Isolated verses without whole-book context leads to misinterpretation.", ref:"Ch. 10" },
+    { q:"What role does historical/cultural background play?", a:"It reveals what the original audience understood \u2014 customs, geography, politics \u2014 that modern readers might miss.", ref:"Ch. 17" }
+  ];
 
-function renderHome() {
-  const inProgress = state.studies.filter(s => !s.completedAt);
-  const container = document.getElementById('recent-studies');
-  const list = document.getElementById('recent-studies-list');
+  // STATE
+  var state = { currentStudy:null, currentPhase:"observation", reviewIndex:0, reviewShowAnswer:false, reviewedToday:0, reviewOrder:[], studies:[] };
 
-  if (inProgress.length === 0) {
-    container.classList.add('hidden');
-    return;
+  function loadState() {
+    try {
+      var s = localStorage.getItem("wellread_studies");
+      if (s) state.studies = JSON.parse(s);
+      var rd = localStorage.getItem("wellread_review_date");
+      var rc = localStorage.getItem("wellread_reviewed_today");
+      if (rd === new Date().toDateString() && rc) state.reviewedToday = parseInt(rc,10);
+      else state.reviewedToday = 0;
+    } catch(e) {}
+  }
+  function saveStudies() { try { localStorage.setItem("wellread_studies", JSON.stringify(state.studies)); } catch(e) {} }
+  function saveReviewCount() { try { localStorage.setItem("wellread_reviewed_today", String(state.reviewedToday)); localStorage.setItem("wellread_review_date", new Date().toDateString()); } catch(e) {} }
+
+  function esc(str) { if (!str) return ""; var d=document.createElement("div"); d.textContent=str; return d.innerHTML; }
+  function cap(s) { return s.charAt(0).toUpperCase()+s.slice(1); }
+  function fmtDate(iso) { var d=new Date(iso), diff=Date.now()-d.getTime(); if(diff<864e5) return "Today"; if(diff<1728e5) return "Yesterday"; return d.toLocaleDateString("en-US",{month:"short",day:"numeric"}); }
+  var _dbt={};
+  function deb(k,fn,ms) { clearTimeout(_dbt[k]); _dbt[k]=setTimeout(fn,ms); }
+
+  // NAV
+  function showScreen(name) {
+    var ss=document.querySelectorAll(".screen"), i;
+    for(i=0;i<ss.length;i++) ss[i].classList.remove("active");
+    document.getElementById("screen-"+name).classList.add("active");
+    var ts=document.querySelectorAll(".tab-btn");
+    for(i=0;i<ts.length;i++) ts[i].classList.remove("active");
+    var at=document.querySelector(".tab-btn[data-screen='"+name+"']");
+    if(at) at.classList.add("active");
+    var hide=(name==="study"||name==="summary");
+    document.querySelector(".tab-bar").style.display=hide?"none":"flex";
+    document.body.style.paddingBottom=hide?"20px":"calc(72px + var(--safe-bottom))";
+    window.scrollTo(0,0);
+    if(name==="home") renderHome();
+    if(name==="review") initReview();
+    if(name==="history") renderHistory();
   }
 
-  container.classList.remove('hidden');
-  list.innerHTML = inProgress.slice(0, 5).map((s, i) => `
-    <div class="study-card animate-fade-up" style="animation-delay: ${i * 0.04}s" data-action="open-study" data-study-id="${s.id}">
-      <div class="study-card-left">
-        <h3>${escapeHtml(s.ref)}</h3>
-        <p>${formatDate(s.createdAt)}</p>
-      </div>
-      <span class="study-card-phase phase-${s.phase}">${s.phase}</span>
-    </div>
-  `).join('');
-}
+  // HOME
+  var refIn=document.getElementById("passage-ref"), txtIn=document.getElementById("passage-text"), beginBtn=document.getElementById("begin-study-btn");
+  refIn.addEventListener("input",function(){beginBtn.disabled=!refIn.value.trim();});
 
-
-// ============================================================
-// STUDY SCREEN
-// ============================================================
-
-function openStudy(id) {
-  const study = state.studies.find(s => s.id === id);
-  if (!study) return;
-
-  // If completed, show summary view
-  if (study.completedAt) {
-    state.currentStudy = study;
-    showSummary(study);
-    return;
+  function doBegin() {
+    var ref=refIn.value.trim(), text=txtIn.value.trim();
+    if(!ref) return;
+    var study={id:String(Date.now()),ref:ref,text:text,phase:"observation",responses:{},createdAt:new Date().toISOString(),completedAt:null};
+    state.studies.unshift(study); saveStudies();
+    refIn.value=""; txtIn.value=""; beginBtn.disabled=true;
+    openStudy(study.id);
   }
 
-  state.currentStudy = study;
-  state.currentPhase = study.phase || 'observation';
-
-  document.getElementById('study-passage-ref').textContent = study.ref;
-  const passageTextEl = document.getElementById('study-passage-text');
-  const toggleBtn = document.getElementById('toggle-passage-btn');
-
-  if (study.text) {
-    passageTextEl.textContent = study.text;
-    passageTextEl.classList.remove('expanded');
-    if (study.text.length > 200) {
-      toggleBtn.classList.remove('hidden');
-      toggleBtn.textContent = 'Show more';
-    } else {
-      toggleBtn.classList.add('hidden');
-      passageTextEl.classList.add('expanded');
+  function renderHome() {
+    var ip=state.studies.filter(function(s){return !s.completedAt;}), c=document.getElementById("recent-studies"), l=document.getElementById("recent-studies-list");
+    if(!ip.length){c.classList.add("hidden");return;}
+    c.classList.remove("hidden");
+    var h="",items=ip.slice(0,5);
+    for(var i=0;i<items.length;i++){var s=items[i];
+      h+='<div class="study-card animate-fade-up" style="animation-delay:'+(i*0.04)+'s" data-action="open-study" data-sid="'+s.id+'">'
+        +'<div class="study-card-left"><h3>'+esc(s.ref)+'</h3><p>'+fmtDate(s.createdAt)+'</p></div>'
+        +'<span class="study-card-phase phase-'+s.phase+'">'+s.phase+'</span></div>';
     }
-  } else {
-    passageTextEl.textContent = 'No passage text entered.';
-    passageTextEl.style.fontStyle = 'italic';
-    toggleBtn.classList.add('hidden');
+    l.innerHTML=h;
   }
 
-  renderPhase();
-  showScreen('study');
-  // Hide tab for study, show back
-}
+  // STUDY
+  function openStudy(id) {
+    var study=null;
+    for(var i=0;i<state.studies.length;i++) if(state.studies[i].id===id){study=state.studies[i];break;}
+    if(!study) return;
+    if(study.completedAt){state.currentStudy=study;showSummary(study);return;}
+    state.currentStudy=study; state.currentPhase=study.phase||"observation";
+    document.getElementById("study-passage-ref").textContent=study.ref;
+    var ptEl=document.getElementById("study-passage-text"), tBtn=document.getElementById("toggle-passage-btn");
+    if(study.text){ptEl.textContent=study.text;ptEl.style.fontStyle="italic";ptEl.classList.remove("expanded");
+      if(study.text.length>200){tBtn.classList.remove("hidden");tBtn.textContent="Show more";}
+      else{tBtn.classList.add("hidden");ptEl.classList.add("expanded");}
+    }else{ptEl.textContent="No passage text entered.";ptEl.style.fontStyle="italic";tBtn.classList.add("hidden");}
+    renderPhase(); showScreen("study");
+  }
 
-document.getElementById('study-back-btn').addEventListener('click', function(e) {
-  e.preventDefault();
-  saveCurrentResponses();
-  showScreen('home');
-});
+  document.getElementById("study-back-btn").addEventListener("click",function(e){e.preventDefault();saveCurrentResponses();showScreen("home");});
 
-function renderPhase() {
-  const phase = state.currentPhase;
-  const study = state.currentStudy;
-
-  // Update tabs
-  document.querySelectorAll('.phase-tab').forEach(t => {
-    t.className = 'phase-tab';
-    if (t.dataset.phase === phase) {
-      t.classList.add(`active-${phase}`);
+  function renderPhase() {
+    var phase=state.currentPhase, study=state.currentStudy;
+    var tabs=document.querySelectorAll(".phase-tab");
+    for(var i=0;i<tabs.length;i++){tabs[i].className="phase-tab";if(tabs[i].getAttribute("data-phase")===phase) tabs[i].classList.add("active-"+phase);}
+    var prompts=STUDY_PROMPTS[phase], container=document.getElementById("prompts-container"), h="";
+    for(var i=0;i<prompts.length;i++){var p=prompts[i],saved=study.responses[p.id]||"";
+      h+='<div class="prompt-card" style="animation-delay:'+(i*0.04)+'s">'
+        +'<div class="prompt-card-header"><h3>'+p.title+'</h3><span class="book-ref">LBTB '+p.bookRef+'</span></div>'
+        +'<p>'+p.description+'</p>'
+        +'<textarea class="prompt-response" data-pid="'+p.id+'" placeholder="'+p.placeholder+'">'+esc(saved)+'</textarea></div>';
     }
+    container.innerHTML=h;
+    var tas=container.querySelectorAll(".prompt-response");
+    for(var i=0;i<tas.length;i++){(function(ta){
+      ta.addEventListener("input",function(){
+        deb("save",function(){study.responses[ta.getAttribute("data-pid")]=ta.value;saveStudies();},500);
+        ta.style.height="auto"; ta.style.height=Math.max(72,ta.scrollHeight)+"px";
+      });
+    })(tas[i]);}
+    var nav=document.getElementById("phase-nav-btns"), ps=["observation","interpretation","application"], idx=ps.indexOf(phase), b="";
+    if(idx>0) b+='<button class="phase-nav-btn secondary" data-action="go-phase" data-phase="'+ps[idx-1]+'">\u2190 '+cap(ps[idx-1])+'</button>';
+    if(idx<ps.length-1) b+='<button class="phase-nav-btn primary" data-action="go-phase" data-phase="'+ps[idx+1]+'">'+cap(ps[idx+1])+' \u2192</button>';
+    if(idx===ps.length-1) b+='<button class="phase-nav-btn complete-btn" data-action="complete-study">Complete Study \u2713</button>';
+    nav.innerHTML=b;
+  }
+
+  function goPhase(p){saveCurrentResponses();state.currentPhase=p;state.currentStudy.phase=p;saveStudies();renderPhase();window.scrollTo({top:0,behavior:"smooth"});}
+  function saveCurrentResponses(){if(!state.currentStudy)return;var t=document.querySelectorAll(".prompt-response");for(var i=0;i<t.length;i++) state.currentStudy.responses[t[i].getAttribute("data-pid")]=t[i].value;saveStudies();}
+
+  function completeStudy(){saveCurrentResponses();state.currentStudy.completedAt=new Date().toISOString();state.currentStudy.phase="complete";saveStudies();showSummary(state.currentStudy);}
+
+  function showSummary(study) {
+    document.getElementById("summary-ref").textContent=study.ref;
+    var phases=[{key:"observation",label:"Observation",cls:"obs",prompts:STUDY_PROMPTS.observation},{key:"interpretation",label:"Interpretation",cls:"int",prompts:STUDY_PROMPTS.interpretation},{key:"application",label:"Application",cls:"app",prompts:STUDY_PROMPTS.application}];
+    var html="";
+    for(var pi=0;pi<phases.length;pi++){var ph=phases[pi],entries="";
+      for(var j=0;j<ph.prompts.length;j++){var p=ph.prompts[j],v=study.responses[p.id];
+        if(v&&v.trim()) entries+='<div class="summary-entry animate-fade-up" style="animation-delay:'+(pi*0.08+0.05)+'s"><h4>'+p.title+'</h4><p>'+esc(v)+'</p></div>';
+      }
+      if(entries) html+='<div class="summary-section animate-fade-up" style="animation-delay:'+(pi*0.08)+'s"><span class="summary-section-label '+ph.cls+'">'+ph.label+'</span>'+entries+'</div>';
+    }
+    if(!html) html='<p style="text-align:center;color:var(--text-tertiary);padding:24px;">No notes recorded.</p>';
+    document.getElementById("summary-content").innerHTML=html;
+    showScreen("summary");
+  }
+
+  // REVIEW
+  function initReview(){
+    document.getElementById("streak-count").textContent=state.reviewedToday;
+    state.reviewOrder=[];for(var i=0;i<REVIEW_CARDS.length;i++) state.reviewOrder.push(i);
+    for(var i=state.reviewOrder.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=state.reviewOrder[i];state.reviewOrder[i]=state.reviewOrder[j];state.reviewOrder[j]=t;}
+    state.reviewIndex=0;state.reviewShowAnswer=false;renderReviewCard();
+  }
+
+  function renderReviewCard(){
+    var c=document.getElementById("review-card-container"),b=document.getElementById("review-btns-container"),pr=document.getElementById("review-progress");
+    if(state.reviewIndex>=state.reviewOrder.length){
+      c.innerHTML='<div class="review-card animate-scale-in"><div class="question">All cards complete!</div><p style="color:var(--text-secondary);margin-top:8px;">Tap below to shuffle and go again.</p></div>';
+      b.innerHTML='<button class="review-btn next-btn" data-action="restart-review" style="width:100%">Shuffle &amp; Restart</button>';
+      pr.textContent="";return;
+    }
+    var card=REVIEW_CARDS[state.reviewOrder[state.reviewIndex]];
+    pr.textContent=(state.reviewIndex+1)+" of "+REVIEW_CARDS.length;
+    var h='<div class="review-card animate-scale-in"><div class="question">'+card.q+'</div><div class="book-ref">LBTB '+card.ref+'</div></div>';
+    if(state.reviewShowAnswer) h+='<div class="review-answer"><p>'+card.a+'</p></div>';
+    c.innerHTML=h;
+    if(!state.reviewShowAnswer) b.innerHTML='<button class="review-btn reveal" data-action="reveal" style="width:100%">Reveal Answer</button>';
+    else b.innerHTML='<div class="review-btns"><button class="review-btn didnt" data-action="review-next" data-knew="false">Didn\'t know</button><button class="review-btn knew" data-action="review-next" data-knew="true">Knew it</button></div>';
+  }
+
+  function revealAnswer(){state.reviewShowAnswer=true;renderReviewCard();}
+  function nextReviewCard(knew){
+    state.reviewedToday++;saveReviewCount();document.getElementById("streak-count").textContent=state.reviewedToday;
+    if(!knew){var cur=state.reviewOrder[state.reviewIndex],at=Math.min(state.reviewIndex+3+Math.floor(Math.random()*3),state.reviewOrder.length);state.reviewOrder.splice(at,0,cur);}
+    state.reviewIndex++;state.reviewShowAnswer=false;renderReviewCard();
+  }
+
+  // HISTORY
+  function renderHistory(){
+    var list=document.getElementById("history-list"),all=state.studies.slice();
+    if(!all.length){list.innerHTML='<div class="empty-state"><p>No studies yet. Start one from the Study tab.</p></div>';return;}
+    var h="";
+    for(var i=0;i<all.length;i++){var s=all[i],pv=getPrev(s),pl=s.completedAt?"complete":s.phase,pt=s.completedAt?"Complete":cap(s.phase);
+      h+='<div class="history-card animate-fade-up" style="animation-delay:'+(i*0.03)+'s" data-action="open-study" data-sid="'+s.id+'">'
+        +'<div class="history-card-top"><h3>'+esc(s.ref)+'</h3><span class="study-card-phase phase-'+pl+'">'+pt+'</span></div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;"><span class="date">'+fmtDate(s.createdAt)+'</span>'
+        +'<button class="delete-study-btn" data-action="delete-study" data-sid="'+s.id+'">Delete</button></div>'
+        +(pv?'<p class="preview">'+esc(pv)+'</p>':'')+'</div>';
+    }
+    list.innerHTML=h;
+  }
+  function deleteStudy(id){if(!confirm("Delete this study?"))return;state.studies=state.studies.filter(function(s){return s.id!==id;});saveStudies();if(state.currentStudy&&state.currentStudy.id===id)state.currentStudy=null;renderHistory();}
+  function getPrev(s){var ks=Object.keys(s.responses);for(var i=0;i<ks.length;i++){var v=s.responses[ks[i]];if(v&&v.trim())return v.trim().substring(0,120);}return"";}
+
+  // EVENT DELEGATION
+  document.addEventListener("click",function(e){
+    var t=e.target;
+    var tab=t.closest(".tab-btn"); if(tab){showScreen(tab.getAttribute("data-screen"));return;}
+    var os=t.closest("[data-action='open-study']"); if(os){openStudy(os.getAttribute("data-sid"));return;}
+    var ds=t.closest("[data-action='delete-study']"); if(ds){e.stopPropagation();deleteStudy(ds.getAttribute("data-sid"));return;}
+    var pt=t.closest(".phase-tab"); if(pt){goPhase(pt.getAttribute("data-phase"));return;}
+    var gp=t.closest("[data-action='go-phase']"); if(gp){goPhase(gp.getAttribute("data-phase"));return;}
+    var cs=t.closest("[data-action='complete-study']"); if(cs){completeStudy();return;}
+    var tp=t.closest("#toggle-passage-btn"); if(tp){var tx=document.getElementById("study-passage-text");tx.classList.toggle("expanded");tp.textContent=tx.classList.contains("expanded")?"Show less":"Show more";return;}
+    var rv=t.closest("[data-action='reveal']"); if(rv){revealAnswer();return;}
+    var rn=t.closest("[data-action='review-next']"); if(rn){nextReviewCard(rn.getAttribute("data-knew")==="true");return;}
+    var rs=t.closest("[data-action='restart-review']"); if(rs){initReview();return;}
+    var sd=t.closest("#summary-done-btn"); if(sd){showScreen("home");return;}
+    var bb=t.closest("#begin-study-btn"); if(bb&&!bb.disabled){doBegin();return;}
+    var sb=t.closest("#study-back-btn"); if(sb){saveCurrentResponses();showScreen("home");return;}
   });
 
-  // Render prompts
-  const prompts = STUDY_PROMPTS[phase];
-  const container = document.getElementById('prompts-container');
-
-  container.innerHTML = prompts.map((p, i) => {
-    const saved = study.responses[p.id] || '';
-    return `
-      <div class="prompt-card" style="animation-delay: ${i * 0.04}s">
-        <div class="prompt-card-header">
-          <h3>${p.title}</h3>
-          <span class="book-ref">LBTB ${p.bookRef}</span>
-        </div>
-        <p>${p.description}</p>
-        <textarea class="prompt-response" id="resp-${p.id}" placeholder="${p.placeholder}" data-prompt-id="${p.id}">${escapeHtml(saved)}</textarea>
-
-```
-  </div>
-`;
-```
-
-}).join(’’);
-
-// Auto-save on input
-container.querySelectorAll(’.prompt-response’).forEach(ta => {
-ta.addEventListener(‘input’, debounce(() => {
-study.responses[ta.dataset.promptId] = ta.value;
-saveStudies();
-}, 500));
-
-```
-// Auto-resize
-ta.addEventListener('input', function() {
-  this.style.height = 'auto';
-  this.style.height = Math.max(72, this.scrollHeight) + 'px';
-});
-```
-
-});
-
-// Phase navigation buttons
-const navContainer = document.getElementById(‘phase-nav-btns’);
-const phases = [‘observation’, ‘interpretation’, ‘application’];
-const idx = phases.indexOf(phase);
-
-let btns = ‘’;
-if (idx > 0) {
-btns += `<button class="phase-nav-btn secondary" data-action="go-phase" data-phase="${phases[idx-1]}">← ${capitalize(phases[idx-1])}</button>`;
-}
-if (idx < phases.length - 1) {
-btns += `<button class="phase-nav-btn primary" data-action="go-phase" data-phase="${phases[idx+1]}">${capitalize(phases[idx+1])} →</button>`;
-}
-if (idx === phases.length - 1) {
-btns += `<button class="phase-nav-btn complete-btn" data-action="complete-study">Complete Study ✓</button>`;
-}
-navContainer.innerHTML = btns;
-}
-
-function goPhase(phase) {
-saveCurrentResponses();
-state.currentPhase = phase;
-state.currentStudy.phase = phase;
-saveStudies();
-renderPhase();
-window.scrollTo({ top: 0, behavior: ‘smooth’ });
-}
-
-function saveCurrentResponses() {
-if (!state.currentStudy) return;
-document.querySelectorAll(’.prompt-response’).forEach(ta => {
-state.currentStudy.responses[ta.dataset.promptId] = ta.value;
-});
-saveStudies();
-}
-
-function completeStudy() {
-saveCurrentResponses();
-state.currentStudy.completedAt = new Date().toISOString();
-state.currentStudy.phase = ‘complete’;
-saveStudies();
-showSummary(state.currentStudy);
-}
-
-function showSummary(study) {
-document.getElementById(‘summary-ref’).textContent = study.ref;
-
-const phases = [
-{ key: ‘observation’, label: ‘Observation’, cls: ‘obs’, prompts: STUDY_PROMPTS.observation },
-{ key: ‘interpretation’, label: ‘Interpretation’, cls: ‘int’, prompts: STUDY_PROMPTS.interpretation },
-{ key: ‘application’, label: ‘Application’, cls: ‘app’, prompts: STUDY_PROMPTS.application }
-];
-
-let html = ‘’;
-phases.forEach((phase, pi) => {
-const entries = phase.prompts
-.filter(p => study.responses[p.id] && study.responses[p.id].trim())
-.map(p => `<div class="summary-entry animate-fade-up" style="animation-delay: ${pi * 0.08 + 0.05}s"> <h4>${p.title}</h4> <p>${escapeHtml(study.responses[p.id])}</p> </div>`).join(’’);
-
-```
-if (entries) {
-  html += `
-    <div class="summary-section animate-fade-up" style="animation-delay: ${pi * 0.08}s">
-      <span class="summary-section-label ${phase.cls}">${phase.label}</span>
-      ${entries}
-    </div>
-  `;
-}
-```
-
-});
-
-if (!html) {
-html = ‘<p style="text-align:center;color:var(--text-tertiary);padding:24px;">No notes recorded.</p>’;
-}
-
-document.getElementById(‘summary-content’).innerHTML = html;
-showScreen(‘summary’);
-}
-
-// ============================================================
-// REVIEW SCREEN
-// ============================================================
-
-function initReview() {
-document.getElementById(‘streak-count’).textContent = state.reviewedToday;
-
-// Shuffle cards
-state.reviewOrder = […Array(REVIEW_CARDS.length).keys()];
-for (let i = state.reviewOrder.length - 1; i > 0; i–) {
-const j = Math.floor(Math.random() * (i + 1));
-[state.reviewOrder[i], state.reviewOrder[j]] = [state.reviewOrder[j], state.reviewOrder[i]];
-}
-state.reviewIndex = 0;
-state.reviewShowAnswer = false;
-renderReviewCard();
-}
-
-function renderReviewCard() {
-const container = document.getElementById(‘review-card-container’);
-const btnsContainer = document.getElementById(‘review-btns-container’);
-const progress = document.getElementById(‘review-progress’);
-
-if (state.reviewIndex >= state.reviewOrder.length) {
-container.innerHTML = `<div class="review-card animate-scale-in"> <div class="question">You've been through all the cards! 🎉</div> <p style="color:var(--text-secondary);margin-top:8px;">Tap below to shuffle and go again.</p> </div>`;
-btnsContainer.innerHTML = `<button class="review-btn next" data-action="restart-review" style="width:100%">Shuffle & Restart</button>`;
-progress.textContent = ‘’;
-return;
-}
-
-const card = REVIEW_CARDS[state.reviewOrder[state.reviewIndex]];
-progress.textContent = `${state.reviewIndex + 1} of ${REVIEW_CARDS.length}`;
-
-container.innerHTML = `<div class="review-card animate-scale-in"> <div class="question">${card.q}</div> <div class="book-ref">LBTB ${card.ref}</div> </div> ${state.reviewShowAnswer ?`
-<div class="review-answer">
-<p>${card.a}</p>
-</div>
-`: ''}`;
-
-if (!state.reviewShowAnswer) {
-btnsContainer.innerHTML = `<button class="review-btn reveal" data-action="reveal" style="width:100%">Reveal Answer</button>`;
-} else {
-btnsContainer.innerHTML = `<div class="review-btns"> <button class="review-btn didnt" data-action="review-next" data-knew="false">Didn't know</button> <button class="review-btn knew" data-action="review-next" data-knew="true">Knew it</button> </div>`;
-}
-}
-
-function revealAnswer() {
-state.reviewShowAnswer = true;
-renderReviewCard();
-}
-
-function nextReviewCard(knew) {
-state.reviewedToday++;
-saveReviewCount();
-document.getElementById(‘streak-count’).textContent = state.reviewedToday;
-
-if (!knew) {
-// Put it back later in the deck
-const current = state.reviewOrder[state.reviewIndex];
-const insertAt = Math.min(state.reviewIndex + 3 + Math.floor(Math.random() * 3), state.reviewOrder.length);
-state.reviewOrder.splice(insertAt, 0, current);
-}
-
-state.reviewIndex++;
-state.reviewShowAnswer = false;
-renderReviewCard();
-}
-
-// ============================================================
-// HISTORY SCREEN
-// ============================================================
-
-function renderHistory() {
-const list = document.getElementById(‘history-list’);
-const completed = state.studies.filter(s => s.completedAt);
-const inProgress = state.studies.filter(s => !s.completedAt);
-const all = […inProgress, …completed];
-
-if (all.length === 0) {
-list.innerHTML = `<div class="empty-state"> <div class="icon">📖</div> <p>No studies yet.<br>Start one from the Study tab.</p> </div>`;
-return;
-}
-
-list.innerHTML = all.map((s, i) => {
-const preview = getPreview(s);
-return `<div class="history-card animate-fade-up" style="animation-delay: ${i * 0.03}s" data-action="open-history" data-study-id="${s.id}"> <div class="history-card-top"> <h3>${escapeHtml(s.ref)}</h3> <span class="study-card-phase phase-${s.completedAt ? 'complete' : s.phase}">${s.completedAt ? 'Complete' : capitalize(s.phase)}</span> </div> <div style="display:flex;justify-content:space-between;align-items:center;"> <span class="date">${formatDate(s.createdAt)}</span> <button class="delete-study-btn" data-action="delete-study" data-study-id="${s.id}">Delete</button> </div> ${preview ?`<p class="preview mt-8">${escapeHtml(preview)}</p>`: ''} </div>`;
-}).join(’’);
-}
-
-function deleteStudy(id) {
-if (!confirm(‘Delete this study?’)) return;
-state.studies = state.studies.filter(s => s.id !== id);
-saveStudies();
-if (state.currentStudy && state.currentStudy.id === id) {
-state.currentStudy = null;
-}
-renderHistory();
-}
-
-function getPreview(study) {
-const keys = Object.keys(study.responses);
-for (const k of keys) {
-if (study.responses[k] && study.responses[k].trim()) {
-return study.responses[k].trim().substring(0, 120);
-}
-}
-return ‘’;
-}
-
-// ============================================================
-// UTILS
-// ============================================================
-
-function escapeHtml(str) {
-if (!str) return ‘’;
-return str.replace(/&/g,’&’).replace(/</g,’<’).replace(/>/g,’>’).replace(/”/g,’"’);
-}
-
-function capitalize(s) {
-return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-function formatDate(iso) {
-const d = new Date(iso);
-const now = new Date();
-const diff = now - d;
-if (diff < 86400000) return ‘Today’;
-if (diff < 172800000) return ‘Yesterday’;
-return d.toLocaleDateString(‘en-US’, { month: ‘short’, day: ‘numeric’ });
-}
-
-function debounce(fn, ms) {
-let t;
-return function(…args) {
-clearTimeout(t);
-t = setTimeout(() => fn.apply(this, args), ms);
-};
-}
-
-// ============================================================
-// INIT
-// ============================================================
-
-loadState();
-renderHome();
+  loadState();
+  renderHome();
+})();
 </script>
-
 </body>
 </html>
