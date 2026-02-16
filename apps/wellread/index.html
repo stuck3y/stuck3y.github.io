@@ -172,13 +172,23 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
 .summary-done-btn { width:100%; padding:16px; background:var(--accent); color:white; border:none; border-radius:var(--radius-md); font-family:var(--sans); font-size:16px; font-weight:600; margin-top:12px; margin-bottom:24px; }
 .summary-done-btn:active { transform:scale(0.98); }
 
+/* Context lookup */
+.context-lookup-btns { display:flex; gap:8px; margin-bottom:12px; }
+.context-lookup-btn { flex:1; padding:10px 12px; background:var(--interpretation-bg); color:var(--interpretation); border:none; border-radius:var(--radius-sm); font-family:var(--sans); font-size:13px; font-weight:600; transition:all 0.2s; }
+.context-lookup-btn:active { transform:scale(0.97); }
+.context-lookup-btn:disabled { opacity:0.5; }
+.context-block { background:var(--bg); border-radius:var(--radius-sm); padding:14px 16px; margin-bottom:12px; border-left:3px solid var(--interpretation); animation:fadeUp 0.3s ease-out both; }
+.context-block-label { font-size:11px; font-weight:600; color:var(--interpretation); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+.context-block-ref { font-family:var(--sans); font-size:13px; font-weight:600; color:var(--text-primary); margin-bottom:6px; }
+.context-block-text { font-family:var(--serif); font-size:14px; line-height:1.6; color:var(--text-secondary); font-style:italic; }
+
 .hidden { display:none !important; }
 </style>
 </head>
 <body>
 
 <div id="screen-home" class="screen active">
-  <div class="screen-header animate-fade-up"><h1>Well Read</h1><p>A study for Living by the Book</p></div>
+  <div class="screen-header animate-fade-up"><h1>Well Read</h1><p>Study the Word with method and care.</p></div>
   <div class="passage-input-card animate-fade-up" style="animation-delay:0.05s">
     <label>New Study</label>
     <div class="ref-row">
@@ -273,7 +283,7 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
       { id:"obs-structure", title:"What Is the Structure?", description:"How is the passage organized? Is it a narrative with a beginning, middle, end? A logical argument? A list? A chiasm? Try to outline the basic flow.", bookRef:"Ch. 9", placeholder:"Describe the passage structure or outline it\u2026" }
     ],
     interpretation: [
-      { id:"int-context", title:"What Is the Context?", description:"Context is king. What comes before and after this passage? What is the book\u2019s overall argument or story? Never read a verse in isolation.", bookRef:"Ch. 15", placeholder:"Describe the surrounding context\u2026" },
+      { id:"int-context", title:"What Is the Context?", description:"Context is king. What comes before and after this passage? What is the book\u2019s overall argument or story? Never read a verse in isolation.", bookRef:"Ch. 15", placeholder:"Describe the surrounding context\u2026", hasContextLookup:true },
       { id:"int-cross-ref", title:"Do Other Scriptures Shed Light?", description:"Let Scripture interpret Scripture. Are there parallel passages, cross-references, or other places where the same theme, word, or idea appears?", bookRef:"Ch. 16", placeholder:"List cross-references and what they clarify\u2026" },
       { id:"int-culture", title:"What Is the Historical/Cultural Background?", description:"What would the original audience have understood that you might miss? Consider customs, geography, politics, and social realities of the time.", bookRef:"Ch. 17", placeholder:"What historical or cultural background is relevant?" },
       { id:"int-genre", title:"What Is the Literary Genre?", description:"Is this narrative, poetry, prophecy, epistle, wisdom, apocalyptic? Each genre has its own rules for interpretation. Do not read a psalm like a legal contract.", bookRef:"Ch. 18", placeholder:"What genre is this and how does that shape your reading?" },
@@ -461,8 +471,15 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
     for(var i=0;i<prompts.length;i++){var p=prompts[i],saved=study.responses[p.id]||"";
       h+='<div class="prompt-card" style="animation-delay:'+(i*0.04)+'s">'
         +'<div class="prompt-card-header"><h3>'+p.title+'</h3><span class="book-ref">LBTB '+p.bookRef+'</span></div>'
-        +'<p>'+p.description+'</p>'
-        +'<textarea class="prompt-response" data-pid="'+p.id+'" placeholder="'+p.placeholder+'">'+esc(saved)+'</textarea></div>';
+        +'<p>'+p.description+'</p>';
+      if(p.hasContextLookup){
+        h+='<div class="context-lookup-btns">'
+          +'<button class="context-lookup-btn" data-action="context-before">\u2190 Look up before</button>'
+          +'<button class="context-lookup-btn" data-action="context-after">Look up after \u2192</button></div>'
+          +'<div id="context-before-block"></div>'
+          +'<div id="context-after-block"></div>';
+      }
+      h+='<textarea class="prompt-response" data-pid="'+p.id+'" placeholder="'+p.placeholder+'">'+esc(saved)+'</textarea></div>';
     }
     container.innerHTML=h;
     var tas=container.querySelectorAll(".prompt-response");
@@ -477,6 +494,82 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
     if(idx<ps.length-1) b+='<button class="phase-nav-btn primary" data-action="go-phase" data-phase="'+ps[idx+1]+'">'+cap(ps[idx+1])+' \u2192</button>';
     if(idx===ps.length-1) b+='<button class="phase-nav-btn complete-btn" data-action="complete-study">Complete Study \u2713</button>';
     nav.innerHTML=b;
+  }
+
+  // CONTEXT LOOKUP
+  function parseReference(ref) {
+    // Parse references like "John 3:1-17", "1 Corinthians 2:4-10", "Genesis 1"
+    // Returns {book, chapter, startVerse, endVerse} or null
+    var m = ref.match(/^(.+?)\s+(\d+)(?::(\d+)(?:\s*-\s*(\d+))?)?$/);
+    if(!m) return null;
+    return { book:m[1], chapter:parseInt(m[2],10), startVerse:m[3]?parseInt(m[3],10):null, endVerse:m[4]?parseInt(m[4],10):(m[3]?parseInt(m[3],10):null) };
+  }
+
+  function getContextRef(ref, direction) {
+    var p = parseReference(ref);
+    if(!p) return null;
+    var CONTEXT_VERSES = 5;
+    if(direction === "before") {
+      if(p.startVerse && p.startVerse > 1) {
+        var from = Math.max(1, p.startVerse - CONTEXT_VERSES);
+        var to = p.startVerse - 1;
+        return p.book + " " + p.chapter + ":" + from + "-" + to;
+      } else if(p.chapter > 1) {
+        // Go to end of previous chapter
+        return p.book + " " + (p.chapter - 1);
+      }
+      return null;
+    } else {
+      if(p.endVerse) {
+        var from = p.endVerse + 1;
+        var to = p.endVerse + CONTEXT_VERSES;
+        return p.book + " " + p.chapter + ":" + from + "-" + to;
+      } else {
+        // Whole chapter — get next chapter
+        return p.book + " " + (p.chapter + 1);
+      }
+    }
+  }
+
+  function fetchContext(direction) {
+    if(!state.currentStudy) return;
+    var contextRef = getContextRef(state.currentStudy.ref, direction);
+    var blockEl = document.getElementById("context-" + direction + "-block");
+    var btns = document.querySelectorAll("[data-action='context-" + direction + "']");
+    if(!contextRef) {
+      blockEl.innerHTML = '<div class="context-block"><div class="context-block-text">No ' + direction + ' context available (beginning of book).</div></div>';
+      return;
+    }
+    for(var i=0;i<btns.length;i++){btns[i].disabled=true;btns[i].textContent="Loading\u2026";}
+    var url = "https://bible-api.com/" + encodeURIComponent(contextRef) + "?translation=web";
+    fetch(url).then(function(r){return r.json();}).then(function(data){
+      for(var i=0;i<btns.length;i++){
+        btns[i].disabled=false;
+        btns[i].textContent = direction==="before" ? "\u2190 Look up before" : "Look up after \u2192";
+      }
+      if(data.error) {
+        blockEl.innerHTML = '<div class="context-block"><div class="context-block-text">Could not load ' + direction + ' context. The passage may be at the ' + (direction==="before"?"beginning":"end") + '.</div></div>';
+        return;
+      }
+      var label = direction === "before" ? "BEFORE" : "AFTER";
+      var verseText = "";
+      if(data.verses && data.verses.length) {
+        for(var j=0;j<data.verses.length;j++){
+          var v=data.verses[j];
+          var t=v.text.replace(/^\n+|\n+$/g,"").replace(/\n/g," ");
+          verseText += v.verse + " " + t.trim() + "\n";
+        }
+      } else if(data.text) {
+        verseText = data.text.trim();
+      }
+      blockEl.innerHTML = '<div class="context-block">'
+        + '<div class="context-block-label">' + label + '</div>'
+        + '<div class="context-block-ref">' + esc(data.reference || contextRef) + '</div>'
+        + '<div class="context-block-text">' + esc(verseText.trim()) + '</div></div>';
+    }).catch(function(){
+      for(var i=0;i<btns.length;i++){btns[i].disabled=false;btns[i].textContent=direction==="before"?"\u2190 Look up before":"Look up after \u2192";}
+      blockEl.innerHTML = '<div class="context-block"><div class="context-block-text">Lookup failed. Check your connection.</div></div>';
+    });
   }
 
   function goPhase(p){saveCurrentResponses();state.currentPhase=p;state.currentStudy.phase=p;saveStudies();renderPhase();window.scrollTo({top:0,behavior:"smooth"});}
@@ -561,6 +654,8 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
     var rn=t.closest("[data-action='review-next']"); if(rn){nextReviewCard(rn.getAttribute("data-knew")==="true");return;}
     var rs=t.closest("[data-action='restart-review']"); if(rs){initReview();return;}
     var sd=t.closest("#summary-done-btn"); if(sd){showScreen("home");return;}
+    var cb=t.closest("[data-action='context-before']"); if(cb&&!cb.disabled){fetchContext("before");return;}
+    var ca=t.closest("[data-action='context-after']"); if(ca&&!ca.disabled){fetchContext("after");return;}
     var lb=t.closest("#lookup-btn"); if(lb&&!lb.disabled){doLookup();return;}
     var bb=t.closest("#begin-study-btn"); if(bb&&!bb.disabled){doBegin();return;}
     var sb=t.closest("#study-back-btn"); if(sb){saveCurrentResponses();showScreen("home");return;}
