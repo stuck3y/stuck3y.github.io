@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Wim Hof Method</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --border: #222;
+    --text: #e8e8e8;
+    --text-dim: #666;
+    --accent: #3b82f6;
+    --accent-glow: rgba(59, 130, 246, 0.15);
+    --warm: #f59e0b;
+    --cold: #06b6d4;
+    --radius: 16px;
+  }
+
+  body {
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header {
+    padding: 20px 24px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .round-badge {
+    font-size: 13px;
+    color: var(--text-dim);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-weight: 500;
+  }
+
+  /* Phase Tabs */
+  .phase-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 8px 24px 16px;
+  }
+  .phase-tab {
+    flex: 1;
+    height: 4px;
+    border-radius: 4px;
+    background: var(--border);
+    transition: background 0.4s;
+  }
+  .phase-tab.active { background: var(--accent); }
+  .phase-tab.done { background: #333; }
+
+  /* Main Area */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px;
+    gap: 24px;
+    min-height: 0;
+  }
+
+  /* The Circle */
+  .circle-container {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    flex-shrink: 0;
+  }
+  .circle-bg {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 4;
+  }
+  .circle-progress {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 4;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: center;
+    transition: stroke-dashoffset 0.3s ease, stroke 0.4s;
+    filter: drop-shadow(0 0 8px var(--accent-glow));
+  }
+  .circle-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .circle-number {
+    font-size: 72px;
+    font-weight: 700;
+    letter-spacing: -3px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .circle-label {
+    font-size: 14px;
+    color: var(--text-dim);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  /* Breathing animation */
+  .breath-ring {
+    position: absolute;
+    inset: 30px;
+    border-radius: 50%;
+    border: 1px solid rgba(59, 130, 246, 0.08);
+    transition: transform 4s ease-in-out, border-color 0.4s;
+  }
+  .breath-ring.inhale {
+    transform: scale(1.08);
+    border-color: rgba(59, 130, 246, 0.2);
+  }
+  .breath-ring.exhale {
+    transform: scale(0.92);
+    border-color: rgba(59, 130, 246, 0.05);
+  }
+
+  /* Instruction */
+  .instruction {
+    text-align: center;
+    min-height: 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .instruction-text {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+  }
+  .instruction-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  /* Controls */
+  .controls {
+    padding: 16px 24px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .btn-primary {
+    width: 100%;
+    padding: 18px;
+    border-radius: var(--radius);
+    border: none;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--accent);
+    color: #fff;
+    transition: opacity 0.2s, transform 0.1s;
+    letter-spacing: -0.2px;
+  }
+  .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
+
+  .btn-secondary {
+    width: 100%;
+    padding: 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: transparent;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .btn-secondary:active { border-color: #444; }
+
+  .btn-row {
+    display: flex;
+    gap: 12px;
+  }
+  .btn-row > * { flex: 1; }
+
+  /* Settings Panel */
+  .settings-panel {
+    padding: 0 24px 24px;
+    display: none;
+  }
+  .settings-panel.visible { display: block; }
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-label {
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .setting-label span {
+    display: block;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .stepper button {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 18px;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .stepper button:active { background: #1a1a1a; }
+  .stepper-value {
+    font-size: 17px;
+    font-weight: 600;
+    min-width: 28px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Session Complete */
+  .complete-stats {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    max-width: 320px;
+  }
+  .stat-card {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -1px;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* Phase colors */
+  .phase-retention .circle-progress { stroke: var(--warm); filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.2)); }
+  .phase-recovery .circle-progress { stroke: #10b981; filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.2)); }
+  .phase-cold .circle-progress { stroke: var(--cold); filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.2)); }
+
+  .hidden { display: none !important; }
+
+  /* Haptic-like pulse */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  .pulsing { animation: pulse 1.5s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Wim Hof Method</h1>
+  <div class="round-badge" id="roundBadge">Round 1 / 3</div>
+</div>
+
+<div class="phase-tabs" id="phaseTabs">
+  <div class="phase-tab" data-phase="0"></div>
+  <div class="phase-tab" data-phase="1"></div>
+  <div class="phase-tab" data-phase="2"></div>
+</div>
+
+<div class="main" id="mainArea">
+  <!-- Idle State -->
+  <div id="idleView">
+    <div class="circle-container">
+      <svg viewBox="0 0 260 260" width="260" height="260">
+        <circle class="circle-bg" cx="130" cy="130" r="120"/>
+      </svg>
+      <div class="circle-center">
+        <div class="circle-number" style="font-size:36px; letter-spacing:-1px;">WHM</div>
+        <div class="circle-label">Ready</div>
+      </div>
+    </div>
+    <div class="instruction">
+      <div class="instruction-text">Breathe. Hold. Recover.</div>
+      <div class="instruction-sub">3 rounds · ~15 minutes</div>
+    </div>
+  </div>
+
+  <!-- Active State -->
+  <div id="activeView" class="hidden">
+    <div class="circle-container" id="circleContainer">
+      <svg viewBox="0 0 260 260" width="260" height="260">
+        <circle class="circle-bg" cx="130" cy="130" r="120"/>
+        <circle class="circle-progress" id="circleProgress" cx="130" cy="130" r="120"
+          stroke-dasharray="754" stroke-dashoffset="0"/>
+      </svg>
+      <div class="breath-ring" id="breathRing"></div>
+      <div class="circle-center">
+        <div class="circle-number" id="circleNumber">30</div>
+        <div class="circle-label" id="circleLabel">breaths</div>
+      </div>
+    </div>
+    <div class="instruction">
+      <div class="instruction-text" id="instructionText">Deep breaths</div>
+      <div class="instruction-sub" id="instructionSub">Inhale nose, exhale mouth</div>
+    </div>
+  </div>
+
+  <!-- Complete State -->
+  <div id="completeView" class="hidden">
+    <div class="circle-container">
+      <svg viewBox="0 0 260 260" width="260" height="260">
+        <circle class="circle-bg" cx="130" cy="130" r="120"/>
+        <circle class="circle-progress" cx="130" cy="130" r="120"
+          stroke-dasharray="754" stroke-dashoffset="0" style="stroke:#10b981;filter:drop-shadow(0 0 8px rgba(16,185,129,0.2))"/>
+      </svg>
+      <div class="circle-center">
+        <div class="circle-number" style="font-size:36px; letter-spacing:-1px;">Done</div>
+        <div class="circle-label">Session complete</div>
+      </div>
+    </div>
+    <div class="complete-stats" id="completeStats"></div>
+  </div>
+</div>
+
+<!-- Settings -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="setting-row">
+    <div class="setting-label">Breaths per round<span>30–50 recommended</span></div>
+    <div class="stepper">
+      <button onclick="adjustSetting('breaths', -5)">−</button>
+      <div class="stepper-value" id="breathsValue">30</div>
+      <button onclick="adjustSetting('breaths', 5)">+</button>
+    </div>
+  </div>
+  <div class="setting-row">
+    <div class="setting-label">Rounds<span>3–4 recommended</span></div>
+    <div class="stepper">
+      <button onclick="adjustSetting('rounds', -1)">−</button>
+      <div class="stepper-value" id="roundsValue">3</div>
+      <button onclick="adjustSetting('rounds', 1)">+</button>
+    </div>
+  </div>
+  <div class="setting-row">
+    <div class="setting-label">Recovery hold<span>Seconds</span></div>
+    <div class="stepper">
+      <button onclick="adjustSetting('recovery', -5)">−</button>
+      <div class="stepper-value" id="recoveryValue">15</div>
+      <button onclick="adjustSetting('recovery', 5)">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="controls" id="controls">
+  <button class="btn-primary" id="btnPrimary" onclick="handlePrimary()">Start Session</button>
+  <button class="btn-secondary" id="btnSecondary" onclick="handleSecondary()">Settings</button>
+</div>
+
+<script>
+  // ── State ──
+  const config = { breaths: 30, rounds: 3, recovery: 15 };
+  let state = 'idle'; // idle | breathing | retention | recovery | complete
+  let currentRound = 1;
+  let breathCount = 0;
+  let timer = null;
+  let seconds = 0;
+  let breathPhase = 'in'; // in | out
+  let retentionTimes = [];
+  let retentionStart = 0;
+  const CIRC = 754; // 2 * π * 120
+
+  // ── Elements ──
+  const $ = id => document.getElementById(id);
+
+  // ── Settings ──
+  function adjustSetting(key, delta) {
+    const mins = { breaths: 10, rounds: 1, recovery: 5 };
+    const maxs = { breaths: 50, rounds: 10, recovery: 30 };
+    config[key] = Math.max(mins[key], Math.min(maxs[key], config[key] + delta));
+    $(key + 'Value').textContent = config[key];
+    $('idleView').querySelector('.instruction-sub').textContent =
+      `${config.rounds} rounds · ~${Math.round(config.rounds * (config.breaths * 4 + 90 + config.recovery) / 60)} minutes`;
+  }
+
+  function updateRoundBadge() {
+    $('roundBadge').textContent = `Round ${currentRound} / ${config.rounds}`;
+  }
+
+  function setProgress(fraction) {
+    $('circleProgress').setAttribute('stroke-dashoffset', CIRC * (1 - fraction));
+  }
+
+  function showView(name) {
+    ['idleView', 'activeView', 'completeView'].forEach(v =>
+      $(v).classList.toggle('hidden', v !== name + 'View'));
+  }
+
+  function updatePhaseTabs() {
+    const phases = ['breathing', 'retention', 'recovery'];
+    const idx = phases.indexOf(state);
+    document.querySelectorAll('.phase-tab').forEach((tab, i) => {
+      tab.className = 'phase-tab' + (i === idx ? ' active' : i < idx ? ' done' : '');
+    });
+  }
+
+  function setPhaseClass(phase) {
+    const el = $('circleContainer');
+    el.className = 'circle-container' + (phase ? ` phase-${phase}` : '');
+  }
+
+  // ── Breathing Phase ──
+  function startBreathing() {
+    state = 'breathing';
+    breathCount = 0;
+    breathPhase = 'in';
+    showView('active');
+    updatePhaseTabs();
+    setPhaseClass('');
+    $('instructionText').textContent = 'Deep breaths';
+    $('instructionSub').textContent = 'Inhale nose, exhale mouth';
+    $('circleNumber').textContent = config.breaths;
+    $('circleLabel').textContent = 'breaths left';
+    setProgress(0);
+    $('btnPrimary').textContent = 'Stop';
+    $('btnSecondary').textContent = 'Stop';
+    $('btnSecondary').classList.add('hidden');
+
+    doBreathe();
+  }
+
+  function doBreathe() {
+    if (state !== 'breathing') return;
+
+    const ring = $('breathRing');
+
+    // Inhale
+    breathPhase = 'in';
+    ring.className = 'breath-ring inhale';
+    $('instructionText').textContent = 'Inhale';
+
+    timer = setTimeout(() => {
+      if (state !== 'breathing') return;
+      // Exhale
+      breathPhase = 'out';
+      ring.className = 'breath-ring exhale';
+      $('instructionText').textContent = 'Exhale';
+      breathCount++;
+      const left = config.breaths - breathCount;
+      $('circleNumber').textContent = left;
+      setProgress(breathCount / config.breaths);
+
+      if (breathCount >= config.breaths) {
+        timer = setTimeout(() => startRetention(), 1500);
+      } else {
+        timer = setTimeout(() => doBreathe(), 1800);
+      }
+    }, 2000);
+  }
+
+  // ── Retention Phase ──
+  function startRetention() {
+    state = 'retention';
+    seconds = 0;
+    retentionStart = Date.now();
+    updatePhaseTabs();
+    setPhaseClass('retention');
+    $('breathRing').className = 'breath-ring';
+    $('circleNumber').textContent = '0:00';
+    $('circleLabel').textContent = 'hold time';
+    $('instructionText').textContent = 'Hold your breath';
+    $('instructionSub').textContent = 'Tap when you need to breathe';
+    setProgress(0);
+    $('circleNumber').classList.add('pulsing');
+
+    $('btnPrimary').textContent = 'I need to breathe';
+
+    timer = setInterval(() => {
+      seconds = Math.floor((Date.now() - retentionStart) / 1000);
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      $('circleNumber').textContent = `${m}:${s.toString().padStart(2, '0')}`;
+      // Gentle progress — fills over 3 minutes
+      setProgress(Math.min(1, seconds / 180));
+    }, 250);
+  }
+
+  // ── Recovery Phase ──
+  function startRecovery() {
+    state = 'recovery';
+    const held = Math.floor((Date.now() - retentionStart) / 1000);
+    retentionTimes.push(held);
+    clearInterval(timer);
+    $('circleNumber').classList.remove('pulsing');
+
+    updatePhaseTabs();
+    setPhaseClass('recovery');
+    let remaining = config.recovery;
+    $('circleNumber').textContent = remaining;
+    $('circleLabel').textContent = 'seconds';
+    $('instructionText').textContent = 'Inhale deeply, hold';
+    $('instructionSub').textContent = `Recovery breath — ${config.recovery}s`;
+    setProgress(1);
+    $('btnPrimary').textContent = 'Skip';
+
+    timer = setInterval(() => {
+      remaining--;
+      $('circleNumber').textContent = remaining;
+      setProgress(remaining / config.recovery);
+      if (remaining <= 0) {
+        clearInterval(timer);
+        nextRoundOrComplete();
+      }
+    }, 1000);
+  }
+
+  function nextRoundOrComplete() {
+    if (currentRound >= config.rounds) {
+      showComplete();
+    } else {
+      currentRound++;
+      updateRoundBadge();
+      startBreathing();
+    }
+  }
+
+  // ── Complete ──
+  function showComplete() {
+    state = 'complete';
+    clearInterval(timer);
+    showView('complete');
+    setPhaseClass('');
+
+    const total = retentionTimes.reduce((a, b) => a + b, 0);
+    const best = Math.max(...retentionTimes);
+
+    let statsHTML = '';
+    retentionTimes.forEach((t, i) => {
+      const m = Math.floor(t / 60);
+      const s = t % 60;
+      statsHTML += `<div class="stat-card">
+        <div class="stat-value">${m}:${s.toString().padStart(2, '0')}</div>
+        <div class="stat-label">Round ${i + 1}</div>
+      </div>`;
+    });
+    $('completeStats').innerHTML = statsHTML;
+
+    $('btnPrimary').textContent = 'New Session';
+    $('btnSecondary').textContent = 'Settings';
+    $('btnSecondary').classList.remove('hidden');
+  }
+
+  // ── Reset ──
+  function resetToIdle() {
+    state = 'idle';
+    clearTimeout(timer);
+    clearInterval(timer);
+    currentRound = 1;
+    retentionTimes = [];
+    breathCount = 0;
+    showView('idle');
+    setPhaseClass('');
+    updateRoundBadge();
+    document.querySelectorAll('.phase-tab').forEach(t => t.className = 'phase-tab');
+    $('breathRing').className = 'breath-ring';
+    $('circleNumber').classList.remove('pulsing');
+    $('btnPrimary').textContent = 'Start Session';
+    $('btnSecondary').textContent = 'Settings';
+    $('btnSecondary').classList.remove('hidden');
+    $('settingsPanel').classList.remove('visible');
+  }
+
+  // ── Button Handlers ──
+  function handlePrimary() {
+    switch (state) {
+      case 'idle':
+        $('settingsPanel').classList.remove('visible');
+        startBreathing();
+        break;
+      case 'breathing':
+        resetToIdle();
+        break;
+      case 'retention':
+        startRecovery();
+        break;
+      case 'recovery':
+        clearInterval(timer);
+        nextRoundOrComplete();
+        break;
+      case 'complete':
+        resetToIdle();
+        break;
+    }
+  }
+
+  function handleSecondary() {
+    if (state === 'idle' || state === 'complete') {
+      $('settingsPanel').classList.toggle('visible');
+    } else {
+      resetToIdle();
+    }
+  }
+
+  // ── Wake Lock (keep screen on) ──
+  let wakeLock = null;
+  async function requestWakeLock() {
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLock = await navigator.wakeLock.request('screen');
+      }
+    } catch (e) {}
+  }
+  function releaseWakeLock() {
+    if (wakeLock) { wakeLock.release(); wakeLock = null; }
+  }
+
+  // Keep screen on during active session
+  const origStart = startBreathing;
+  const patchedStart = function() {
+    requestWakeLock();
+    origStart();
+  };
+  // We patch inline since startBreathing calls itself via nextRound
+  const origReset = resetToIdle;
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && state !== 'idle' && state !== 'complete') {
+      requestWakeLock();
+    }
+  });
+
+  // Init
+  updateRoundBadge();
+</script>
+
+</body>
+</html>
