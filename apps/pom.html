@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pomo">
+<title>Pomo</title>
+<style>
+  :root {
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --text: #1D1D1F;
+    --text-secondary: #86868B;
+    --accent: #FF3B30;
+    --accent-soft: #FF3B3018;
+    --break-accent: #34C759;
+    --break-soft: #34C75918;
+    --border: #E5E5EA;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+    --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, sans-serif;
+    --mono: 'SF Mono', ui-monospace, monospace;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000;
+      --surface: #1C1C1E;
+      --text: #F5F5F7;
+      --text-secondary: #98989D;
+      --border: #38383A;
+      --accent-soft: #FF3B3025;
+      --break-soft: #34C75925;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.4);
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+
+  body {
+    padding: calc(var(--safe-top) + 16px) 16px calc(var(--safe-bottom) + 16px);
+    max-width: 440px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    min-height: 100dvh;
+  }
+
+  /* — Timer — */
+  .timer-section {
+    flex-shrink: 0;
+    text-align: center;
+    padding: 32px 0 24px;
+  }
+
+  .mode-tabs {
+    display: inline-flex;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+    gap: 2px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow);
+  }
+
+  .mode-tab {
+    font: 600 13px/1 var(--font);
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-user-select: none;
+  }
+
+  .mode-tab.active {
+    background: var(--accent);
+    color: white;
+  }
+
+  .mode-tab.active[data-mode="shortBreak"],
+  .mode-tab.active[data-mode="longBreak"] {
+    background: var(--break-accent);
+  }
+
+  .timer-display {
+    font: 200 96px/1 var(--font);
+    letter-spacing: -4px;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 32px;
+    transition: color 0.3s ease;
+    -webkit-user-select: none;
+  }
+
+  .timer-display.break-mode { color: var(--break-accent); }
+  .timer-display.focus-mode { color: var(--text); }
+
+  .timer-controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .btn {
+    font: 600 15px/1 var(--font);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    -webkit-user-select: none;
+  }
+
+  .btn:active { transform: scale(0.96); }
+
+  .btn-primary {
+    padding: 14px 48px;
+    background: var(--accent);
+    color: white;
+    font-size: 17px;
+    border-radius: 14px;
+  }
+
+  .btn-primary.break-active {
+    background: var(--break-accent);
+  }
+
+  .btn-secondary {
+    padding: 14px 20px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    box-shadow: var(--shadow);
+  }
+
+  /* — Task Input — */
+  .task-input-row {
+    flex-shrink: 0;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .task-input-row input {
+    flex: 1;
+    font: 400 16px/1.2 var(--font);
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .task-input-row input:focus {
+    border-color: var(--accent);
+  }
+
+  .task-input-row input::placeholder {
+    color: var(--text-secondary);
+  }
+
+  .btn-add {
+    padding: 14px 18px;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow);
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  /* — Task List — */
+  .tasks-section {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 12px;
+  }
+
+  .section-label {
+    font: 600 12px/1 var(--font);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    padding: 0 4px;
+  }
+
+  .task-list { list-style: none; }
+
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    margin-bottom: 6px;
+    box-shadow: var(--shadow);
+    transition: opacity 0.2s;
+    -webkit-user-select: none;
+  }
+
+  .task-item.active-task {
+    border-left: 3px solid var(--accent);
+  }
+
+  .task-item.completed { opacity: 0.45; }
+  .task-item.completed .task-name { text-decoration: line-through; }
+
+  .task-check {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    background: transparent;
+    color: transparent;
+    font-size: 12px;
+  }
+
+  .task-check.checked {
+    border-color: var(--break-accent);
+    background: var(--break-accent);
+    color: white;
+  }
+
+  .task-name {
+    flex: 1;
+    font: 400 15px/1.3 var(--font);
+    cursor: pointer;
+  }
+
+  .task-pomos {
+    font: 500 12px/1 var(--mono);
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .task-delete {
+    font-size: 16px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    background: none;
+    border: none;
+  }
+
+  .task-item:hover .task-delete { opacity: 1; }
+  @media (hover: none) { .task-delete { opacity: 0.5; } }
+
+  /* — History & Footer — */
+  .footer-bar {
+    flex-shrink: 0;
+    display: flex;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-btn {
+    font: 500 13px/1 var(--font);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    flex: 1;
+    text-align: center;
+  }
+
+  .footer-btn:active { transform: scale(0.97); }
+
+  /* — Modal — */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    display: none; align-items: flex-end; justify-content: center;
+    z-index: 100;
+    padding: 16px;
+    padding-bottom: calc(var(--safe-bottom) + 16px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 20px;
+    width: 100%; max-width: 440px;
+    max-height: 70vh;
+    display: flex; flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 20px 12px;
+    flex-shrink: 0;
+  }
+
+  .modal-header h2 {
+    font: 700 18px/1 var(--font);
+  }
+
+  .modal-close {
+    font-size: 24px; background: none; border: none;
+    color: var(--text-secondary); cursor: pointer; padding: 4px 8px;
+  }
+
+  .modal-body {
+    padding: 0 20px 20px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .history-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .history-item:last-child { border-bottom: none; }
+
+  .history-date {
+    font: 600 13px/1 var(--font);
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+
+  .history-detail {
+    font: 400 14px/1.4 var(--font);
+  }
+
+  .history-empty {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 32px 0;
+    font: 400 14px/1.4 var(--font);
+  }
+
+  /* — Settings — */
+  .setting-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .setting-row:last-child { border-bottom: none; }
+
+  .setting-label { font: 400 15px/1 var(--font); }
+
+  .setting-value {
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .setting-value input {
+    width: 56px;
+    font: 500 15px/1 var(--mono);
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+  }
+
+  .setting-unit {
+    font: 400 13px/1 var(--font);
+    color: var(--text-secondary);
+  }
+
+  /* — Toast — */
+  .toast {
+    position: fixed;
+    bottom: calc(var(--safe-bottom) + 80px);
+    left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--text);
+    color: var(--bg);
+    font: 500 14px/1 var(--font);
+    padding: 12px 24px;
+    border-radius: 100px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 200;
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* — Pomo counter — */
+  .pomo-count {
+    font: 600 13px/1 var(--font);
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .pomo-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .pomo-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .pomo-dot.filled { background: var(--accent); }
+
+  /* — Status bar — */
+  .status-export-preview {
+    font: 400 13px/1.4 var(--mono);
+    color: var(--text-secondary);
+    background: var(--bg);
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .danger-btn {
+    color: var(--accent);
+    background: var(--accent-soft);
+    font: 500 14px/1 var(--font);
+    padding: 12px 20px;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    width: 100%;
+    margin-top: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Timer -->
+<div class="timer-section">
+  <div class="mode-tabs">
+    <button class="mode-tab active" data-mode="focus" onclick="setMode('focus')">Focus</button>
+    <button class="mode-tab" data-mode="shortBreak" onclick="setMode('shortBreak')">Short</button>
+    <button class="mode-tab" data-mode="longBreak" onclick="setMode('longBreak')">Long</button>
+  </div>
+
+  <div class="pomo-dots" id="pomoDots"></div>
+
+  <div class="timer-display focus-mode" id="timerDisplay">25:00</div>
+
+  <div class="timer-controls">
+    <button class="btn btn-secondary" onclick="resetTimer()">Reset</button>
+    <button class="btn btn-primary" id="startBtn" onclick="toggleTimer()">Start</button>
+    <button class="btn btn-secondary" onclick="skipTimer()">Skip</button>
+  </div>
+</div>
+
+<!-- Task Input -->
+<div class="task-input-row">
+  <input type="text" id="taskInput" placeholder="What are you working on?" autocomplete="off" enterkeyhint="done">
+  <button class="btn btn-add" onclick="addTask()">+</button>
+</div>
+
+<!-- Tasks -->
+<div class="tasks-section">
+  <div class="section-label" id="tasksLabel">Tasks</div>
+  <ul class="task-list" id="taskList"></ul>
+</div>
+
+<!-- Footer -->
+<div class="footer-bar">
+  <button class="footer-btn" onclick="exportStatus()">📋 Status</button>
+  <button class="footer-btn" onclick="showHistory()">📊 History</button>
+  <button class="footer-btn" onclick="showSettings()">⚙ Settings</button>
+</div>
+
+<!-- History Modal -->
+<div class="modal-overlay" id="historyModal" onclick="closeModal(event, 'historyModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>History</h2>
+      <button class="modal-close" onclick="document.getElementById('historyModal').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-body" id="historyBody"></div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal" onclick="closeModal(event, 'settingsModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Settings</h2>
+      <button class="modal-close" onclick="document.getElementById('settingsModal').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="setting-row">
+        <span class="setting-label">Focus</span>
+        <div class="setting-value">
+          <input type="number" id="setFocus" value="25" min="1" max="120" inputmode="numeric">
+          <span class="setting-unit">min</span>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Short Break</span>
+        <div class="setting-value">
+          <input type="number" id="setShort" value="5" min="1" max="30" inputmode="numeric">
+          <span class="setting-unit">min</span>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Long Break</span>
+        <div class="setting-value">
+          <input type="number" id="setLong" value="15" min="1" max="60" inputmode="numeric">
+          <span class="setting-unit">min</span>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Long Break After</span>
+        <div class="setting-value">
+          <input type="number" id="setLongAfter" value="4" min="2" max="10" inputmode="numeric">
+          <span class="setting-unit">pomos</span>
+        </div>
+      </div>
+      <button class="btn footer-btn" style="width:100%;margin-top:12px" onclick="saveSettings()">Save</button>
+      <button class="danger-btn" onclick="clearAllData()">Clear All Data</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ——— State ———
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem('pomo_' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('pomo_' + k, JSON.stringify(v)); } catch {} }
+};
+
+let settings = LS.get('settings', { focus: 25, shortBreak: 5, longBreak: 15, longAfter: 4 });
+let tasks = LS.get('tasks', []);
+let history = LS.get('history', []);
+let mode = 'focus'; // 'focus' | 'shortBreak' | 'longBreak'
+let timeLeft = settings.focus * 60;
+let running = false;
+let interval = null;
+let pomosCompleted = LS.get('pomosToday', 0);
+let activeTaskId = LS.get('activeTask', null);
+let sessionStartTime = null;
+
+// Reset daily pomo count
+const today = new Date().toDateString();
+if (LS.get('lastDay', '') !== today) {
+  pomosCompleted = 0;
+  LS.set('pomosToday', 0);
+  LS.set('lastDay', today);
+}
+
+// ——— Timer ———
+function formatTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+}
+
+function updateDisplay() {
+  const display = document.getElementById('timerDisplay');
+  display.textContent = formatTime(timeLeft);
+  display.className = 'timer-display ' + (mode === 'focus' ? 'focus-mode' : 'break-mode');
+
+  const btn = document.getElementById('startBtn');
+  btn.textContent = running ? 'Pause' : 'Start';
+  btn.className = 'btn btn-primary' + (mode !== 'focus' ? ' break-active' : '');
+
+  // Title
+  const prefix = running ? (mode === 'focus' ? '🔴 ' : '🟢 ') : '';
+  document.title = prefix + formatTime(timeLeft) + ' — Pomo';
+
+  renderPomoDots();
+}
+
+function toggleTimer() {
+  if (running) {
+    clearInterval(interval);
+    running = false;
+  } else {
+    if (!sessionStartTime) sessionStartTime = new Date();
+    running = true;
+    interval = setInterval(tick, 1000);
+  }
+  updateDisplay();
+}
+
+function tick() {
+  if (timeLeft <= 0) {
+    clearInterval(interval);
+    running = false;
+    onTimerComplete();
+    return;
+  }
+  timeLeft--;
+  updateDisplay();
+}
+
+function resetTimer() {
+  clearInterval(interval);
+  running = false;
+  sessionStartTime = null;
+  timeLeft = getDuration(mode);
+  updateDisplay();
+}
+
+function skipTimer() {
+  clearInterval(interval);
+  running = false;
+  onTimerComplete();
+}
+
+function getDuration(m) {
+  return (m === 'focus' ? settings.focus : m === 'shortBreak' ? settings.shortBreak : settings.longBreak) * 60;
+}
+
+function setMode(m) {
+  clearInterval(interval);
+  running = false;
+  mode = m;
+  sessionStartTime = null;
+  timeLeft = getDuration(m);
+
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === m));
+  updateDisplay();
+}
+
+function onTimerComplete() {
+  sessionStartTime = null;
+
+  if (mode === 'focus') {
+    pomosCompleted++;
+    LS.set('pomosToday', pomosCompleted);
+
+    // Credit active task
+    if (activeTaskId) {
+      const task = tasks.find(t => t.id === activeTaskId);
+      if (task) { task.pomos++; saveTasks(); }
+    }
+
+    // Log history
+    addHistory('focus', settings.focus);
+
+    // Notify
+    notify('Focus session complete!', 'Time for a break.');
+
+    // Auto-switch to break
+    if (pomosCompleted % settings.longAfter === 0) {
+      setMode('longBreak');
+    } else {
+      setMode('shortBreak');
+    }
+  } else {
+    addHistory(mode, mode === 'shortBreak' ? settings.shortBreak : settings.longBreak);
+    notify('Break over!', 'Ready to focus?');
+    setMode('focus');
+  }
+}
+
+function notify(title, body) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, { body, icon: '🍅' });
+  }
+  // Audio ping
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    gain.gain.value = 0.3;
+    osc.start(); osc.stop(ctx.currentTime + 0.2);
+    setTimeout(() => {
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.connect(gain2); gain2.connect(ctx.destination);
+      osc2.frequency.value = 1100;
+      osc2.type = 'sine';
+      gain2.gain.value = 0.3;
+      osc2.start(); osc2.stop(ctx.currentTime + 0.3);
+    }, 250);
+  } catch {}
+}
+
+// ——— Tasks ———
+function saveTasks() { LS.set('tasks', tasks); }
+
+function addTask() {
+  const input = document.getElementById('taskInput');
+  const name = input.value.trim();
+  if (!name) return;
+
+  tasks.push({ id: Date.now().toString(), name, pomos: 0, done: false, created: new Date().toISOString() });
+  input.value = '';
+  saveTasks();
+  renderTasks();
+}
+
+function toggleTask(id) {
+  const task = tasks.find(t => t.id === id);
+  if (task) {
+    task.done = !task.done;
+    if (task.done && activeTaskId === id) { activeTaskId = null; LS.set('activeTask', null); }
+    saveTasks();
+    renderTasks();
+  }
+}
+
+function selectTask(id) {
+  activeTaskId = activeTaskId === id ? null : id;
+  LS.set('activeTask', activeTaskId);
+  renderTasks();
+}
+
+function deleteTask(id) {
+  tasks = tasks.filter(t => t.id !== id);
+  if (activeTaskId === id) { activeTaskId = null; LS.set('activeTask', null); }
+  saveTasks();
+  renderTasks();
+}
+
+function renderTasks() {
+  const list = document.getElementById('taskList');
+  const active = tasks.filter(t => !t.done);
+  const done = tasks.filter(t => t.done);
+  const all = [...active, ...done];
+
+  list.innerHTML = all.map(t => `
+    <li class="task-item ${t.done ? 'completed' : ''} ${t.id === activeTaskId ? 'active-task' : ''}">
+      <div class="task-check ${t.done ? 'checked' : ''}" onclick="toggleTask('${t.id}')">✓</div>
+      <span class="task-name" onclick="selectTask('${t.id}')">${escHtml(t.name)}</span>
+      ${t.pomos > 0 ? `<span class="task-pomos">${t.pomos}🍅</span>` : ''}
+      <button class="task-delete" onclick="deleteTask('${t.id}')">×</button>
+    </li>
+  `).join('');
+
+  document.getElementById('tasksLabel').textContent =
+    `Tasks${active.length > 0 ? ' · ' + active.length : ''}`;
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ——— Pomo Dots ———
+function renderPomoDots() {
+  const container = document.getElementById('pomoDots');
+  const total = settings.longAfter;
+  const filled = pomosCompleted % total;
+  container.innerHTML = Array.from({ length: total }, (_, i) =>
+    `<div class="pomo-dot ${i < filled ? 'filled' : ''}"></div>`
+  ).join('');
+}
+
+// ——— History ———
+function addHistory(type, minutes) {
+  const entry = {
+    type,
+    minutes,
+    task: activeTaskId ? (tasks.find(t => t.id === activeTaskId)?.name || null) : null,
+    time: new Date().toISOString()
+  };
+  history.unshift(entry);
+  if (history.length > 200) history = history.slice(0, 200);
+  LS.set('history', history);
+}
+
+function showHistory() {
+  const body = document.getElementById('historyBody');
+  if (history.length === 0) {
+    body.innerHTML = '<div class="history-empty">No sessions yet.<br>Start your first focus session!</div>';
+  } else {
+    // Group by day
+    const groups = {};
+    history.forEach(h => {
+      const day = new Date(h.time).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+      if (!groups[day]) groups[day] = [];
+      groups[day].push(h);
+    });
+
+    body.innerHTML = Object.entries(groups).map(([day, items]) => {
+      const focusCount = items.filter(i => i.type === 'focus').length;
+      const focusMins = items.filter(i => i.type === 'focus').reduce((s, i) => s + i.minutes, 0);
+      return `
+        <div class="history-item">
+          <div class="history-date">${day}</div>
+          <div class="history-detail">
+            ${focusCount} focus session${focusCount !== 1 ? 's' : ''} · ${focusMins} min total
+            ${items.filter(i => i.task).length > 0 ?
+              '<br>' + [...new Set(items.filter(i => i.task).map(i => i.task))].map(t => `<span style="color:var(--text-secondary)">— ${escHtml(t)}</span>`).join('<br>')
+            : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  document.getElementById('historyModal').classList.add('open');
+}
+
+// ——— Status Export ———
+function exportStatus() {
+  const activeTask = activeTaskId ? tasks.find(t => t.id === activeTaskId) : null;
+  let status = '';
+
+  if (running && mode === 'focus') {
+    const minsLeft = Math.ceil(timeLeft / 60);
+    status += `🔴 Focusing right now`;
+    if (activeTask) status += ` on "${activeTask.name}"`;
+    status += `\n⏱ ${minsLeft} min left`;
+    const endTime = new Date(Date.now() + timeLeft * 1000);
+    const endStr = endTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    status += `\n🕐 Available ~${endStr}`;
+  } else if (running && mode !== 'focus') {
+    const minsLeft = Math.ceil(timeLeft / 60);
+    status += `🟢 On a ${mode === 'shortBreak' ? 'short' : 'long'} break`;
+    status += `\n⏱ ${minsLeft} min left`;
+    const endTime = new Date(Date.now() + timeLeft * 1000);
+    const endStr = endTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    status += `\n🔴 Back to focus ~${endStr}`;
+  } else {
+    status += `⏸ Pomo paused`;
+  }
+
+  status += `\n📊 ${pomosCompleted} pomo${pomosCompleted !== 1 ? 's' : ''} today`;
+
+  const done = tasks.filter(t => t.done).length;
+  const total = tasks.length;
+  if (total > 0) status += ` · ${done}/${total} tasks done`;
+
+  navigator.clipboard.writeText(status).then(() => {
+    showToast('Status copied!');
+  }).catch(() => {
+    // Fallback
+    prompt('Copy your status:', status);
+  });
+}
+
+// ——— Settings ———
+function showSettings() {
+  document.getElementById('setFocus').value = settings.focus;
+  document.getElementById('setShort').value = settings.shortBreak;
+  document.getElementById('setLong').value = settings.longBreak;
+  document.getElementById('setLongAfter').value = settings.longAfter;
+  document.getElementById('settingsModal').classList.add('open');
+}
+
+function saveSettings() {
+  settings.focus = clamp(parseInt(document.getElementById('setFocus').value) || 25, 1, 120);
+  settings.shortBreak = clamp(parseInt(document.getElementById('setShort').value) || 5, 1, 30);
+  settings.longBreak = clamp(parseInt(document.getElementById('setLong').value) || 15, 1, 60);
+  settings.longAfter = clamp(parseInt(document.getElementById('setLongAfter').value) || 4, 2, 10);
+  LS.set('settings', settings);
+
+  if (!running) {
+    timeLeft = getDuration(mode);
+    updateDisplay();
+  }
+
+  document.getElementById('settingsModal').classList.remove('open');
+  showToast('Settings saved');
+}
+
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+function clearAllData() {
+  if (!confirm('Clear all tasks, history, and settings?')) return;
+  localStorage.removeItem('pomo_tasks');
+  localStorage.removeItem('pomo_history');
+  localStorage.removeItem('pomo_settings');
+  localStorage.removeItem('pomo_pomosToday');
+  localStorage.removeItem('pomo_activeTask');
+  localStorage.removeItem('pomo_lastDay');
+  location.reload();
+}
+
+// ——— Modals & Toast ———
+function closeModal(e, id) {
+  if (e.target === document.getElementById(id)) {
+    document.getElementById(id).classList.remove('open');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ——— Enter key for task ———
+document.getElementById('taskInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addTask();
+});
+
+// ——— Request notification permission ———
+if ('Notification' in window && Notification.permission === 'default') {
+  // Ask on first interaction
+  document.addEventListener('click', function askPerm() {
+    Notification.requestPermission();
+    document.removeEventListener('click', askPerm);
+  }, { once: true });
+}
+
+// ——— Init ———
+renderTasks();
+updateDisplay();
+</script>
+</body>
+</html>
