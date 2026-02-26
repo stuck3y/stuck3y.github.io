@@ -575,10 +575,11 @@ const LS = {
 let settings = LS.get('settings', { focus: 25, shortBreak: 5, longBreak: 15, longAfter: 4 });
 let tasks = LS.get('tasks', []);
 let history = LS.get('history', []);
-let mode = 'focus'; // 'focus' | 'shortBreak' | 'longBreak'
+let mode = LS.get('mode', 'focus'); // 'focus' | 'shortBreak' | 'longBreak'
 let timeLeft = settings.focus * 60;
 let running = false;
 let interval = null;
+let endTime = null; // absolute ms timestamp when timer hits 0
 let pomosCompleted = LS.get('pomosToday', 0);
 let activeTaskId = LS.get('activeTask', null);
 let sessionStartTime = null;
@@ -590,6 +591,31 @@ if (LS.get('lastDay', '') !== today) {
   LS.set('pomosToday', 0);
   LS.set('lastDay', today);
 }
+
+// Restore running timer that survived a tab suspension or page reload
+(function restoreTimer() {
+  const saved = LS.get('timerState', null);
+  if (saved && saved.endTime && saved.running) {
+    endTime = saved.endTime;
+    mode = saved.mode || 'focus';
+    const remaining = Math.round((endTime - Date.now()) / 1000);
+    if (remaining > 0) {
+      timeLeft = remaining;
+      running = true;
+      sessionStartTime = new Date(saved.sessionStart || Date.now());
+      startTicking();
+    } else {
+      // Timer expired while we were away — fire completion
+      timeLeft = 0;
+      running = false;
+      LS.set('timerState', null);
+      // defer so DOM is ready
+      setTimeout(() => onTimerComplete(), 0);
+    }
+  }
+  // Sync mode tabs
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+})();
 
 // ——— Timer ———
 function formatTime(s) {
@@ -614,40 +640,73 @@ function updateDisplay() {
   renderPomoDots();
 }
 
+function persistTimerState() {
+  if (running && endTime) {
+    LS.set('timerState', { endTime, mode, running: true, sessionStart: sessionStartTime?.toISOString() });
+  } else {
+    LS.set('timerState', null);
+  }
+}
+
 function toggleTimer() {
   if (running) {
+    // Pause: freeze timeLeft from endTime
     clearInterval(interval);
+    interval = null;
+    timeLeft = Math.max(0, Math.round((endTime - Date.now()) / 1000));
+    endTime = null;
     running = false;
   } else {
+    // Start: set absolute endTime
     if (!sessionStartTime) sessionStartTime = new Date();
+    endTime = Date.now() + timeLeft * 1000;
     running = true;
-    interval = setInterval(tick, 1000);
+    startTicking();
   }
+  persistTimerState();
   updateDisplay();
 }
 
+function startTicking() {
+  clearInterval(interval);
+  interval = setInterval(tick, 250); // 4x/sec for snappy recovery
+}
+
 function tick() {
-  if (timeLeft <= 0) {
+  if (!endTime) return;
+  const remaining = Math.round((endTime - Date.now()) / 1000);
+  if (remaining <= 0) {
+    timeLeft = 0;
     clearInterval(interval);
+    interval = null;
     running = false;
+    endTime = null;
+    persistTimerState();
+    updateDisplay();
     onTimerComplete();
     return;
   }
-  timeLeft--;
+  timeLeft = remaining;
   updateDisplay();
 }
 
 function resetTimer() {
   clearInterval(interval);
+  interval = null;
   running = false;
+  endTime = null;
   sessionStartTime = null;
   timeLeft = getDuration(mode);
+  persistTimerState();
   updateDisplay();
 }
 
 function skipTimer() {
   clearInterval(interval);
+  interval = null;
   running = false;
+  endTime = null;
+  persistTimerState();
   onTimerComplete();
 }
 
@@ -657,10 +716,14 @@ function getDuration(m) {
 
 function setMode(m) {
   clearInterval(interval);
+  interval = null;
   running = false;
+  endTime = null;
   mode = m;
   sessionStartTime = null;
   timeLeft = getDuration(m);
+  LS.set('mode', m);
+  persistTimerState();
 
   document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === m));
   updateDisplay();
@@ -944,6 +1007,20 @@ if ('Notification' in window && Notification.permission === 'default') {
     document.removeEventListener('click', askPerm);
   }, { once: true });
 }
+
+// ——— Recover on tab focus (critical for iOS Safari) ———
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && running && endTime) {
+    tick(); // immediately recalc from endTime
+  }
+});
+
+// Also catch Safari's page show event (back-forward cache)
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted && running && endTime) {
+    tick();
+  }
+});
 
 // ——— Init ———
 renderTasks();
