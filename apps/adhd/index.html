@@ -146,13 +146,13 @@ color: var(–text-tertiary);
 }
 
 /* per-button tint: colored left border + faint background wash */
-.feeling-btn[data-key=“can’t start”]     { border-left-color: #D4A06A; background: linear-gradient(90deg, #FBF3EB 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“can’t focus”]     { border-left-color: #6998BF; background: linear-gradient(90deg, #EDF3F9 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“can’t decide”]    { border-left-color: #A98DC5; background: linear-gradient(90deg, #F4EFF9 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“feeling behind”]  { border-left-color: #C47A7A; background: linear-gradient(90deg, #F9EDED 0%, #FFFFFF 40%); }
+.feeling-btn[data-key=“cant-start”]     { border-left-color: #D4A06A; background: linear-gradient(90deg, #FBF3EB 0%, #FFFFFF 40%); }
+.feeling-btn[data-key=“cant-focus”]     { border-left-color: #6998BF; background: linear-gradient(90deg, #EDF3F9 0%, #FFFFFF 40%); }
+.feeling-btn[data-key=“cant-decide”]    { border-left-color: #A98DC5; background: linear-gradient(90deg, #F4EFF9 0%, #FFFFFF 40%); }
+.feeling-btn[data-key=“feeling-behind”]  { border-left-color: #C47A7A; background: linear-gradient(90deg, #F9EDED 0%, #FFFFFF 40%); }
 .feeling-btn[data-key=“overwhelmed”]     { border-left-color: #D9A54B; background: linear-gradient(90deg, #FBF4E6 0%, #FFFFFF 40%); }
 .feeling-btn[data-key=“restless”]        { border-left-color: #6DAE8A; background: linear-gradient(90deg, #ECF5F0 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“feeling nothing”] { border-left-color: #94A3AF; background: linear-gradient(90deg, #EFF2F4 0%, #FFFFFF 40%); }
+.feeling-btn[data-key=“feeling-nothing”] { border-left-color: #94A3AF; background: linear-gradient(90deg, #EFF2F4 0%, #FFFFFF 40%); }
 
 /* ===== RESULT VIEW ===== */
 .result-view {
@@ -373,7 +373,7 @@ height: 16px;
   <div class="home-view" id="homeView">
     <div class="header">
       <h1>The ADHD Playbook</h1>
-      <p class="prompt">Right now, <em>I'm feeling...</em></p>
+      <p class="prompt">Right now, <em>I&#8217;m feeling...</em></p>
     </div>
     <div class="feelings" id="feelings"></div>
   </div>
@@ -387,7 +387,7 @@ height: 16px;
     </button>
     <div class="result-header">
       <div class="feeling-label" id="resultFeeling"></div>
-      <h2 id="resultTitle">Here's your play.</h2>
+      <h2 id="resultTitle">Here&#8217;s your play.</h2>
     </div>
     <div id="resultCards"></div>
     <button class="shuffle-btn" id="shuffleBtn">
@@ -400,16 +400,17 @@ height: 16px;
 
 <script>
 // ============================================================
-// DATA
+// DATA — keys use simple hyphenated slugs (no apostrophes)
 // ============================================================
 const PLAYBOOK = {
-  "can't start": {
+  "cant-start": {
     label: "stuck",
+    displayName: "can\u2019t start",
     strategies: [
-      "Pick the smallest physical movement. Not the task\u2009—\u2009the first motion. \u2018Open the doc.\u2019 That\u2019s it.",
+      "Pick the smallest physical movement. Not the task\u2009\u2014\u2009the first motion. \u2018Open the doc.\u2019 That\u2019s it.",
       "Set a 2-minute timer. You only have to work for 2 minutes. Most of the time, you won\u2019t stop.",
       "Narrate out loud what you\u2019re about to do. \u2018I\u2019m going to stand up, walk to the desk, open my laptop.\u2019",
-      "Put on one specific song\u2009—\u2009your launch song. Pair starting with a sensory ritual your brain can latch onto.",
+      "Put on one specific song\u2009\u2014\u2009your launch song. Pair starting with a sensory ritual your brain can latch onto.",
       "Text a friend: \u2018I\u2019m about to start X.\u2019 Accountability with a witness breaks the freeze."
     ],
     verses: [
@@ -422,7 +423,7 @@ const PLAYBOOK = {
     mantras: [
       "Motion before motivation.",
       "Start ugly. Clean it up later.",
-      "The hardest step is the first one\u2009—\u2009and it\u2019s already behind you.",
+      "The hardest step is the first one\u2009\u2014\u2009and it\u2019s already behind you.",
       "You don\u2019t need to feel ready. You just need to begin.",
       "Doing it badly still counts as doing it."
     ],
@@ -434,12 +435,13 @@ const PLAYBOOK = {
       { title: "John Piper: Don\u2019t Waste Your Life", url: "https://www.desiringgod.org/messages/boasting-only-in-the-cross" }
     ]
   },
-  "can't focus": {
+  "cant-focus": {
     label: "unfocused",
+    displayName: "can\u2019t focus",
     strategies: [
       "Body double. FaceTime a friend, go to a caf\u00e9, or put on a study-with-me livestream.",
       "Take a 15-minute phone-free walk outside. Let your brain reset without input.",
-      "Switch to a physical medium\u2009—\u2009pen and paper, whiteboard, sticky notes. Change the texture of the work.",
+      "Switch to a physical medium\u2009\u2014\u2009pen and paper, whiteboard, sticky notes. Change the texture of the work.",
       "Pomodoro: 25 minutes on, 5 off. Set the timer where you can see it counting down.",
       "Put on brown noise or one song on repeat. Give your restless brain a track to ride on."
     ],
@@ -465,10 +467,11 @@ const PLAYBOOK = {
       { title: "Body Doubling Explained", url: "https://www.youtube.com/watch?v=4lTMROSdSMc" }
     ]
   },
-  "can't decide": {
+  "cant-decide": {
     label: "paralyzed",
+    displayName: "can\u2019t decide",
     strategies: [
-      "Flip a coin. Not to let the coin decide\u2009—\u2009but to notice how you feel when it lands. That\u2019s your answer.",
+      "Flip a coin. Not to let the coin decide\u2009\u2014\u2009but to notice how you feel when it lands. That\u2019s your answer.",
       "Set a 5-minute timer. Pick one option and commit until it ends. Any direction beats standing still.",
       "Write only two options. Cross out the one that makes you relieved. Do the other one.",
       "Ask: \u2018What would I tell a friend to do?\u2019 Then take your own advice.",
@@ -496,13 +499,14 @@ const PLAYBOOK = {
       { title: "Piper: How Do I Make Hard Decisions?", url: "https://www.desiringgod.org/interviews/how-do-i-make-hard-decisions" }
     ]
   },
-  "feeling behind": {
+  "feeling-behind": {
     label: "behind",
+    displayName: "feeling behind",
     strategies: [
-      "Done list. Write everything you did today\u2009—\u2009even \u2018I got out of bed.\u2019 Evidence beats shame.",
+      "Done list. Write everything you did today\u2009\u2014\u2009even \u2018I got out of bed.\u2019 Evidence beats shame.",
       "Name three things you accomplished this week. Say them out loud. Your brain won\u2019t track wins on its own.",
       "Unfollow or mute one account that makes you feel behind. Curate your inputs.",
-      "Set one benchmark that\u2019s yours\u2009—\u2009not borrowed from someone else\u2019s timeline. Run your race.",
+      "Set one benchmark that\u2019s yours\u2009\u2014\u2009not borrowed from someone else\u2019s timeline. Run your race.",
       "Write a 3-sentence letter to yourself from one year ago. You\u2019d be proud of more than you think."
     ],
     verses: [
@@ -529,6 +533,7 @@ const PLAYBOOK = {
   },
   "overwhelmed": {
     label: "overwhelmed",
+    displayName: "overwhelmed",
     strategies: [
       "Brain dump. Everything in your head onto paper. Every task, worry, thought. Then circle just one.",
       "Cancel or postpone one thing today. Give yourself permission to have less on the plate.",
@@ -560,6 +565,7 @@ const PLAYBOOK = {
   },
   "restless": {
     label: "restless",
+    displayName: "restless",
     strategies: [
       "Move your body for 5 minutes. Walk, push-ups, jumping jacks. Get the buzz out, then sit down.",
       "Cold water on your wrists and face. 30 seconds. Resets your nervous system fast.",
@@ -578,7 +584,7 @@ const PLAYBOOK = {
       "Your body is talking. Listen to it.",
       "Restless isn\u2019t broken. It\u2019s energy looking for a channel.",
       "Move first. Think second.",
-      "You\u2019re not lazy\u2009—\u2009you\u2019re wired for motion.",
+      "You\u2019re not lazy\u2009\u2014\u2009you\u2019re wired for motion.",
       "The buzz passes. It always passes."
     ],
     resources: [
@@ -589,11 +595,12 @@ const PLAYBOOK = {
       { title: "C.S. Lewis: Mere Christianity", url: "https://www.cslewis.com/mere-christianity/" }
     ]
   },
-  "feeling nothing": {
+  "feeling-nothing": {
     label: "flat",
+    displayName: "feeling nothing",
     strategies: [
       "Lower the bar to \u2018exist with dignity.\u2019 Brush teeth. Drink water. Sit in sunlight. That\u2019s enough.",
-      "Put on a comfort show or album\u2009—\u2009something familiar that doesn\u2019t ask anything of you.",
+      "Put on a comfort show or album\u2009\u2014\u2009something familiar that doesn\u2019t ask anything of you.",
       "Text one person. Just \u2018hey.\u2019 Connection is medicine even when you don\u2019t feel like taking it.",
       "Write one sentence about how you feel. Just one. Naming the flat makes it less permanent.",
       "Go outside and look up. Sky, trees, clouds. Give your senses something gentle and real."
@@ -623,7 +630,7 @@ const PLAYBOOK = {
 };
 
 // ============================================================
-// LOGIC — stateless random selection
+// LOGIC
 // ============================================================
 function pick(arr, n) {
   const a = [...arr];
@@ -661,25 +668,26 @@ const linkIconSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 
 const arrowSVG = '<svg class="resource-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>';
 
-const buttonLabels = {
-  "can't start": "stuck",
-  "can't focus": "unfocused",
-  "can't decide": "paralyzed",
-  "feeling behind": "behind",
-  "overwhelmed": "overwhelmed",
-  "restless": "restless",
-  "feeling nothing": "nothing"
+const feelingColors = {
+  "cant-start": "#D4A06A",
+  "cant-focus": "#6998BF",
+  "cant-decide": "#A98DC5",
+  "feeling-behind": "#C47A7A",
+  "overwhelmed": "#D9A54B",
+  "restless": "#6DAE8A",
+  "feeling-nothing": "#94A3AF"
 };
 
 // Build buttons
 Object.keys(PLAYBOOK).forEach(key => {
+  const b = PLAYBOOK[key];
   const btn = document.createElement("button");
   btn.className = "feeling-btn";
   btn.dataset.key = key;
   btn.innerHTML = `
     <div class="label-group">
       <div class="prefix">I\u2019m feeling</div>
-      <div class="label">${buttonLabels[key]}</div>
+      <div class="label">${b.label}</div>
     </div>
     ${chevronSVG}
   `;
@@ -689,22 +697,13 @@ Object.keys(PLAYBOOK).forEach(key => {
 
 let currentKey = null;
 
-const feelingColors = {
-  "can't start": "#D4A06A",
-  "can't focus": "#6998BF",
-  "can't decide": "#A98DC5",
-  "feeling behind": "#C47A7A",
-  "overwhelmed": "#D9A54B",
-  "restless": "#6DAE8A",
-  "feeling nothing": "#94A3AF"
-};
-
 function showResult(key) {
   currentKey = key;
   const play = getPlay(key);
+  const b = PLAYBOOK[key];
 
   resultView.style.setProperty("--play-color", feelingColors[key]);
-  resultFeeling.textContent = "I\u2019m feeling " + buttonLabels[key];
+  resultFeeling.textContent = "I\u2019m feeling " + b.label;
 
   resultCards.innerHTML = `
     <div class="card strategy">
@@ -735,7 +734,6 @@ function showResult(key) {
 
   homeView.classList.add("hidden");
   resultView.classList.remove("active");
-  // force reflow for animation
   void resultView.offsetWidth;
   resultView.classList.add("active");
   window.scrollTo({ top: 0, behavior: "instant" });
