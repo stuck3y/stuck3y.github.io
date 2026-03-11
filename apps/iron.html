@@ -224,6 +224,10 @@ function rd(d){
       h+='<span style="font-size:16px;margin-top:2px;flex-shrink:0">'+(IC[x.t]||"\uD83D\uDD17")+'</span>';
       h+='<span style="font-size:14px;line-height:1.375;color:'+(hl?"#fde68a":"#d6d3d1")+(hl?";font-weight:500":"")+'">'+x.l+'</span>';
       h+='<svg style="width:14px;height:14px;margin-top:2px;margin-left:auto;flex-shrink:0;color:'+(hl?"rgba(245,158,11,.6)":"#78716c")+'" viewBox="0 0 16 16" fill="none"><path d="M5 3h8v8M13 3L3 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>'}
+    h+='<a href="https://jonsdata.com/apps/wellread?passage='+encodeURIComponent(d.reading)+'" target="_blank" rel="noopener noreferrer" class="rl rl-d">';
+    h+='<span style="font-size:16px;margin-top:2px;flex-shrink:0">\uD83D\uDD0D</span>';
+    h+='<span style="font-size:14px;line-height:1.375;color:#d6d3d1">Well Read \u2014 Study '+d.reading+'</span>';
+    h+='<svg style="width:14px;height:14px;margin-top:2px;margin-left:auto;flex-shrink:0;color:#78716c" viewBox="0 0 16 16" fill="none"><path d="M5 3h8v8M13 3L3 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>';
     h+='</div></div></div>';
   }
   h+='</div>';return h;
