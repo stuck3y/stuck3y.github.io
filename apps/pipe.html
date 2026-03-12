@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PipeTake — Residential Plumbing Takeoff</title>
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=SF+Pro+Text:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-hover: #fafafa;
+  --border: #e5e5e7;
+  --border-light: #f0f0f2;
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #aeaeb2;
+  --accent: #0071e3;
+  --accent-hover: #0077ED;
+  --accent-light: #e8f2ff;
+  --copper: #b87333;
+  --pex-red: #e63946;
+  --pex-blue: #457b9d;
+  --pvc: #8d99ae;
+  --cpvc: #f4a261;
+  --success: #34c759;
+  --warning: #ff9f0a;
+  --danger: #ff3b30;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  --transition: 200ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* ---- TOP BAR ---- */
+.topbar {
+  height: 52px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 16px;
+  z-index: 100;
+  position: relative;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.3px;
+  color: var(--text-primary);
+  user-select: none;
+}
+
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--accent), #5856d6);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.topbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+}
+
+.project-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  outline: none;
+  transition: var(--transition);
+  background: transparent;
+}
+
+.project-name:hover { background: var(--surface-hover); border-color: var(--border); }
+.project-name:focus { border-color: var(--accent); background: white; }
+
+.topbar-spacer { flex: 1; }
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- BUTTONS ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-0.5px); box-shadow: var(--shadow-sm); }
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--surface-hover); border-color: #d5d5d7; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.btn-ghost:hover { background: rgba(0,0,0,0.04); color: var(--text-primary); }
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+.btn-icon:hover { background: rgba(0,0,0,0.04); color: var(--text-primary); }
+.btn-icon.active { background: var(--accent-light); color: var(--accent); }
+
+/* ---- MAIN LAYOUT ---- */
+.main {
+  display: flex;
+  height: calc(100vh - 52px);
+}
+
+/* ---- LEFT TOOLBAR ---- */
+.toolbar {
+  width: 56px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  gap: 4px;
+}
+
+.tool-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: var(--transition);
+  position: relative;
+}
+.tool-btn:hover { background: rgba(0,0,0,0.04); color: var(--text-primary); }
+.tool-btn.active { background: var(--accent-light); color: var(--accent); }
+
+.tool-btn .tooltip {
+  position: absolute;
+  left: 48px;
+  background: var(--text-primary);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms;
+  z-index: 200;
+}
+.tool-btn:hover .tooltip { opacity: 1; }
+
+.tool-divider {
+  width: 24px;
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+/* ---- CANVAS AREA ---- */
+.canvas-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #eeeef0;
+  background-image:
+    radial-gradient(circle, #d5d5d7 0.8px, transparent 0.8px);
+  background-size: 24px 24px;
+}
+
+.canvas-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.upload-zone {
+  width: 400px;
+  padding: 48px 40px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-xl);
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(12px);
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.upload-zone:hover {
+  border-color: var(--accent);
+  background: rgba(255,255,255,0.9);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.upload-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  background: var(--accent-light);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 24px;
+}
+
+.upload-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.upload-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.upload-or {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin: 16px 0;
+}
+
+/* ---- CANVAS SVG ---- */
+.canvas-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.blueprint-image {
+  cursor: grab;
+}
+.blueprint-image.grabbing { cursor: grabbing; }
+
+.pipe-run {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  cursor: pointer;
+  transition: stroke-width 100ms;
+}
+.pipe-run:hover { stroke-width: 5; }
+
+.pipe-run.copper { stroke: var(--copper); }
+.pipe-run.pex-red { stroke: var(--pex-red); }
+.pipe-run.pex-blue { stroke: var(--pex-blue); }
+.pipe-run.pvc { stroke: var(--pvc); }
+.pipe-run.cpvc { stroke: var(--cpvc); }
+
+.fitting-marker {
+  cursor: pointer;
+  transition: transform 100ms;
+}
+.fitting-marker:hover { transform: scale(1.2); }
+
+.node-point {
+  fill: white;
+  stroke: var(--accent);
+  stroke-width: 2;
+  cursor: crosshair;
+  transition: var(--transition);
+}
+.node-point:hover {
+  fill: var(--accent-light);
+  stroke-width: 3;
+  r: 6;
+}
+
+/* ---- RIGHT PANEL ---- */
+.panel {
+  width: 320px;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+}
+
+.panel-tab {
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: var(--transition);
+}
+.panel-tab:hover { color: var(--text-primary); }
+.panel-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.panel-content::-webkit-scrollbar { width: 6px; }
+.panel-content::-webkit-scrollbar-track { background: transparent; }
+.panel-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ---- PANEL SECTIONS ---- */
+.section {
+  margin-bottom: 20px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary);
+}
+
+/* ---- PIPE TYPE SELECTOR ---- */
+.pipe-type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.pipe-type-card {
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  background: var(--surface);
+}
+.pipe-type-card:hover { border-color: #c5c5c7; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.pipe-type-card.selected { border-color: var(--accent); background: var(--accent-light); }
+
+.pipe-type-swatch {
+  width: 20px;
+  height: 4px;
+  border-radius: 2px;
+  margin-bottom: 6px;
+}
+
+.pipe-type-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pipe-type-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ---- SIZE SELECTOR ---- */
+.size-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.size-chip {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: 'JetBrains Mono', monospace;
+}
+.size-chip:hover { border-color: #c5c5c7; }
+.size-chip.selected { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+
+/* ---- MATERIAL LIST ---- */
+.material-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+  border: 1px solid transparent;
+}
+.material-item:hover { background: var(--surface-hover); border-color: var(--border-light); }
+
+.material-swatch {
+  width: 8px;
+  height: 32px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.material-info { flex: 1; min-width: 0; }
+
+.material-name {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.material-detail {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 1px;
+}
+
+.material-qty {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: right;
+}
+
+.material-unit {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ---- EMPTY STATE ---- */
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--text-tertiary);
+}
+
+.empty-state-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.empty-state-text {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ---- FITTING PALETTE ---- */
+.fitting-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.fitting-btn {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 8px;
+}
+.fitting-btn:hover { border-color: #c5c5c7; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.fitting-btn.selected { border-color: var(--accent); background: var(--accent-light); }
+
+.fitting-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.fitting-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* ---- STATUS BAR ---- */
+.statusbar {
+  height: 28px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 16px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+/* ---- MODAL / OVERLAY ---- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms;
+}
+.modal-overlay.visible { opacity: 1; pointer-events: auto; }
+
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  width: 480px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 28px;
+  transform: translateY(8px);
+  transition: transform 200ms;
+}
+.modal-overlay.visible .modal { transform: translateY(0); }
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.modal-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+/* ---- EXPORT TABLE ---- */
+.export-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.export-table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary);
+  border-bottom: 1px solid var(--border);
+}
+
+.export-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.export-table tr:last-child td { border-bottom: none; }
+
+.export-table .qty-cell {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  text-align: right;
+}
+
+/* ---- ZOOM CONTROLS ---- */
+.zoom-controls {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+}
+
+.zoom-level {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 0 8px;
+  min-width: 44px;
+  text-align: center;
+  user-select: none;
+}
+
+/* ---- CONTEXT MENU ---- */
+.context-menu {
+  position: fixed;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  padding: 6px;
+  z-index: 500;
+  min-width: 180px;
+  display: none;
+}
+
+.context-menu.visible { display: block; }
+
+.context-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 100ms;
+  color: var(--text-primary);
+}
+.context-item:hover { background: rgba(0,0,0,0.04); }
+.context-item.danger { color: var(--danger); }
+.context-item .shortcut {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ---- ANIMATIONS ---- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeIn 300ms ease-out;
+}
+
+/* ---- NOTIFICATION ---- */
+.toast {
+  position: fixed;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text-primary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transition: all 300ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  z-index: 1000;
+  pointer-events: none;
+}
+.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---- SCALE INPUT ---- */
+.scale-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.scale-input {
+  width: 60px;
+  padding: 5px 8px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  text-align: center;
+  outline: none;
+  transition: var(--transition);
+}
+.scale-input:focus { border-color: var(--accent); }
+
+.scale-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">P</div>
+    <span>PipeTake</span>
+  </div>
+  <div class="topbar-divider"></div>
+  <input class="project-name" value="Untitled Project" id="projectName" spellcheck="false">
+  <div class="topbar-spacer"></div>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost" onclick="undoAction()" title="Undo (⌘Z)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      Undo
+    </button>
+    <button class="btn btn-secondary" onclick="showExport()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export BOM
+    </button>
+    <button class="btn btn-primary" onclick="showExport()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print
+    </button>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="main">
+
+  <!-- LEFT TOOLBAR -->
+  <div class="toolbar">
+    <button class="tool-btn active" id="toolSelect" onclick="setTool('select')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
+      <span class="tooltip">Select (V)</span>
+    </button>
+    <button class="tool-btn" id="toolPan" onclick="setTool('pan')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v6"/><path d="M14 10V4a2 2 0 0 0-4 0v7"/><path d="M10 10.5V5a2 2 0 0 0-4 0v9"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.5 0-6-1-8-5l-1.3-3.3a1.3 1.3 0 0 1 1.1-1.7 1.5 1.5 0 0 1 1.5.8L6 14"/></svg>
+      <span class="tooltip">Pan (H)</span>
+    </button>
+    <div class="tool-divider"></div>
+    <button class="tool-btn" id="toolPipe" onclick="setTool('pipe')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="20" x2="12" y2="12"/><line x1="12" y1="12" x2="20" y2="12"/></svg>
+      <span class="tooltip">Draw Pipe (P)</span>
+    </button>
+    <button class="tool-btn" id="toolFitting" onclick="setTool('fitting')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m-10-10h4m12 0h4"/></svg>
+      <span class="tooltip">Place Fitting (F)</span>
+    </button>
+    <button class="tool-btn" id="toolMeasure" onclick="setTool('measure')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h5m3 0h4m3 0h5"/><path d="M4 8v8m16-8v8m-6-6v4m-4-4v4"/></svg>
+      <span class="tooltip">Measure (M)</span>
+    </button>
+    <div class="tool-divider"></div>
+    <button class="tool-btn" id="toolErase" onclick="setTool('erase')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H7L3 16l9-9 8 8-4 4"/><line x1="18" y1="13" x2="11" y2="6"/></svg>
+      <span class="tooltip">Erase (E)</span>
+    </button>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas-area" id="canvasArea">
+    <!-- Empty state -->
+    <div class="canvas-empty" id="canvasEmpty">
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="upload-title">Upload Blueprint</div>
+        <div class="upload-subtitle">Drop a PDF or image of your plumbing plan here</div>
+        <div class="upload-or">or click to browse</div>
+        <button class="btn btn-secondary" onclick="event.stopPropagation(); startBlank()">Start with blank canvas</button>
+      </div>
+      <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.tiff,.bmp" style="display:none" onchange="handleFileUpload(event)">
+    </div>
+
+    <!-- SVG Canvas (hidden until active) -->
+    <svg class="canvas-svg" id="canvasSvg" style="display:none">
+      <g id="canvasGroup">
+        <image id="blueprintImg" x="0" y="0" style="display:none"/>
+        <g id="pipesLayer"></g>
+        <g id="fittingsLayer"></g>
+        <g id="nodesLayer"></g>
+        <g id="measureLayer"></g>
+        <g id="previewLayer"></g>
+      </g>
+    </svg>
+
+    <!-- Zoom Controls -->
+    <div class="zoom-controls" id="zoomControls" style="display:none">
+      <button class="btn-icon" onclick="zoomOut()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <span class="zoom-level" id="zoomLevel">100%</span>
+      <button class="btn-icon" onclick="zoomIn()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <button class="btn-icon" onclick="zoomFit()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel">
+    <div class="panel-tabs">
+      <button class="panel-tab active" id="tabProperties" onclick="switchTab('properties')">Properties</button>
+      <button class="panel-tab" id="tabMaterials" onclick="switchTab('materials')">Materials</button>
+    </div>
+
+    <!-- Properties Panel -->
+    <div class="panel-content" id="panelProperties">
+      <!-- Scale Setting -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Drawing Scale</span>
+        </div>
+        <div class="scale-input-row">
+          <span class="scale-label">1" =</span>
+          <input class="scale-input" id="scaleValue" type="text" value="1" onchange="updateScale()">
+          <span class="scale-label">ft</span>
+        </div>
+      </div>
+
+      <!-- Pipe Material -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Pipe Material</span>
+        </div>
+        <div class="pipe-type-grid" id="pipeTypeGrid">
+          <div class="pipe-type-card selected" data-type="copper" onclick="selectPipeType(this)">
+            <div class="pipe-type-swatch" style="background: var(--copper)"></div>
+            <div class="pipe-type-name">Copper</div>
+            <div class="pipe-type-desc">Type L / M</div>
+          </div>
+          <div class="pipe-type-card" data-type="pex-red" onclick="selectPipeType(this)">
+            <div class="pipe-type-swatch" style="background: var(--pex-red)"></div>
+            <div class="pipe-type-name">PEX (Hot)</div>
+            <div class="pipe-type-desc">Red — F1807</div>
+          </div>
+          <div class="pipe-type-card" data-type="pex-blue" onclick="selectPipeType(this)">
+            <div class="pipe-type-swatch" style="background: var(--pex-blue)"></div>
+            <div class="pipe-type-name">PEX (Cold)</div>
+            <div class="pipe-type-desc">Blue — F1807</div>
+          </div>
+          <div class="pipe-type-card" data-type="pvc" onclick="selectPipeType(this)">
+            <div class="pipe-type-swatch" style="background: var(--pvc)"></div>
+            <div class="pipe-type-name">PVC</div>
+            <div class="pipe-type-desc">Sch 40 DWV</div>
+          </div>
+          <div class="pipe-type-card" data-type="cpvc" onclick="selectPipeType(this)">
+            <div class="pipe-type-swatch" style="background: var(--cpvc)"></div>
+            <div class="pipe-type-name">CPVC</div>
+            <div class="pipe-type-desc">FlowGuard</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pipe Size -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Pipe Size</span>
+        </div>
+        <div class="size-row" id="sizeRow">
+          <span class="size-chip" data-size='0.5' onclick="selectSize(this)">1/2"</span>
+          <span class="size-chip selected" data-size='0.75' onclick="selectSize(this)">3/4"</span>
+          <span class="size-chip" data-size='1' onclick="selectSize(this)">1"</span>
+          <span class="size-chip" data-size='1.5' onclick="selectSize(this)">1-1/2"</span>
+          <span class="size-chip" data-size='2' onclick="selectSize(this)">2"</span>
+          <span class="size-chip" data-size='3' onclick="selectSize(this)">3"</span>
+          <span class="size-chip" data-size='4' onclick="selectSize(this)">4"</span>
+        </div>
+      </div>
+
+      <!-- Fittings Palette -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Fittings</span>
+        </div>
+        <div class="fitting-grid" id="fittingGrid">
+          <button class="fitting-btn" data-fitting="elbow90" onclick="selectFitting(this)">
+            <span class="fitting-icon">⌐</span>
+            <span class="fitting-label">90° Elbow</span>
+          </button>
+          <button class="fitting-btn" data-fitting="elbow45" onclick="selectFitting(this)">
+            <span class="fitting-icon">∠</span>
+            <span class="fitting-label">45° Elbow</span>
+          </button>
+          <button class="fitting-btn" data-fitting="tee" onclick="selectFitting(this)">
+            <span class="fitting-icon">⊤</span>
+            <span class="fitting-label">Tee</span>
+          </button>
+          <button class="fitting-btn" data-fitting="coupling" onclick="selectFitting(this)">
+            <span class="fitting-icon">⊟</span>
+            <span class="fitting-label">Coupling</span>
+          </button>
+          <button class="fitting-btn" data-fitting="reducer" onclick="selectFitting(this)">
+            <span class="fitting-icon">◁</span>
+            <span class="fitting-label">Reducer</span>
+          </button>
+          <button class="fitting-btn" data-fitting="valve" onclick="selectFitting(this)">
+            <span class="fitting-icon">⊳</span>
+            <span class="fitting-label">Valve</span>
+          </button>
+          <button class="fitting-btn" data-fitting="cleanout" onclick="selectFitting(this)">
+            <span class="fitting-icon">⊙</span>
+            <span class="fitting-label">Cleanout</span>
+          </button>
+          <button class="fitting-btn" data-fitting="cap" onclick="selectFitting(this)">
+            <span class="fitting-icon">⊣</span>
+            <span class="fitting-label">Cap</span>
+          </button>
+          <button class="fitting-btn" data-fitting="wye" onclick="selectFitting(this)">
+            <span class="fitting-icon">⋎</span>
+            <span class="fitting-label">Wye</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Materials Panel -->
+    <div class="panel-content" id="panelMaterials" style="display:none">
+      <div id="materialsList">
+        <div class="empty-state">
+          <div class="empty-state-icon">📋</div>
+          <div class="empty-state-text">No materials yet.<br>Draw pipe runs and place fittings to build your material list.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- STATUS BAR -->
+<div class="statusbar">
+  <div class="status-item">
+    <span class="status-dot"></span>
+    Ready
+  </div>
+  <div class="status-item" id="statusCoords">0, 0</div>
+  <div class="status-item" id="statusPipes">Pipes: 0</div>
+  <div class="status-item" id="statusFittings">Fittings: 0</div>
+  <div class="status-item" id="statusLength">Total: 0 ft</div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <div class="modal-title">Bill of Materials</div>
+    <div class="modal-subtitle" id="exportProjectName">Untitled Project</div>
+    <div id="exportContent"></div>
+    <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
+      <button class="btn btn-secondary" onclick="closeExport()">Close</button>
+      <button class="btn btn-secondary" onclick="copyBOM()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy
+      </button>
+      <button class="btn btn-primary" onclick="downloadCSV()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download CSV
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div class="context-menu" id="contextMenu">
+  <div class="context-item" onclick="deleteSelected()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+    Delete
+    <span class="shortcut">⌫</span>
+  </div>
+  <div class="context-item" onclick="duplicateSelected()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+    Duplicate
+    <span class="shortcut">⌘D</span>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================
+// STATE
+// =============================================
+const state = {
+  tool: 'select',
+  pipeType: 'copper',
+  pipeSize: 0.75,
+  selectedFitting: null,
+  scale: 1, // 1 inch on screen = 1 ft real
+  zoom: 1,
+  panX: 0,
+  panY: 0,
+  isPanning: false,
+  panStart: { x: 0, y: 0 },
+  isDrawing: false,
+  drawStart: null,
+  pipes: [],       // { id, points: [{x,y}], type, size, nodes: [] }
+  fittings: [],    // { id, x, y, type, fitting, size }
+  undoStack: [],
+  selectedId: null,
+  blueprintLoaded: false,
+  nextId: 1,
+};
+
+const PIPE_COLORS = {
+  copper: '#b87333',
+  'pex-red': '#e63946',
+  'pex-blue': '#457b9d',
+  pvc: '#8d99ae',
+  cpvc: '#f4a261',
+};
+
+const PIPE_LABELS = {
+  copper: 'Copper Type L',
+  'pex-red': 'PEX (Hot)',
+  'pex-blue': 'PEX (Cold)',
+  pvc: 'PVC Sch 40',
+  cpvc: 'CPVC',
+};
+
+const FITTING_LABELS = {
+  elbow90: '90° Elbow',
+  elbow45: '45° Elbow',
+  tee: 'Tee',
+  coupling: 'Coupling',
+  reducer: 'Reducer',
+  valve: 'Ball Valve',
+  cleanout: 'Cleanout',
+  cap: 'Cap',
+  wye: 'Wye',
+};
+
+const FITTING_SYMBOLS = {
+  elbow90: '⌐',
+  elbow45: '∠',
+  tee: '⊤',
+  coupling: '⊟',
+  reducer: '◁',
+  valve: '⊳',
+  cleanout: '⊙',
+  cap: '⊣',
+  wye: '⋎',
+};
+
+// =============================================
+// INIT
+// =============================================
+const svg = document.getElementById('canvasSvg');
+const canvasGroup = document.getElementById('canvasGroup');
+const pipesLayer = document.getElementById('pipesLayer');
+const fittingsLayer = document.getElementById('fittingsLayer');
+const nodesLayer = document.getElementById('nodesLayer');
+const previewLayer = document.getElementById('previewLayer');
+const canvasArea = document.getElementById('canvasArea');
+
+// =============================================
+// TOOLS
+// =============================================
+function setTool(tool) {
+  state.tool = tool;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('tool' + tool.charAt(0).toUpperCase() + tool.slice(1));
+  if (btn) btn.classList.add('active');
+
+  // Cancel any in-progress drawing
+  if (tool !== 'pipe') {
+    state.isDrawing = false;
+    state.drawStart = null;
+    previewLayer.innerHTML = '';
+  }
+
+  svg.style.cursor = tool === 'pan' ? 'grab' : tool === 'pipe' ? 'crosshair' : tool === 'fitting' ? 'copy' : tool === 'erase' ? 'pointer' : tool === 'measure' ? 'crosshair' : 'default';
+}
+
+function selectPipeType(el) {
+  document.querySelectorAll('.pipe-type-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.pipeType = el.dataset.type;
+}
+
+function selectSize(el) {
+  document.querySelectorAll('.size-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.pipeSize = parseFloat(el.dataset.size);
+}
+
+function selectFitting(el) {
+  document.querySelectorAll('.fitting-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  state.selectedFitting = el.dataset.fitting;
+  setTool('fitting');
+}
+
+// =============================================
+// CANVAS INTERACTIONS
+// =============================================
+function getSvgPoint(e) {
+  const rect = svg.getBoundingClientRect();
+  return {
+    x: (e.clientX - rect.left - state.panX) / state.zoom,
+    y: (e.clientY - rect.top - state.panY) / state.zoom,
+  };
+}
+
+function snapToGrid(val, gridSize = 12) {
+  return Math.round(val / gridSize) * gridSize;
+}
+
+svg.addEventListener('mousedown', (e) => {
+  if (e.button === 2) return; // right click handled separately
+
+  if (state.tool === 'pan' || (e.button === 1) || (e.altKey)) {
+    state.isPanning = true;
+    state.panStart = { x: e.clientX - state.panX, y: e.clientY - state.panY };
+    svg.style.cursor = 'grabbing';
+    return;
+  }
+
+  const pt = getSvgPoint(e);
+
+  if (state.tool === 'pipe') {
+    if (!state.isDrawing) {
+      state.isDrawing = true;
+      state.drawStart = { x: snapToGrid(pt.x), y: snapToGrid(pt.y) };
+    } else {
+      const endPt = { x: snapToGrid(pt.x), y: snapToGrid(pt.y) };
+      addPipe(state.drawStart, endPt);
+      state.drawStart = endPt; // chain pipes
+    }
+  }
+
+  if (state.tool === 'fitting' && state.selectedFitting) {
+    addFitting(snapToGrid(pt.x), snapToGrid(pt.y));
+  }
+
+  if (state.tool === 'select') {
+    // Deselect
+    state.selectedId = null;
+    renderAll();
+  }
+});
+
+svg.addEventListener('mousemove', (e) => {
+  const pt = getSvgPoint(e);
+  document.getElementById('statusCoords').textContent = `${Math.round(pt.x)}, ${Math.round(pt.y)}`;
+
+  if (state.isPanning) {
+    state.panX = e.clientX - state.panStart.x;
+    state.panY = e.clientY - state.panStart.y;
+    updateTransform();
+    return;
+  }
+
+  if (state.tool === 'pipe' && state.isDrawing && state.drawStart) {
+    const endPt = { x: snapToGrid(pt.x), y: snapToGrid(pt.y) };
+    previewLayer.innerHTML = `
+      <line x1="${state.drawStart.x}" y1="${state.drawStart.y}"
+            x2="${endPt.x}" y2="${endPt.y}"
+            stroke="${PIPE_COLORS[state.pipeType]}" stroke-width="3"
+            stroke-dasharray="6 4" stroke-linecap="round" opacity="0.7"/>
+      <circle cx="${endPt.x}" cy="${endPt.y}" r="4" fill="${PIPE_COLORS[state.pipeType]}" opacity="0.5"/>
+    `;
+  }
+});
+
+svg.addEventListener('mouseup', () => {
+  if (state.isPanning) {
+    state.isPanning = false;
+    svg.style.cursor = state.tool === 'pan' ? 'grab' : 'default';
+  }
+});
+
+svg.addEventListener('dblclick', () => {
+  if (state.tool === 'pipe' && state.isDrawing) {
+    state.isDrawing = false;
+    state.drawStart = null;
+    previewLayer.innerHTML = '';
+    showToast('Pipe run completed');
+  }
+});
+
+// Mouse wheel zoom
+canvasArea.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? -0.1 : 0.1;
+  const newZoom = Math.max(0.1, Math.min(5, state.zoom + delta));
+  state.zoom = newZoom;
+  updateTransform();
+  document.getElementById('zoomLevel').textContent = Math.round(state.zoom * 100) + '%';
+}, { passive: false });
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT') return;
+  switch(e.key.toLowerCase()) {
+    case 'v': setTool('select'); break;
+    case 'h': setTool('pan'); break;
+    case 'p': setTool('pipe'); break;
+    case 'f': setTool('fitting'); break;
+    case 'm': setTool('measure'); break;
+    case 'e': setTool('erase'); break;
+    case 'escape':
+      state.isDrawing = false;
+      state.drawStart = null;
+      previewLayer.innerHTML = '';
+      closeExport();
+      break;
+    case 'z':
+      if (e.metaKey || e.ctrlKey) undoAction();
+      break;
+    case 'backspace':
+    case 'delete':
+      deleteSelected();
+      break;
+  }
+});
+
+// Right-click context menu
+svg.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  if (state.tool === 'pipe' && state.isDrawing) {
+    state.isDrawing = false;
+    state.drawStart = null;
+    previewLayer.innerHTML = '';
+    showToast('Pipe run completed');
+    return;
+  }
+});
+
+// =============================================
+// DATA OPERATIONS
+// =============================================
+function genId() {
+  return state.nextId++;
+}
+
+function saveUndo() {
+  state.undoStack.push({
+    pipes: JSON.parse(JSON.stringify(state.pipes)),
+    fittings: JSON.parse(JSON.stringify(state.fittings)),
+  });
+  if (state.undoStack.length > 50) state.undoStack.shift();
+}
+
+function undoAction() {
+  if (state.undoStack.length === 0) return;
+  const prev = state.undoStack.pop();
+  state.pipes = prev.pipes;
+  state.fittings = prev.fittings;
+  renderAll();
+  updateStatus();
+  showToast('Undone');
+}
+
+function addPipe(startPt, endPt) {
+  saveUndo();
+  const pipe = {
+    id: genId(),
+    x1: startPt.x, y1: startPt.y,
+    x2: endPt.x, y2: endPt.y,
+    type: state.pipeType,
+    size: state.pipeSize,
+  };
+  state.pipes.push(pipe);
+  renderAll();
+  updateStatus();
+  updateMaterials();
+}
+
+function addFitting(x, y) {
+  saveUndo();
+  const fitting = {
+    id: genId(),
+    x, y,
+    fitting: state.selectedFitting,
+    type: state.pipeType,
+    size: state.pipeSize,
+  };
+  state.fittings.push(fitting);
+  renderAll();
+  updateStatus();
+  updateMaterials();
+  showToast(`${FITTING_LABELS[state.selectedFitting]} placed`);
+}
+
+function deleteSelected() {
+  if (!state.selectedId) return;
+  saveUndo();
+  state.pipes = state.pipes.filter(p => p.id !== state.selectedId);
+  state.fittings = state.fittings.filter(f => f.id !== state.selectedId);
+  state.selectedId = null;
+  renderAll();
+  updateStatus();
+  updateMaterials();
+  hideContextMenu();
+  showToast('Deleted');
+}
+
+function duplicateSelected() {
+  hideContextMenu();
+  // Simple duplicate offset
+  const pipe = state.pipes.find(p => p.id === state.selectedId);
+  if (pipe) {
+    saveUndo();
+    const np = { ...pipe, id: genId(), x1: pipe.x1 + 24, y1: pipe.y1 + 24, x2: pipe.x2 + 24, y2: pipe.y2 + 24 };
+    state.pipes.push(np);
+  }
+  const fitting = state.fittings.find(f => f.id === state.selectedId);
+  if (fitting) {
+    saveUndo();
+    const nf = { ...fitting, id: genId(), x: fitting.x + 24, y: fitting.y + 24 };
+    state.fittings.push(nf);
+  }
+  renderAll();
+  updateStatus();
+  updateMaterials();
+}
+
+// =============================================
+// RENDERING
+// =============================================
+function renderAll() {
+  // Pipes
+  pipesLayer.innerHTML = state.pipes.map(p => {
+    const selected = p.id === state.selectedId;
+    return `
+      <line x1="${p.x1}" y1="${p.y1}" x2="${p.x2}" y2="${p.y2}"
+            stroke="${PIPE_COLORS[p.type]}" stroke-width="${selected ? 5 : 3}"
+            stroke-linecap="round" class="pipe-run ${p.type}"
+            data-id="${p.id}"
+            ${selected ? 'filter="url(#glow)"' : ''}
+            onclick="selectItem(${p.id})"
+            oncontextmenu="event.preventDefault(); selectItem(${p.id}); showContextMenu(event)"
+      />
+      ${selected ? `
+        <circle cx="${p.x1}" cy="${p.y1}" r="5" fill="white" stroke="${PIPE_COLORS[p.type]}" stroke-width="2" class="node-point"/>
+        <circle cx="${p.x2}" cy="${p.y2}" r="5" fill="white" stroke="${PIPE_COLORS[p.type]}" stroke-width="2" class="node-point"/>
+      ` : ''}
+    `;
+  }).join('');
+
+  // Fittings
+  fittingsLayer.innerHTML = state.fittings.map(f => {
+    const selected = f.id === state.selectedId;
+    const color = PIPE_COLORS[f.type];
+    return `
+      <g class="fitting-marker" data-id="${f.id}"
+         onclick="selectItem(${f.id})"
+         oncontextmenu="event.preventDefault(); selectItem(${f.id}); showContextMenu(event)">
+        <circle cx="${f.x}" cy="${f.y}" r="${selected ? 14 : 12}"
+                fill="${selected ? color : 'white'}" stroke="${color}" stroke-width="2.5"/>
+        <text x="${f.x}" y="${f.y}" text-anchor="middle" dominant-baseline="central"
+              font-size="12" font-weight="600"
+              fill="${selected ? 'white' : color}"
+              style="pointer-events:none; user-select:none;">${FITTING_SYMBOLS[f.fitting] || '•'}</text>
+      </g>
+    `;
+  }).join('');
+}
+
+function selectItem(id) {
+  state.selectedId = id;
+  renderAll();
+}
+
+function updateTransform() {
+  canvasGroup.setAttribute('transform', `translate(${state.panX},${state.panY}) scale(${state.zoom})`);
+}
+
+// =============================================
+// MATERIALS
+// =============================================
+function getPipeLength(pipe) {
+  const dx = pipe.x2 - pipe.x1;
+  const dy = pipe.y2 - pipe.y1;
+  const pixelLen = Math.sqrt(dx * dx + dy * dy);
+  return (pixelLen / 48) * state.scale; // convert pixels to feet using scale
+}
+
+function computeBOM() {
+  const bom = {};
+
+  // Pipes — group by type + size, sum length
+  state.pipes.forEach(p => {
+    const key = `pipe|${p.type}|${p.size}`;
+    if (!bom[key]) {
+      bom[key] = { category: 'pipe', type: p.type, size: p.size, qty: 0, unit: 'ft' };
+    }
+    bom[key].qty += getPipeLength(p);
+  });
+
+  // Fittings — group by fitting + type + size, count
+  state.fittings.forEach(f => {
+    const key = `fitting|${f.fitting}|${f.type}|${f.size}`;
+    if (!bom[key]) {
+      bom[key] = { category: 'fitting', fitting: f.fitting, type: f.type, size: f.size, qty: 0, unit: 'ea' };
+    }
+    bom[key].qty += 1;
+  });
+
+  return Object.values(bom);
+}
+
+function updateMaterials() {
+  const bom = computeBOM();
+  const container = document.getElementById('materialsList');
+
+  if (bom.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📋</div>
+        <div class="empty-state-text">No materials yet.<br>Draw pipe runs and place fittings to build your material list.</div>
+      </div>`;
+    return;
+  }
+
+  const sizeLabel = (s) => {
+    if (s === 0.5) return '1/2"';
+    if (s === 0.75) return '3/4"';
+    if (s === 1.5) return '1-1/2"';
+    return s + '"';
+  };
+
+  container.innerHTML = bom.map(item => {
+    const color = PIPE_COLORS[item.type];
+    let name, detail;
+    if (item.category === 'pipe') {
+      name = `${PIPE_LABELS[item.type]}`;
+      detail = `${sizeLabel(item.size)} pipe`;
+    } else {
+      name = FITTING_LABELS[item.fitting];
+      detail = `${sizeLabel(item.size)} ${PIPE_LABELS[item.type]}`;
+    }
+    const qtyStr = item.unit === 'ft' ? item.qty.toFixed(1) : item.qty;
+    return `
+      <div class="material-item animate-in">
+        <div class="material-swatch" style="background:${color}"></div>
+        <div class="material-info">
+          <div class="material-name">${name}</div>
+          <div class="material-detail">${detail}</div>
+        </div>
+        <div class="material-qty">${qtyStr} <span class="material-unit">${item.unit}</span></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateStatus() {
+  document.getElementById('statusPipes').textContent = `Pipes: ${state.pipes.length}`;
+  document.getElementById('statusFittings').textContent = `Fittings: ${state.fittings.length}`;
+  const totalFt = state.pipes.reduce((sum, p) => sum + getPipeLength(p), 0);
+  document.getElementById('statusLength').textContent = `Total: ${totalFt.toFixed(1)} ft`;
+}
+
+function updateScale() {
+  const val = parseFloat(document.getElementById('scaleValue').value);
+  if (!isNaN(val) && val > 0) {
+    state.scale = val;
+    updateStatus();
+    updateMaterials();
+  }
+}
+
+// =============================================
+// TABS
+// =============================================
+function switchTab(tab) {
+  document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+  document.getElementById('panelProperties').style.display = tab === 'properties' ? 'block' : 'none';
+  document.getElementById('panelMaterials').style.display = tab === 'materials' ? 'block' : 'none';
+}
+
+// =============================================
+// FILE UPLOAD
+// =============================================
+function handleFileUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    activateCanvas();
+    const img = document.getElementById('blueprintImg');
+    img.setAttribute('href', ev.target.result);
+    img.style.display = 'block';
+
+    // Size the image when loaded
+    const tempImg = new Image();
+    tempImg.onload = () => {
+      img.setAttribute('width', tempImg.width);
+      img.setAttribute('height', tempImg.height);
+      zoomFit();
+    };
+    tempImg.src = ev.target.result;
+
+    state.blueprintLoaded = true;
+    showToast('Blueprint loaded — set your scale, then start drawing');
+  };
+  reader.readAsDataURL(file);
+}
+
+function startBlank() {
+  activateCanvas();
+  showToast('Blank canvas ready — start drawing pipe runs');
+}
+
+function activateCanvas() {
+  document.getElementById('canvasEmpty').style.display = 'none';
+  svg.style.display = 'block';
+  document.getElementById('zoomControls').style.display = 'flex';
+  setTool('pipe');
+}
+
+// =============================================
+// ZOOM
+// =============================================
+function zoomIn() {
+  state.zoom = Math.min(5, state.zoom + 0.25);
+  updateTransform();
+  document.getElementById('zoomLevel').textContent = Math.round(state.zoom * 100) + '%';
+}
+
+function zoomOut() {
+  state.zoom = Math.max(0.1, state.zoom - 0.25);
+  updateTransform();
+  document.getElementById('zoomLevel').textContent = Math.round(state.zoom * 100) + '%';
+}
+
+function zoomFit() {
+  state.zoom = 0.5;
+  state.panX = 40;
+  state.panY = 40;
+  updateTransform();
+  document.getElementById('zoomLevel').textContent = Math.round(state.zoom * 100) + '%';
+}
+
+// =============================================
+// CONTEXT MENU
+// =============================================
+function showContextMenu(e) {
+  const menu = document.getElementById('contextMenu');
+  menu.style.left = e.clientX + 'px';
+  menu.style.top = e.clientY + 'px';
+  menu.classList.add('visible');
+}
+
+function hideContextMenu() {
+  document.getElementById('contextMenu').classList.remove('visible');
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.context-menu')) hideContextMenu();
+});
+
+// =============================================
+// EXPORT
+// =============================================
+function showExport() {
+  const bom = computeBOM();
+  document.getElementById('exportProjectName').textContent = document.getElementById('projectName').value;
+
+  const sizeLabel = (s) => {
+    if (s === 0.5) return '1/2"';
+    if (s === 0.75) return '3/4"';
+    if (s === 1.5) return '1-1/2"';
+    return s + '"';
+  };
+
+  if (bom.length === 0) {
+    document.getElementById('exportContent').innerHTML = '<div class="empty-state"><div class="empty-state-text">No materials to export yet.</div></div>';
+  } else {
+    let html = `<table class="export-table">
+      <thead><tr><th>Item</th><th>Material</th><th>Size</th><th style="text-align:right">Qty</th><th>Unit</th></tr></thead><tbody>`;
+    bom.forEach(item => {
+      const name = item.category === 'pipe' ? `${PIPE_LABELS[item.type]} Pipe` : FITTING_LABELS[item.fitting];
+      const mat = PIPE_LABELS[item.type];
+      const size = sizeLabel(item.size);
+      const qty = item.unit === 'ft' ? item.qty.toFixed(1) : item.qty;
+      html += `<tr><td>${name}</td><td>${mat}</td><td>${size}</td><td class="qty-cell">${qty}</td><td>${item.unit}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('exportContent').innerHTML = html;
+  }
+
+  document.getElementById('exportModal').classList.add('visible');
+}
+
+function closeExport() {
+  document.getElementById('exportModal').classList.remove('visible');
+}
+
+function copyBOM() {
+  const bom = computeBOM();
+  const sizeLabel = (s) => {
+    if (s === 0.5) return '1/2"';
+    if (s === 0.75) return '3/4"';
+    if (s === 1.5) return '1-1/2"';
+    return s + '"';
+  };
+  let text = 'Item\tMaterial\tSize\tQty\tUnit\n';
+  bom.forEach(item => {
+    const name = item.category === 'pipe' ? `${PIPE_LABELS[item.type]} Pipe` : FITTING_LABELS[item.fitting];
+    text += `${name}\t${PIPE_LABELS[item.type]}\t${sizeLabel(item.size)}\t${item.unit === 'ft' ? item.qty.toFixed(1) : item.qty}\t${item.unit}\n`;
+  });
+  navigator.clipboard.writeText(text);
+  showToast('BOM copied to clipboard');
+}
+
+function downloadCSV() {
+  const bom = computeBOM();
+  const sizeLabel = (s) => {
+    if (s === 0.5) return '1/2"';
+    if (s === 0.75) return '3/4"';
+    if (s === 1.5) return '1-1/2"';
+    return s + '"';
+  };
+  let csv = 'Item,Material,Size,Qty,Unit\n';
+  bom.forEach(item => {
+    const name = item.category === 'pipe' ? `${PIPE_LABELS[item.type]} Pipe` : FITTING_LABELS[item.fitting];
+    csv += `"${name}","${PIPE_LABELS[item.type]}","${sizeLabel(item.size)}",${item.unit === 'ft' ? item.qty.toFixed(1) : item.qty},${item.unit}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (document.getElementById('projectName').value || 'takeoff') + '_BOM.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV downloaded');
+}
+
+// =============================================
+// TOAST
+// =============================================
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('visible');
+  setTimeout(() => toast.classList.remove('visible'), 2200);
+}
+
+// =============================================
+// DRAG & DROP
+// =============================================
+const uploadZone = document.getElementById('uploadZone');
+if (uploadZone) {
+  ['dragenter', 'dragover'].forEach(ev => {
+    uploadZone.addEventListener(ev, (e) => {
+      e.preventDefault();
+      uploadZone.style.borderColor = 'var(--accent)';
+      uploadZone.style.background = 'rgba(255,255,255,0.95)';
+    });
+  });
+  ['dragleave', 'drop'].forEach(ev => {
+    uploadZone.addEventListener(ev, (e) => {
+      e.preventDefault();
+      uploadZone.style.borderColor = '';
+      uploadZone.style.background = '';
+    });
+  });
+  uploadZone.addEventListener('drop', (e) => {
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      document.getElementById('fileInput').files = dt.files;
+      handleFileUpload({ target: { files: [file] } });
+    }
+  });
+}
+
+// Prevent default drag on the whole page
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => e.preventDefault());
+
+// =============================================
+// INIT STATE
+// =============================================
+updateStatus();
+updateMaterials();
+</script>
+</body>
+</html>
