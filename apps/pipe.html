@@ -1,1774 +1,2004 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PipeTake — Residential Plumbing Takeoff</title>
-<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=SF+Pro+Text:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>PipeRunner — Blueprint to BOM</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* ============================================
+   DESIGN SYSTEM
+   Industrial-refined: warm neutrals, copper accents,
+   clean typography, utility-forward
+   ============================================ */
 :root {
-  --bg: #f5f5f7;
+  --bg: #f3f1ee;
+  --bg-warm: #eae7e1;
   --surface: #ffffff;
-  --surface-hover: #fafafa;
-  --border: #e5e5e7;
-  --border-light: #f0f0f2;
-  --text-primary: #1d1d1f;
-  --text-secondary: #6e6e73;
-  --text-tertiary: #aeaeb2;
-  --accent: #0071e3;
-  --accent-hover: #0077ED;
-  --accent-light: #e8f2ff;
-  --copper: #b87333;
-  --pex-red: #e63946;
-  --pex-blue: #457b9d;
-  --pvc: #8d99ae;
-  --cpvc: #f4a261;
-  --success: #34c759;
-  --warning: #ff9f0a;
-  --danger: #ff3b30;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
-  --shadow-lg: 0 12px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
-  --transition: 200ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  --surface-alt: #faf9f7;
+  --surface-hover: #f7f6f3;
+  --border: #e2dfd9;
+  --border-light: #edebe6;
+  --border-focus: #2d7ff9;
+
+–text-1: #1a1815;
+–text-2: #5c564d;
+–text-3: #9b9488;
+–text-inv: #ffffff;
+
+–accent: #2d7ff9;
+–accent-hover: #1a6fe8;
+–accent-light: #edf3ff;
+–accent-dark: #1b5cc4;
+
+–blue: #4a7c9b;
+–blue-light: #edf4f8;
+–green: #5a8a5e;
+–green-light: #edf5ee;
+–red: #c05746;
+–red-light: #fdf0ed;
+–amber: #c4922a;
+–amber-light: #fdf6e8;
+
+/* Pipe colors */
+–copper: #b87333;
+–pex-hot: #c05746;
+–pex-cold: #4a7c9b;
+–pvc-dwv: #7d8690;
+–cpvc: #c4922a;
+–rcp: #6b6560;
+–hdpe: #2d2926;
+–ads: #4a6741;
+
+–radius-xs: 4px;
+–radius-sm: 6px;
+–radius-md: 10px;
+–radius-lg: 14px;
+–radius-xl: 18px;
+
+–shadow-xs: 0 1px 2px rgba(26,24,21,0.04);
+–shadow-sm: 0 1px 4px rgba(26,24,21,0.06), 0 1px 2px rgba(26,24,21,0.04);
+–shadow-md: 0 4px 16px rgba(26,24,21,0.07), 0 2px 4px rgba(26,24,21,0.03);
+–shadow-lg: 0 12px 40px rgba(26,24,21,0.1), 0 4px 12px rgba(26,24,21,0.04);
+–shadow-focus: 0 0 0 3px rgba(45,127,249,0.15);
+
+–ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+–duration: 180ms;
+
+–sidebar-w: 340px;
+–topbar-h: 48px;
+–statusbar-h: 28px;
+–toolbar-w: 48px;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+- { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
 
 body {
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
-  color: var(--text-primary);
-  overflow: hidden;
-  height: 100vh;
+font-family: ‘DM Sans’, system-ui, sans-serif;
+background: var(–bg);
+color: var(–text-1);
+font-size: 13px;
+line-height: 1.4;
+-webkit-font-smoothing: antialiased;
 }
 
-/* ---- TOP BAR ---- */
+/* –– SCROLLBAR –– */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(–border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(–text-3); }
+
+/* –– TOPBAR –– */
 .topbar {
-  height: 52px;
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  gap: 16px;
-  z-index: 100;
-  position: relative;
+height: var(–topbar-h);
+background: var(–surface);
+border-bottom: 1px solid var(–border);
+display: flex;
+align-items: center;
+padding: 0 16px;
+gap: 12px;
+position: relative;
+z-index: 100;
 }
 
 .logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  font-size: 17px;
-  letter-spacing: -0.3px;
-  color: var(--text-primary);
-  user-select: none;
+display: flex;
+align-items: center;
+gap: 7px;
+font-family: ‘Outfit’, sans-serif;
+font-weight: 700;
+font-size: 15px;
+letter-spacing: -0.3px;
+color: var(–text-1);
+user-select: none;
+flex-shrink: 0;
 }
 
-.logo-icon {
-  width: 28px;
-  height: 28px;
-  background: linear-gradient(135deg, var(--accent), #5856d6);
-  border-radius: 7px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 14px;
-  font-weight: 700;
+.logo-mark {
+width: 26px;
+height: 26px;
+background: linear-gradient(135deg, #2d7ff9, #1b5cc4);
+border-radius: 6px;
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+font-size: 12px;
+font-weight: 800;
 }
 
-.topbar-divider {
-  width: 1px;
-  height: 24px;
-  background: var(--border);
+.sep {
+width: 1px;
+height: 20px;
+background: var(–border);
+flex-shrink: 0;
 }
 
-.project-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid transparent;
-  outline: none;
-  transition: var(--transition);
-  background: transparent;
+.project-input {
+font-family: inherit;
+font-size: 13px;
+font-weight: 500;
+color: var(–text-2);
+border: 1px solid transparent;
+background: transparent;
+padding: 4px 8px;
+border-radius: var(–radius-sm);
+outline: none;
+min-width: 140px;
+transition: all var(–duration) var(–ease);
 }
+.project-input:hover { background: var(–surface-hover); border-color: var(–border-light); }
+.project-input:focus { background: white; border-color: var(–border-focus); box-shadow: var(–shadow-focus); }
 
-.project-name:hover { background: var(--surface-hover); border-color: var(--border); }
-.project-name:focus { border-color: var(--accent); background: white; }
+.flex-spacer { flex: 1; }
 
-.topbar-spacer { flex: 1; }
-
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* ---- BUTTONS ---- */
+/* –– BUTTONS –– */
 .btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: var(--radius-sm);
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  transition: var(--transition);
-  user-select: none;
-  white-space: nowrap;
+display: inline-flex;
+align-items: center;
+gap: 5px;
+padding: 5px 12px;
+border-radius: var(–radius-sm);
+font-family: inherit;
+font-size: 12px;
+font-weight: 500;
+border: none;
+cursor: pointer;
+transition: all var(–duration) var(–ease);
+user-select: none;
+white-space: nowrap;
+line-height: 1.3;
 }
+.btn svg { width: 14px; height: 14px; flex-shrink: 0; }
 
-.btn-primary {
-  background: var(--accent);
-  color: white;
+.btn-primary { background: var(–accent); color: var(–text-inv); }
+.btn-primary:hover { background: var(–accent-hover); box-shadow: var(–shadow-sm); transform: translateY(-0.5px); }
+
+.btn-secondary { background: var(–surface); color: var(–text-1); border: 1px solid var(–border); }
+.btn-secondary:hover { background: var(–surface-hover); border-color: #d5d2cc; }
+
+.btn-ghost { background: transparent; color: var(–text-2); }
+.btn-ghost:hover { background: rgba(0,0,0,0.03); color: var(–text-1); }
+
+.btn-sm { padding: 3px 8px; font-size: 11px; }
+
+.icon-btn {
+width: 30px;
+height: 30px;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: var(–radius-sm);
+border: none;
+background: transparent;
+cursor: pointer;
+color: var(–text-3);
+transition: all var(–duration) var(–ease);
 }
-.btn-primary:hover { background: var(--accent-hover); transform: translateY(-0.5px); box-shadow: var(--shadow-sm); }
+.icon-btn:hover { background: rgba(0,0,0,0.04); color: var(–text-1); }
+.icon-btn.active { background: var(–accent-light); color: var(–accent); }
 
-.btn-secondary {
-  background: var(--surface);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-}
-.btn-secondary:hover { background: var(--surface-hover); border-color: #d5d5d7; }
-
-.btn-ghost {
-  background: transparent;
-  color: var(--text-secondary);
-}
-.btn-ghost:hover { background: rgba(0,0,0,0.04); color: var(--text-primary); }
-
-.btn-icon {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--text-secondary);
-  transition: var(--transition);
-}
-.btn-icon:hover { background: rgba(0,0,0,0.04); color: var(--text-primary); }
-.btn-icon.active { background: var(--accent-light); color: var(--accent); }
-
-/* ---- MAIN LAYOUT ---- */
+/* –– MAIN LAYOUT –– */
 .main {
-  display: flex;
-  height: calc(100vh - 52px);
+display: flex;
+height: calc(100vh - var(–topbar-h) - var(–statusbar-h));
 }
 
-/* ---- LEFT TOOLBAR ---- */
+/* –– LEFT TOOLBAR –– */
 .toolbar {
-  width: 56px;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 12px 0;
-  gap: 4px;
+width: var(–toolbar-w);
+background: var(–surface);
+border-right: 1px solid var(–border);
+display: flex;
+flex-direction: column;
+align-items: center;
+padding: 8px 0;
+gap: 2px;
+flex-shrink: 0;
 }
 
-.tool-btn {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  color: var(--text-secondary);
-  transition: var(--transition);
-  position: relative;
+.tbtn {
+width: 36px;
+height: 36px;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: var(–radius-sm);
+border: none;
+background: transparent;
+cursor: pointer;
+color: var(–text-3);
+transition: all var(–duration) var(–ease);
+position: relative;
 }
-.tool-btn:hover { background: rgba(0,0,0,0.04); color: var(--text-primary); }
-.tool-btn.active { background: var(--accent-light); color: var(--accent); }
+.tbtn svg { width: 17px; height: 17px; }
+.tbtn:hover { background: rgba(0,0,0,0.04); color: var(–text-1); }
+.tbtn.active { background: var(–accent-light); color: var(–accent); }
 
-.tool-btn .tooltip {
-  position: absolute;
-  left: 48px;
-  background: var(--text-primary);
-  color: white;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 150ms;
-  z-index: 200;
+.tbtn .tip {
+position: absolute;
+left: 44px;
+background: var(–text-1);
+color: var(–text-inv);
+padding: 3px 8px;
+border-radius: 5px;
+font-size: 11px;
+font-weight: 500;
+white-space: nowrap;
+opacity: 0;
+pointer-events: none;
+transition: opacity 120ms;
+z-index: 200;
 }
-.tool-btn:hover .tooltip { opacity: 1; }
+.tbtn:hover .tip { opacity: 1; }
 
-.tool-divider {
-  width: 24px;
-  height: 1px;
-  background: var(--border);
-  margin: 4px 0;
-}
-
-/* ---- CANVAS AREA ---- */
-.canvas-area {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-  background: #eeeef0;
-  background-image:
-    radial-gradient(circle, #d5d5d7 0.8px, transparent 0.8px);
-  background-size: 24px 24px;
+.tdiv {
+width: 20px;
+height: 1px;
+background: var(–border);
+margin: 4px 0;
 }
 
-.canvas-empty {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
+/* –– CANVAS –– */
+.canvas-wrap {
+flex: 1;
+position: relative;
+overflow: hidden;
+background: var(–bg-warm);
+background-image: radial-gradient(circle, #d5d2cc 0.7px, transparent 0.7px);
+background-size: 20px 20px;
 }
 
-.upload-zone {
-  width: 400px;
-  padding: 48px 40px;
-  border: 2px dashed var(--border);
-  border-radius: var(--radius-xl);
-  background: rgba(255,255,255,0.7);
-  backdrop-filter: blur(12px);
-  text-align: center;
-  cursor: pointer;
-  transition: var(--transition);
+/* Upload screen */
+.upload-screen {
+position: absolute;
+inset: 0;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+z-index: 10;
 }
-.upload-zone:hover {
-  border-color: var(--accent);
-  background: rgba(255,255,255,0.9);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+
+.upload-card {
+width: 440px;
+background: rgba(255,255,255,0.85);
+backdrop-filter: blur(16px);
+border-radius: var(–radius-xl);
+border: 1px solid var(–border);
+padding: 44px 40px;
+text-align: center;
+box-shadow: var(–shadow-lg);
+animation: slideUp 400ms var(–ease);
+}
+
+@keyframes slideUp {
+from { opacity: 0; transform: translateY(12px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.upload-drop {
+border: 2px dashed var(–border);
+border-radius: var(–radius-lg);
+padding: 32px 24px;
+margin-bottom: 20px;
+cursor: pointer;
+transition: all var(–duration) var(–ease);
+}
+.upload-drop:hover, .upload-drop.dragover {
+border-color: var(–accent);
+background: var(–accent-light);
 }
 
 .upload-icon {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 16px;
-  background: var(--accent-light);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--accent);
-  font-size: 24px;
+width: 48px;
+height: 48px;
+margin: 0 auto 12px;
+background: var(–accent-light);
+border-radius: 12px;
+display: flex;
+align-items: center;
+justify-content: center;
+color: var(–accent);
 }
 
 .upload-title {
-  font-size: 17px;
-  font-weight: 600;
-  margin-bottom: 6px;
+font-family: ‘Outfit’, sans-serif;
+font-size: 18px;
+font-weight: 700;
+margin-bottom: 4px;
 }
 
-.upload-subtitle {
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.5;
+.upload-sub {
+font-size: 13px;
+color: var(–text-2);
+margin-bottom: 4px;
+}
+
+.upload-hint {
+font-size: 11px;
+color: var(–text-3);
 }
 
 .upload-or {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  margin: 16px 0;
+font-size: 11px;
+color: var(–text-3);
+margin: 16px 0;
+display: flex;
+align-items: center;
+gap: 12px;
+}
+.upload-or::before, .upload-or::after {
+content: ‘’;
+flex: 1;
+height: 1px;
+background: var(–border);
 }
 
-/* ---- CANVAS SVG ---- */
+/* Profile selector */
+.profile-section {
+margin-bottom: 24px;
+}
+
+.profile-label {
+font-size: 11px;
+font-weight: 600;
+text-transform: uppercase;
+letter-spacing: 0.6px;
+color: var(–text-3);
+margin-bottom: 8px;
+}
+
+.profile-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 8px;
+}
+
+.profile-card {
+padding: 12px;
+border: 1.5px solid var(–border);
+border-radius: var(–radius-md);
+cursor: pointer;
+transition: all var(–duration) var(–ease);
+text-align: left;
+background: var(–surface);
+}
+.profile-card:hover { border-color: #c5c2bc; transform: translateY(-1px); box-shadow: var(–shadow-sm); }
+.profile-card.selected { border-color: var(–accent); background: var(–accent-light); }
+
+.profile-card-icon {
+font-size: 20px;
+margin-bottom: 6px;
+}
+.profile-card-name {
+font-weight: 600;
+font-size: 13px;
+margin-bottom: 2px;
+}
+.profile-card-desc {
+font-size: 11px;
+color: var(–text-3);
+}
+
+/* –– CANVAS SVG –– */
 .canvas-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+position: absolute;
+inset: 0;
+width: 100%;
+height: 100%;
+display: none;
 }
 
-.blueprint-image {
-  cursor: grab;
-}
-.blueprint-image.grabbing { cursor: grabbing; }
-
-.pipe-run {
-  fill: none;
-  stroke-width: 3;
-  stroke-linecap: round;
-  cursor: pointer;
-  transition: stroke-width 100ms;
-}
-.pipe-run:hover { stroke-width: 5; }
-
-.pipe-run.copper { stroke: var(--copper); }
-.pipe-run.pex-red { stroke: var(--pex-red); }
-.pipe-run.pex-blue { stroke: var(--pex-blue); }
-.pipe-run.pvc { stroke: var(--pvc); }
-.pipe-run.cpvc { stroke: var(--cpvc); }
-
-.fitting-marker {
-  cursor: pointer;
-  transition: transform 100ms;
-}
-.fitting-marker:hover { transform: scale(1.2); }
-
-.node-point {
-  fill: white;
-  stroke: var(--accent);
-  stroke-width: 2;
-  cursor: crosshair;
-  transition: var(--transition);
-}
-.node-point:hover {
-  fill: var(--accent-light);
-  stroke-width: 3;
-  r: 6;
+/* –– ZOOM CONTROLS –– */
+.zoom-bar {
+position: absolute;
+bottom: 14px;
+left: 50%;
+transform: translateX(-50%);
+display: none;
+align-items: center;
+gap: 1px;
+background: rgba(255,255,255,0.92);
+backdrop-filter: blur(12px);
+border-radius: var(–radius-md);
+padding: 3px;
+box-shadow: var(–shadow-md);
+border: 1px solid var(–border);
 }
 
-/* ---- RIGHT PANEL ---- */
-.panel {
-  width: 320px;
-  background: var(--surface);
-  border-left: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+.zoom-bar .zoom-val {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 10px;
+color: var(–text-2);
+padding: 0 8px;
+min-width: 40px;
+text-align: center;
+user-select: none;
 }
 
-.panel-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border);
-  padding: 0 16px;
+/* –– RIGHT SIDEBAR –– */
+.sidebar {
+width: var(–sidebar-w);
+background: var(–surface);
+border-left: 1px solid var(–border);
+display: flex;
+flex-direction: column;
+overflow: hidden;
+flex-shrink: 0;
 }
 
-.panel-tab {
-  padding: 12px 14px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: var(--transition);
-}
-.panel-tab:hover { color: var(--text-primary); }
-.panel-tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
+.sidebar-tabs {
+display: flex;
+border-bottom: 1px solid var(–border);
+padding: 0 12px;
+flex-shrink: 0;
 }
 
-.panel-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
+.sidebar-tab {
+padding: 10px 12px;
+font-size: 12px;
+font-weight: 500;
+color: var(–text-3);
+border: none;
+background: none;
+cursor: pointer;
+border-bottom: 2px solid transparent;
+transition: all var(–duration) var(–ease);
+}
+.sidebar-tab:hover { color: var(–text-2); }
+.sidebar-tab.active { color: var(–accent); border-bottom-color: var(–accent); }
+
+.sidebar-body {
+flex: 1;
+overflow-y: auto;
+padding: 14px;
 }
 
-.panel-content::-webkit-scrollbar { width: 6px; }
-.panel-content::-webkit-scrollbar-track { background: transparent; }
-.panel-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+/* –– SECTIONS –– */
+.sec { margin-bottom: 18px; }
 
-/* ---- PANEL SECTIONS ---- */
-.section {
-  margin-bottom: 20px;
+.sec-head {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 8px;
 }
 
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
+.sec-title {
+font-size: 10px;
+font-weight: 600;
+text-transform: uppercase;
+letter-spacing: 0.6px;
+color: var(–text-3);
 }
 
-.section-title {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-tertiary);
+/* –– PIPE MATERIAL CARDS –– */
+.mat-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 6px;
 }
 
-/* ---- PIPE TYPE SELECTOR ---- */
-.pipe-type-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+.mat-card {
+padding: 8px 10px;
+border: 1.5px solid var(–border);
+border-radius: var(–radius-sm);
+cursor: pointer;
+transition: all var(–duration) var(–ease);
+background: var(–surface);
+}
+.mat-card:hover { border-color: #c5c2bc; }
+.mat-card.sel { border-color: var(–accent); background: var(–accent-light); }
+
+.mat-swatch {
+width: 16px;
+height: 3px;
+border-radius: 2px;
+margin-bottom: 4px;
 }
 
-.pipe-type-card {
-  padding: 10px 12px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: var(--transition);
-  background: var(--surface);
-}
-.pipe-type-card:hover { border-color: #c5c5c7; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-.pipe-type-card.selected { border-color: var(--accent); background: var(--accent-light); }
-
-.pipe-type-swatch {
-  width: 20px;
-  height: 4px;
-  border-radius: 2px;
-  margin-bottom: 6px;
+.mat-name {
+font-size: 12px;
+font-weight: 600;
 }
 
-.pipe-type-name {
-  font-size: 13px;
-  font-weight: 600;
+.mat-spec {
+font-size: 10px;
+color: var(–text-3);
+margin-top: 1px;
 }
 
-.pipe-type-desc {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-top: 2px;
+/* –– SIZE CHIPS –– */
+.chip-row {
+display: flex;
+gap: 4px;
+flex-wrap: wrap;
 }
 
-/* ---- SIZE SELECTOR ---- */
-.size-row {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+.chip {
+padding: 4px 10px;
+border-radius: 16px;
+font-size: 11px;
+font-weight: 500;
+border: 1.5px solid var(–border);
+background: var(–surface);
+cursor: pointer;
+transition: all var(–duration) var(–ease);
+font-family: ‘JetBrains Mono’, monospace;
+}
+.chip:hover { border-color: #c5c2bc; }
+.chip.sel { border-color: var(–accent); background: var(–accent-light); color: var(–accent); }
+
+/* –– FITTING GRID –– */
+.fit-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 6px;
 }
 
-.size-chip {
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-  border: 1.5px solid var(--border);
-  background: var(--surface);
-  cursor: pointer;
-  transition: var(--transition);
-  font-family: 'JetBrains Mono', monospace;
+.fit-btn {
+aspect-ratio: 1;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 3px;
+border: 1.5px solid var(–border);
+border-radius: var(–radius-sm);
+background: var(–surface);
+cursor: pointer;
+transition: all var(–duration) var(–ease);
+padding: 6px;
 }
-.size-chip:hover { border-color: #c5c5c7; }
-.size-chip.selected { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+.fit-btn:hover { border-color: #c5c2bc; transform: translateY(-1px); }
+.fit-btn.sel { border-color: var(–accent); background: var(–accent-light); }
 
-/* ---- MATERIAL LIST ---- */
-.material-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: var(--radius-md);
-  transition: var(--transition);
-  border: 1px solid transparent;
-}
-.material-item:hover { background: var(--surface-hover); border-color: var(--border-light); }
-
-.material-swatch {
-  width: 8px;
-  height: 32px;
-  border-radius: 4px;
-  flex-shrink: 0;
+.fit-icon {
+font-size: 17px;
+line-height: 1;
 }
 
-.material-info { flex: 1; min-width: 0; }
-
-.material-name {
-  font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.fit-label {
+font-size: 9px;
+font-weight: 500;
+color: var(–text-3);
+text-align: center;
 }
 
-.material-detail {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-top: 1px;
+/* –– MATERIAL LIST (BOM) –– */
+.bom-item {
+display: flex;
+align-items: center;
+gap: 8px;
+padding: 8px 10px;
+border-radius: var(–radius-sm);
+transition: background var(–duration) var(–ease);
+}
+.bom-item:hover { background: var(–surface-hover); }
+
+.bom-swatch {
+width: 6px;
+height: 28px;
+border-radius: 3px;
+flex-shrink: 0;
 }
 
-.material-qty {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-primary);
-  text-align: right;
+.bom-info { flex: 1; min-width: 0; }
+
+.bom-name {
+font-size: 12px;
+font-weight: 500;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
 }
 
-.material-unit {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  font-family: 'DM Sans', sans-serif;
+.bom-detail {
+font-size: 10px;
+color: var(–text-3);
+margin-top: 1px;
 }
 
-/* ---- EMPTY STATE ---- */
-.empty-state {
-  text-align: center;
-  padding: 32px 16px;
-  color: var(--text-tertiary);
+.bom-nums {
+text-align: right;
+flex-shrink: 0;
 }
 
-.empty-state-icon {
-  font-size: 32px;
-  margin-bottom: 12px;
-  opacity: 0.5;
+.bom-qty {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 12px;
+font-weight: 500;
 }
 
-.empty-state-text {
-  font-size: 13px;
-  line-height: 1.5;
+.bom-price {
+font-size: 10px;
+color: var(–text-3);
+font-family: ‘JetBrains Mono’, monospace;
 }
 
-/* ---- FITTING PALETTE ---- */
-.fitting-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+/* –– PRICING TOTALS –– */
+.totals-bar {
+border-top: 1px solid var(–border);
+padding: 12px 14px;
+background: var(–surface-alt);
+flex-shrink: 0;
 }
 
-.fitting-btn {
-  aspect-ratio: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  cursor: pointer;
-  transition: var(--transition);
-  padding: 8px;
-}
-.fitting-btn:hover { border-color: #c5c5c7; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-.fitting-btn.selected { border-color: var(--accent); background: var(--accent-light); }
-
-.fitting-icon {
-  font-size: 20px;
-  line-height: 1;
+.totals-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+font-size: 12px;
 }
 
-.fitting-label {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  text-align: center;
+.totals-row.grand {
+margin-top: 6px;
+padding-top: 6px;
+border-top: 1px solid var(–border);
+font-weight: 700;
+font-size: 14px;
 }
 
-/* ---- STATUS BAR ---- */
+.totals-label { color: var(–text-2); }
+.totals-value {
+font-family: ‘JetBrains Mono’, monospace;
+font-weight: 600;
+}
+
+/* –– AI ANALYSIS BANNER –– */
+.ai-banner {
+margin: 0 -14px 14px;
+padding: 12px 14px;
+background: linear-gradient(135deg, var(–blue-light), #f0edf8);
+border-bottom: 1px solid var(–border-light);
+display: none;
+}
+
+.ai-banner.visible { display: block; }
+
+.ai-banner-title {
+font-size: 12px;
+font-weight: 600;
+color: var(–blue);
+display: flex;
+align-items: center;
+gap: 6px;
+margin-bottom: 4px;
+}
+
+.ai-banner-text {
+font-size: 11px;
+color: var(–text-2);
+line-height: 1.5;
+}
+
+.ai-tag {
+display: inline-flex;
+align-items: center;
+gap: 3px;
+padding: 2px 7px;
+border-radius: 4px;
+background: rgba(74,124,155,0.12);
+color: var(–blue);
+font-size: 10px;
+font-weight: 600;
+}
+
+/* –– AI SUGGESTIONS –– */
+.ai-suggestion {
+display: flex;
+align-items: center;
+gap: 8px;
+padding: 8px 10px;
+border: 1px solid var(–border-light);
+border-left: 3px solid var(–blue);
+border-radius: var(–radius-sm);
+background: var(–blue-light);
+margin-bottom: 6px;
+animation: slideUp 300ms var(–ease);
+}
+
+.ai-suggestion .ai-sug-info { flex: 1; }
+.ai-suggestion .ai-sug-name { font-size: 12px; font-weight: 500; }
+.ai-suggestion .ai-sug-detail { font-size: 10px; color: var(–text-3); }
+
+.ai-suggestion .ai-sug-actions {
+display: flex;
+gap: 4px;
+}
+
+.ai-accept {
+width: 24px; height: 24px;
+border-radius: 4px;
+border: none;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: all var(–duration) var(–ease);
+}
+
+.ai-accept.yes { background: var(–green-light); color: var(–green); }
+.ai-accept.yes:hover { background: var(–green); color: white; }
+.ai-accept.no { background: var(–red-light); color: var(–red); }
+.ai-accept.no:hover { background: var(–red); color: white; }
+
+/* –– EMPTY STATE –– */
+.empty {
+text-align: center;
+padding: 28px 12px;
+color: var(–text-3);
+}
+
+.empty-icon {
+font-size: 28px;
+margin-bottom: 10px;
+opacity: 0.4;
+}
+
+.empty-text {
+font-size: 12px;
+line-height: 1.5;
+}
+
+/* –– STATUSBAR –– */
 .statusbar {
-  height: 28px;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  gap: 16px;
-  font-size: 11px;
-  color: var(--text-tertiary);
+height: var(–statusbar-h);
+background: var(–surface);
+border-top: 1px solid var(–border);
+display: flex;
+align-items: center;
+padding: 0 14px;
+gap: 14px;
+font-size: 10px;
+color: var(–text-3);
 }
 
-.status-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.stat {
+display: flex;
+align-items: center;
+gap: 3px;
 }
 
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--success);
+.stat-dot {
+width: 5px;
+height: 5px;
+border-radius: 50%;
+background: var(–green);
 }
 
-/* ---- MODAL / OVERLAY ---- */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.3);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 200ms;
+/* –– MODAL –– */
+.modal-bg {
+position: fixed;
+inset: 0;
+background: rgba(26,24,21,0.25);
+backdrop-filter: blur(6px);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 1000;
+opacity: 0;
+pointer-events: none;
+transition: opacity 200ms;
 }
-.modal-overlay.visible { opacity: 1; pointer-events: auto; }
+.modal-bg.open { opacity: 1; pointer-events: auto; }
 
 .modal {
-  background: var(--surface);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  width: 480px;
-  max-height: 80vh;
-  overflow-y: auto;
-  padding: 28px;
-  transform: translateY(8px);
-  transition: transform 200ms;
+background: var(–surface);
+border-radius: var(–radius-xl);
+box-shadow: var(–shadow-lg);
+width: 560px;
+max-height: 80vh;
+overflow-y: auto;
+padding: 28px;
+transform: translateY(8px);
+transition: transform 200ms;
 }
-.modal-overlay.visible .modal { transform: translateY(0); }
+.modal-bg.open .modal { transform: translateY(0); }
 
 .modal-title {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 4px;
+font-family: ‘Outfit’, sans-serif;
+font-size: 20px;
+font-weight: 700;
+margin-bottom: 2px;
 }
 
-.modal-subtitle {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-bottom: 20px;
+.modal-sub {
+font-size: 13px;
+color: var(–text-2);
+margin-bottom: 16px;
 }
 
-/* ---- EXPORT TABLE ---- */
-.export-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  margin-bottom: 20px;
+/* –– EXPORT TABLE –– */
+.ex-table {
+width: 100%;
+border-collapse: collapse;
+font-size: 12px;
+margin-bottom: 16px;
 }
 
-.export-table th {
-  text-align: left;
-  padding: 8px 12px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-tertiary);
-  border-bottom: 1px solid var(--border);
+.ex-table th {
+text-align: left;
+padding: 7px 10px;
+font-size: 10px;
+font-weight: 600;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+color: var(–text-3);
+border-bottom: 1px solid var(–border);
 }
 
-.export-table td {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border-light);
+.ex-table td {
+padding: 7px 10px;
+border-bottom: 1px solid var(–border-light);
 }
 
-.export-table tr:last-child td { border-bottom: none; }
+.ex-table .r { text-align: right; font-family: ‘JetBrains Mono’, monospace; font-weight: 500; }
 
-.export-table .qty-cell {
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 500;
-  text-align: right;
+.ex-table tfoot td {
+font-weight: 700;
+border-top: 2px solid var(–border);
+border-bottom: none;
 }
 
-/* ---- ZOOM CONTROLS ---- */
-.zoom-controls {
-  position: absolute;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  background: rgba(255,255,255,0.9);
-  backdrop-filter: blur(12px);
-  border-radius: var(--radius-md);
-  padding: 4px;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border);
-}
-
-.zoom-level {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--text-secondary);
-  padding: 0 8px;
-  min-width: 44px;
-  text-align: center;
-  user-select: none;
-}
-
-/* ---- CONTEXT MENU ---- */
-.context-menu {
-  position: fixed;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(20px);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border);
-  padding: 6px;
-  z-index: 500;
-  min-width: 180px;
-  display: none;
-}
-
-.context-menu.visible { display: block; }
-
-.context-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 100ms;
-  color: var(--text-primary);
-}
-.context-item:hover { background: rgba(0,0,0,0.04); }
-.context-item.danger { color: var(--danger); }
-.context-item .shortcut {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--text-tertiary);
-  font-family: 'JetBrains Mono', monospace;
-}
-
-/* ---- ANIMATIONS ---- */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-in {
-  animation: fadeIn 300ms ease-out;
-}
-
-/* ---- NOTIFICATION ---- */
+/* –– TOAST –– */
 .toast {
-  position: fixed;
-  bottom: 48px;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: var(--text-primary);
-  color: white;
-  padding: 10px 20px;
-  border-radius: var(--radius-md);
-  font-size: 13px;
-  font-weight: 500;
-  box-shadow: var(--shadow-lg);
-  opacity: 0;
-  transition: all 300ms cubic-bezier(0.25, 0.1, 0.25, 1);
-  z-index: 1000;
-  pointer-events: none;
+position: fixed;
+bottom: 44px;
+left: 50%;
+transform: translateX(-50%) translateY(16px);
+background: var(–text-1);
+color: var(–text-inv);
+padding: 8px 18px;
+border-radius: var(–radius-md);
+font-size: 12px;
+font-weight: 500;
+box-shadow: var(–shadow-lg);
+opacity: 0;
+transition: all 250ms var(–ease);
+z-index: 2000;
+pointer-events: none;
 }
-.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* ---- SCALE INPUT ---- */
-.scale-input-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
+/* –– LOADING SPINNER –– */
+.spinner {
+display: inline-block;
+width: 14px;
+height: 14px;
+border: 2px solid rgba(74,124,155,0.2);
+border-top-color: var(–blue);
+border-radius: 50%;
+animation: spin 600ms linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* –– AI ANALYZING OVERLAY –– */
+.analyzing {
+position: absolute;
+inset: 0;
+background: rgba(255,255,255,0.8);
+backdrop-filter: blur(8px);
+display: none;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 12px;
+z-index: 50;
+}
+.analyzing.active { display: flex; }
+
+.analyzing-spinner {
+width: 40px;
+height: 40px;
+border: 3px solid var(–border);
+border-top-color: var(–accent);
+border-radius: 50%;
+animation: spin 800ms linear infinite;
 }
 
-.scale-input {
-  width: 60px;
-  padding: 5px 8px;
-  border: 1.5px solid var(--border);
-  border-radius: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  text-align: center;
-  outline: none;
-  transition: var(--transition);
+.analyzing-text {
+font-size: 14px;
+font-weight: 500;
+color: var(–text-2);
 }
-.scale-input:focus { border-color: var(--accent); }
 
-.scale-label {
-  font-size: 12px;
-  color: var(--text-secondary);
+.analyzing-sub {
+font-size: 12px;
+color: var(–text-3);
 }
 </style>
+
 </head>
 <body>
 
-<!-- TOP BAR -->
+<!-- TOPBAR -->
+
 <div class="topbar">
   <div class="logo">
-    <div class="logo-icon">P</div>
-    <span>PipeTake</span>
+    <div class="logo-mark">▸</div>
+    PipeRunner
   </div>
-  <div class="topbar-divider"></div>
-  <input class="project-name" value="Untitled Project" id="projectName" spellcheck="false">
-  <div class="topbar-spacer"></div>
-  <div class="topbar-actions">
-    <button class="btn btn-ghost" onclick="undoAction()" title="Undo (⌘Z)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-      Undo
-    </button>
-    <button class="btn btn-secondary" onclick="showExport()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Export BOM
-    </button>
-    <button class="btn btn-primary" onclick="showExport()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-      Print
-    </button>
-  </div>
+  <div class="sep"></div>
+  <input class="project-input" id="projName" value="Untitled Project" spellcheck="false">
+  <div class="flex-spacer"></div>
+
+  <button class="btn btn-ghost" onclick="undo()" title="Undo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+    Undo
+  </button>
+  <div class="sep"></div>
+  <button class="btn btn-secondary" onclick="openExport()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Export BOM
+  </button>
+  <button class="btn btn-primary" onclick="openExport()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Print
+  </button>
 </div>
 
-<!-- MAIN LAYOUT -->
+<!-- MAIN -->
+
 <div class="main">
 
-  <!-- LEFT TOOLBAR -->
+  <!-- TOOLBAR -->
+
   <div class="toolbar">
-    <button class="tool-btn active" id="toolSelect" onclick="setTool('select')">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
-      <span class="tooltip">Select (V)</span>
+    <button class="tbtn active" data-tool="select" onclick="setTool('select')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
+      <span class="tip">Select (V)</span>
     </button>
-    <button class="tool-btn" id="toolPan" onclick="setTool('pan')">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v6"/><path d="M14 10V4a2 2 0 0 0-4 0v7"/><path d="M10 10.5V5a2 2 0 0 0-4 0v9"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.5 0-6-1-8-5l-1.3-3.3a1.3 1.3 0 0 1 1.1-1.7 1.5 1.5 0 0 1 1.5.8L6 14"/></svg>
-      <span class="tooltip">Pan (H)</span>
+    <button class="tbtn" data-tool="pan" onclick="setTool('pan')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v6m-4-3.5V5a2 2 0 0 0-4 0v9l-1.3-3.3a1.3 1.3 0 0 1 1.1-1.7 1.5 1.5 0 0 1 1.5.8L6 14"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.5 0-6-1-8-5"/></svg>
+      <span class="tip">Pan (H)</span>
     </button>
-    <div class="tool-divider"></div>
-    <button class="tool-btn" id="toolPipe" onclick="setTool('pipe')">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="20" x2="12" y2="12"/><line x1="12" y1="12" x2="20" y2="12"/></svg>
-      <span class="tooltip">Draw Pipe (P)</span>
+    <div class="tdiv"></div>
+    <button class="tbtn" data-tool="pipe" onclick="setTool('pipe')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="20" x2="12" y2="12"/><line x1="12" y1="12" x2="20" y2="12"/></svg>
+      <span class="tip">Pipe (P)</span>
     </button>
-    <button class="tool-btn" id="toolFitting" onclick="setTool('fitting')">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m-10-10h4m12 0h4"/></svg>
-      <span class="tooltip">Place Fitting (F)</span>
+    <button class="tbtn" data-tool="fitting" onclick="setTool('fitting')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m-10-10h4m12 0h4"/></svg>
+      <span class="tip">Fitting (F)</span>
     </button>
-    <button class="tool-btn" id="toolMeasure" onclick="setTool('measure')">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h5m3 0h4m3 0h5"/><path d="M4 8v8m16-8v8m-6-6v4m-4-4v4"/></svg>
-      <span class="tooltip">Measure (M)</span>
+    <button class="tbtn" data-tool="measure" onclick="setTool('measure')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12h5m3 0h4m3 0h5"/><path d="M4 8v8m16-8v8m-6-6v4m-4-4v4"/></svg>
+      <span class="tip">Measure (M)</span>
     </button>
-    <div class="tool-divider"></div>
-    <button class="tool-btn" id="toolErase" onclick="setTool('erase')">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H7L3 16l9-9 8 8-4 4"/><line x1="18" y1="13" x2="11" y2="6"/></svg>
-      <span class="tooltip">Erase (E)</span>
+    <div class="tdiv"></div>
+    <button class="tbtn" data-tool="erase" onclick="setTool('erase')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H7L3 16l9-9 8 8-4 4"/><line x1="18" y1="13" x2="11" y2="6"/></svg>
+      <span class="tip">Erase (E)</span>
     </button>
   </div>
 
   <!-- CANVAS -->
-  <div class="canvas-area" id="canvasArea">
-    <!-- Empty state -->
-    <div class="canvas-empty" id="canvasEmpty">
-      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-        <div class="upload-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+
+  <div class="canvas-wrap" id="canvasWrap">
+
+```
+<!-- Upload Screen -->
+<div class="upload-screen" id="uploadScreen">
+  <div class="upload-card">
+    <div class="profile-section">
+      <div class="profile-label">Trade Profile</div>
+      <div class="profile-grid" id="profileGrid">
+        <div class="profile-card selected" data-profile="residential" onclick="selectProfile(this)">
+          <div class="profile-card-icon">🏠</div>
+          <div class="profile-card-name">Residential Plumbing</div>
+          <div class="profile-card-desc">Copper, PEX, PVC/DWV, CPVC</div>
         </div>
-        <div class="upload-title">Upload Blueprint</div>
-        <div class="upload-subtitle">Drop a PDF or image of your plumbing plan here</div>
-        <div class="upload-or">or click to browse</div>
-        <button class="btn btn-secondary" onclick="event.stopPropagation(); startBlank()">Start with blank canvas</button>
+        <div class="profile-card" data-profile="stormwater" onclick="selectProfile(this)">
+          <div class="profile-card-icon">🌧️</div>
+          <div class="profile-card-name">Stormwater / Civil</div>
+          <div class="profile-card-desc">RCP, HDPE, ADS, Structures</div>
+        </div>
+        <div class="profile-card" data-profile="commercial" onclick="selectProfile(this)">
+          <div class="profile-card-icon">🏢</div>
+          <div class="profile-card-name">Commercial Mechanical</div>
+          <div class="profile-card-desc">Steel, copper, grooved, etc.</div>
+        </div>
+        <div class="profile-card" data-profile="fire" onclick="selectProfile(this)">
+          <div class="profile-card-icon">🔥</div>
+          <div class="profile-card-name">Fire Protection</div>
+          <div class="profile-card-desc">Sch 10/40, CPVC, grooved</div>
+        </div>
       </div>
-      <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.tiff,.bmp" style="display:none" onchange="handleFileUpload(event)">
     </div>
 
-    <!-- SVG Canvas (hidden until active) -->
-    <svg class="canvas-svg" id="canvasSvg" style="display:none">
-      <g id="canvasGroup">
-        <image id="blueprintImg" x="0" y="0" style="display:none"/>
-        <g id="pipesLayer"></g>
-        <g id="fittingsLayer"></g>
-        <g id="nodesLayer"></g>
-        <g id="measureLayer"></g>
-        <g id="previewLayer"></g>
-      </g>
-    </svg>
-
-    <!-- Zoom Controls -->
-    <div class="zoom-controls" id="zoomControls" style="display:none">
-      <button class="btn-icon" onclick="zoomOut()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
-      <span class="zoom-level" id="zoomLevel">100%</span>
-      <button class="btn-icon" onclick="zoomIn()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
-      <button class="btn-icon" onclick="zoomFit()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-      </button>
+    <div class="upload-drop" id="uploadDrop" onclick="document.getElementById('fileIn').click()">
+      <div class="upload-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="upload-title">Upload Blueprint</div>
+      <div class="upload-sub">PDF or image — PipeRunner AI will analyze and pre-populate</div>
+      <div class="upload-hint">Supports .pdf, .png, .jpg, .tiff</div>
     </div>
+    <input type="file" id="fileIn" accept=".pdf,.png,.jpg,.jpeg,.tiff,.bmp" style="display:none" onchange="handleUpload(event)">
+
+    <div class="upload-or">or</div>
+
+    <button class="btn btn-secondary" onclick="startBlank()" style="width:100%; justify-content:center; padding: 10px;">
+      Start with blank canvas
+    </button>
   </div>
-
-  <!-- RIGHT PANEL -->
-  <div class="panel">
-    <div class="panel-tabs">
-      <button class="panel-tab active" id="tabProperties" onclick="switchTab('properties')">Properties</button>
-      <button class="panel-tab" id="tabMaterials" onclick="switchTab('materials')">Materials</button>
-    </div>
-
-    <!-- Properties Panel -->
-    <div class="panel-content" id="panelProperties">
-      <!-- Scale Setting -->
-      <div class="section">
-        <div class="section-header">
-          <span class="section-title">Drawing Scale</span>
-        </div>
-        <div class="scale-input-row">
-          <span class="scale-label">1" =</span>
-          <input class="scale-input" id="scaleValue" type="text" value="1" onchange="updateScale()">
-          <span class="scale-label">ft</span>
-        </div>
-      </div>
-
-      <!-- Pipe Material -->
-      <div class="section">
-        <div class="section-header">
-          <span class="section-title">Pipe Material</span>
-        </div>
-        <div class="pipe-type-grid" id="pipeTypeGrid">
-          <div class="pipe-type-card selected" data-type="copper" onclick="selectPipeType(this)">
-            <div class="pipe-type-swatch" style="background: var(--copper)"></div>
-            <div class="pipe-type-name">Copper</div>
-            <div class="pipe-type-desc">Type L / M</div>
-          </div>
-          <div class="pipe-type-card" data-type="pex-red" onclick="selectPipeType(this)">
-            <div class="pipe-type-swatch" style="background: var(--pex-red)"></div>
-            <div class="pipe-type-name">PEX (Hot)</div>
-            <div class="pipe-type-desc">Red — F1807</div>
-          </div>
-          <div class="pipe-type-card" data-type="pex-blue" onclick="selectPipeType(this)">
-            <div class="pipe-type-swatch" style="background: var(--pex-blue)"></div>
-            <div class="pipe-type-name">PEX (Cold)</div>
-            <div class="pipe-type-desc">Blue — F1807</div>
-          </div>
-          <div class="pipe-type-card" data-type="pvc" onclick="selectPipeType(this)">
-            <div class="pipe-type-swatch" style="background: var(--pvc)"></div>
-            <div class="pipe-type-name">PVC</div>
-            <div class="pipe-type-desc">Sch 40 DWV</div>
-          </div>
-          <div class="pipe-type-card" data-type="cpvc" onclick="selectPipeType(this)">
-            <div class="pipe-type-swatch" style="background: var(--cpvc)"></div>
-            <div class="pipe-type-name">CPVC</div>
-            <div class="pipe-type-desc">FlowGuard</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pipe Size -->
-      <div class="section">
-        <div class="section-header">
-          <span class="section-title">Pipe Size</span>
-        </div>
-        <div class="size-row" id="sizeRow">
-          <span class="size-chip" data-size='0.5' onclick="selectSize(this)">1/2"</span>
-          <span class="size-chip selected" data-size='0.75' onclick="selectSize(this)">3/4"</span>
-          <span class="size-chip" data-size='1' onclick="selectSize(this)">1"</span>
-          <span class="size-chip" data-size='1.5' onclick="selectSize(this)">1-1/2"</span>
-          <span class="size-chip" data-size='2' onclick="selectSize(this)">2"</span>
-          <span class="size-chip" data-size='3' onclick="selectSize(this)">3"</span>
-          <span class="size-chip" data-size='4' onclick="selectSize(this)">4"</span>
-        </div>
-      </div>
-
-      <!-- Fittings Palette -->
-      <div class="section">
-        <div class="section-header">
-          <span class="section-title">Fittings</span>
-        </div>
-        <div class="fitting-grid" id="fittingGrid">
-          <button class="fitting-btn" data-fitting="elbow90" onclick="selectFitting(this)">
-            <span class="fitting-icon">⌐</span>
-            <span class="fitting-label">90° Elbow</span>
-          </button>
-          <button class="fitting-btn" data-fitting="elbow45" onclick="selectFitting(this)">
-            <span class="fitting-icon">∠</span>
-            <span class="fitting-label">45° Elbow</span>
-          </button>
-          <button class="fitting-btn" data-fitting="tee" onclick="selectFitting(this)">
-            <span class="fitting-icon">⊤</span>
-            <span class="fitting-label">Tee</span>
-          </button>
-          <button class="fitting-btn" data-fitting="coupling" onclick="selectFitting(this)">
-            <span class="fitting-icon">⊟</span>
-            <span class="fitting-label">Coupling</span>
-          </button>
-          <button class="fitting-btn" data-fitting="reducer" onclick="selectFitting(this)">
-            <span class="fitting-icon">◁</span>
-            <span class="fitting-label">Reducer</span>
-          </button>
-          <button class="fitting-btn" data-fitting="valve" onclick="selectFitting(this)">
-            <span class="fitting-icon">⊳</span>
-            <span class="fitting-label">Valve</span>
-          </button>
-          <button class="fitting-btn" data-fitting="cleanout" onclick="selectFitting(this)">
-            <span class="fitting-icon">⊙</span>
-            <span class="fitting-label">Cleanout</span>
-          </button>
-          <button class="fitting-btn" data-fitting="cap" onclick="selectFitting(this)">
-            <span class="fitting-icon">⊣</span>
-            <span class="fitting-label">Cap</span>
-          </button>
-          <button class="fitting-btn" data-fitting="wye" onclick="selectFitting(this)">
-            <span class="fitting-icon">⋎</span>
-            <span class="fitting-label">Wye</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Materials Panel -->
-    <div class="panel-content" id="panelMaterials" style="display:none">
-      <div id="materialsList">
-        <div class="empty-state">
-          <div class="empty-state-icon">📋</div>
-          <div class="empty-state-text">No materials yet.<br>Draw pipe runs and place fittings to build your material list.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </div>
 
-<!-- STATUS BAR -->
-<div class="statusbar">
-  <div class="status-item">
-    <span class="status-dot"></span>
-    Ready
+<!-- AI Analyzing overlay -->
+<div class="analyzing" id="analyzing">
+  <div class="analyzing-spinner"></div>
+  <div class="analyzing-text">PipeRunner is analyzing…</div>
+  <div class="analyzing-sub">Identifying pipe runs, fittings, and structures from your blueprint</div>
+</div>
+
+<!-- SVG Canvas -->
+<svg class="canvas-svg" id="svg">
+  <defs>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g id="world">
+    <image id="bpImg" x="0" y="0" style="display:none"/>
+    <g id="pipeG"></g>
+    <g id="fitG"></g>
+    <g id="nodeG"></g>
+    <g id="prevG"></g>
+  </g>
+</svg>
+
+<!-- Zoom -->
+<div class="zoom-bar" id="zoomBar">
+  <button class="icon-btn" onclick="zoomOut()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+  <span class="zoom-val" id="zoomVal">100%</span>
+  <button class="icon-btn" onclick="zoomIn()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+  <button class="icon-btn" onclick="zoomFit()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
+</div>
+```
+
   </div>
-  <div class="status-item" id="statusCoords">0, 0</div>
-  <div class="status-item" id="statusPipes">Pipes: 0</div>
-  <div class="status-item" id="statusFittings">Fittings: 0</div>
-  <div class="status-item" id="statusLength">Total: 0 ft</div>
+
+  <!-- SIDEBAR -->
+
+  <div class="sidebar">
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" onclick="switchTab('props')">Properties</button>
+      <button class="sidebar-tab" onclick="switchTab('bom')">Materials</button>
+      <button class="sidebar-tab" onclick="switchTab('pricing')">Pricing</button>
+    </div>
+
+```
+<div class="sidebar-body" id="panelProps">
+  <!-- AI Banner -->
+  <div class="ai-banner" id="aiBanner">
+    <div class="ai-banner-title">
+      <span class="ai-tag"><span class="spinner" style="width:10px;height:10px;border-width:1.5px;"></span> AI</span>
+      Blueprint Analysis
+    </div>
+    <div class="ai-banner-text" id="aiBannerText">Analyzing uploaded blueprint for pipe runs and fittings…</div>
+  </div>
+
+  <!-- AI Suggestions -->
+  <div id="aiSuggestions"></div>
+
+  <!-- Scale -->
+  <div class="sec">
+    <div class="sec-head"><span class="sec-title">Drawing Scale</span></div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-size:11px;color:var(--text-3)">1" =</span>
+      <input class="project-input" id="scaleIn" value="1" style="width:50px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;" onchange="updateScale()">
+      <span style="font-size:11px;color:var(--text-3)">ft</span>
+    </div>
+  </div>
+
+  <!-- Materials (dynamic per profile) -->
+  <div class="sec">
+    <div class="sec-head"><span class="sec-title">Pipe Material</span></div>
+    <div class="mat-grid" id="matGrid"></div>
+  </div>
+
+  <!-- Sizes -->
+  <div class="sec">
+    <div class="sec-head"><span class="sec-title">Size</span></div>
+    <div class="chip-row" id="sizeRow"></div>
+  </div>
+
+  <!-- Fittings -->
+  <div class="sec">
+    <div class="sec-head"><span class="sec-title">Fittings</span></div>
+    <div class="fit-grid" id="fitGrid"></div>
+  </div>
+</div>
+
+<!-- BOM Panel -->
+<div class="sidebar-body" id="panelBom" style="display:none">
+  <div id="bomList">
+    <div class="empty">
+      <div class="empty-icon">📋</div>
+      <div class="empty-text">No materials yet.<br>Draw pipe runs and place fittings.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Pricing Panel -->
+<div class="sidebar-body" id="panelPricing" style="display:none">
+  <div class="sec">
+    <div class="sec-head">
+      <span class="sec-title">Unit Prices</span>
+      <button class="btn btn-sm btn-ghost" onclick="resetPrices()">Reset defaults</button>
+    </div>
+    <div class="empty-text" style="margin-bottom:8px;color:var(--text-3);">Click any price to edit. Prices are per unit (ft or ea).</div>
+    <div id="priceList"></div>
+  </div>
+</div>
+
+<!-- Totals Bar -->
+<div class="totals-bar" id="totalsBar">
+  <div class="totals-row">
+    <span class="totals-label">Materials</span>
+    <span class="totals-value" id="totalMat">$0.00</span>
+  </div>
+  <div class="totals-row">
+    <span class="totals-label">Tax (8%)</span>
+    <span class="totals-value" id="totalTax">$0.00</span>
+  </div>
+  <div class="totals-row grand">
+    <span class="totals-label">Total</span>
+    <span class="totals-value" id="totalGrand">$0.00</span>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- STATUSBAR -->
+
+<div class="statusbar">
+  <div class="stat"><span class="stat-dot"></span> Ready</div>
+  <div class="stat" id="sCoords">0, 0</div>
+  <div class="stat" id="sPipes">Pipes: 0</div>
+  <div class="stat" id="sFittings">Fittings: 0</div>
+  <div class="stat" id="sLength">Total: 0 ft</div>
+  <div class="flex-spacer"></div>
+  <div class="stat" id="sProfile">Profile: Residential Plumbing</div>
 </div>
 
 <!-- EXPORT MODAL -->
-<div class="modal-overlay" id="exportModal">
+
+<div class="modal-bg" id="exportModal">
   <div class="modal">
     <div class="modal-title">Bill of Materials</div>
-    <div class="modal-subtitle" id="exportProjectName">Untitled Project</div>
-    <div id="exportContent"></div>
-    <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
+    <div class="modal-sub" id="exProjName">Untitled Project</div>
+    <div id="exContent"></div>
+    <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:12px;">
       <button class="btn btn-secondary" onclick="closeExport()">Close</button>
-      <button class="btn btn-secondary" onclick="copyBOM()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        Copy
-      </button>
-      <button class="btn btn-primary" onclick="downloadCSV()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download CSV
-      </button>
+      <button class="btn btn-secondary" onclick="copyBOM()">Copy</button>
+      <button class="btn btn-primary" onclick="downloadCSV()">Download CSV</button>
     </div>
-  </div>
-</div>
-
-<!-- CONTEXT MENU -->
-<div class="context-menu" id="contextMenu">
-  <div class="context-item" onclick="deleteSelected()">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-    Delete
-    <span class="shortcut">⌫</span>
-  </div>
-  <div class="context-item" onclick="duplicateSelected()">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-    Duplicate
-    <span class="shortcut">⌘D</span>
   </div>
 </div>
 
 <!-- TOAST -->
+
 <div class="toast" id="toast"></div>
 
 <script>
-// =============================================
+// =====================================================
+// PROFILES — each profile defines materials, sizes,
+// fittings, and default unit prices
+// =====================================================
+const PROFILES = {
+  residential: {
+    name: 'Residential Plumbing',
+    materials: [
+      { id: 'copper', name: 'Copper', spec: 'Type L', color: '#b87333' },
+      { id: 'pex-hot', name: 'PEX (Hot)', spec: 'Red — F1807', color: '#c05746' },
+      { id: 'pex-cold', name: 'PEX (Cold)', spec: 'Blue — F1807', color: '#4a7c9b' },
+      { id: 'pvc-dwv', name: 'PVC DWV', spec: 'Sch 40', color: '#7d8690' },
+      { id: 'cpvc', name: 'CPVC', spec: 'FlowGuard Gold', color: '#c4922a' },
+    ],
+    sizes: [
+      { label: '1/2"', value: 0.5 },
+      { label: '3/4"', value: 0.75 },
+      { label: '1"', value: 1 },
+      { label: '1-1/2"', value: 1.5 },
+      { label: '2"', value: 2 },
+      { label: '3"', value: 3 },
+      { label: '4"', value: 4 },
+    ],
+    fittings: [
+      { id: 'elbow90', name: '90° Elbow', icon: '⌐' },
+      { id: 'elbow45', name: '45° Elbow', icon: '∠' },
+      { id: 'tee', name: 'Tee', icon: '⊤' },
+      { id: 'coupling', name: 'Coupling', icon: '⊟' },
+      { id: 'reducer', name: 'Reducer', icon: '◁' },
+      { id: 'valve', name: 'Ball Valve', icon: '⊳' },
+      { id: 'cleanout', name: 'Cleanout', icon: '⊙' },
+      { id: 'cap', name: 'Cap', icon: '⊣' },
+      { id: 'wye', name: 'Wye', icon: '⋎' },
+    ],
+    defaultPrices: {
+      'copper|pipe': 4.50,
+      'pex-hot|pipe': 1.20,
+      'pex-cold|pipe': 1.20,
+      'pvc-dwv|pipe': 1.80,
+      'cpvc|pipe': 2.10,
+      'copper|elbow90': 3.25,
+      'copper|elbow45': 3.75,
+      'copper|tee': 4.50,
+      'copper|coupling': 2.00,
+      'copper|reducer': 5.50,
+      'copper|valve': 18.00,
+      'copper|cleanout': 12.00,
+      'copper|cap': 1.80,
+      'copper|wye': 6.00,
+      'pex-hot|elbow90': 1.50, 'pex-hot|elbow45': 1.75, 'pex-hot|tee': 2.80,
+      'pex-hot|coupling': 1.20, 'pex-hot|reducer': 3.00, 'pex-hot|valve': 12.00,
+      'pex-hot|cleanout': 8.00, 'pex-hot|cap': 0.80, 'pex-hot|wye': 4.00,
+      'pex-cold|elbow90': 1.50, 'pex-cold|elbow45': 1.75, 'pex-cold|tee': 2.80,
+      'pex-cold|coupling': 1.20, 'pex-cold|reducer': 3.00, 'pex-cold|valve': 12.00,
+      'pex-cold|cleanout': 8.00, 'pex-cold|cap': 0.80, 'pex-cold|wye': 4.00,
+      'pvc-dwv|elbow90': 2.50, 'pvc-dwv|elbow45': 2.75, 'pvc-dwv|tee': 3.80,
+      'pvc-dwv|coupling': 1.50, 'pvc-dwv|reducer': 4.00, 'pvc-dwv|valve': 15.00,
+      'pvc-dwv|cleanout': 10.00, 'pvc-dwv|cap': 1.20, 'pvc-dwv|wye': 5.00,
+      'cpvc|elbow90': 2.00, 'cpvc|elbow45': 2.25, 'cpvc|tee': 3.20,
+      'cpvc|coupling': 1.40, 'cpvc|reducer': 3.50, 'cpvc|valve': 14.00,
+      'cpvc|cleanout': 9.00, 'cpvc|cap': 1.00, 'cpvc|wye': 4.50,
+    }
+  },
+  stormwater: {
+    name: 'Stormwater / Civil',
+    materials: [
+      { id: 'rcp', name: 'RCP', spec: 'Reinforced Concrete', color: '#6b6560' },
+      { id: 'hdpe', name: 'HDPE', spec: 'DR 11 / DR 17', color: '#2d2926' },
+      { id: 'ads', name: 'ADS N-12', spec: 'Corrugated', color: '#4a6741' },
+      { id: 'pvc-sdr', name: 'PVC SDR-35', spec: 'Storm Sewer', color: '#7d8690' },
+    ],
+    sizes: [
+      { label: '12"', value: 12 },
+      { label: '15"', value: 15 },
+      { label: '18"', value: 18 },
+      { label: '24"', value: 24 },
+      { label: '30"', value: 30 },
+      { label: '36"', value: 36 },
+      { label: '48"', value: 48 },
+    ],
+    fittings: [
+      { id: 'storm-mh', name: 'Storm MH', icon: '◉' },
+      { id: 'inlet-c', name: 'Type C Inlet', icon: '▣' },
+      { id: 'inlet-e', name: 'Type E Inlet', icon: '▤' },
+      { id: 'outfall', name: 'Outfall', icon: '▶' },
+      { id: 'bubbleup', name: 'Bubble-Up', icon: '◎' },
+      { id: 'elbow90', name: '90° Bend', icon: '⌐' },
+      { id: 'tee', name: 'Tee / Wye', icon: '⊤' },
+      { id: 'reducer', name: 'Reducer', icon: '◁' },
+      { id: 'riser', name: 'Riser', icon: '⬆' },
+    ],
+    defaultPrices: {
+      'rcp|pipe': 28.00, 'hdpe|pipe': 18.00, 'ads|pipe': 12.00, 'pvc-sdr|pipe': 8.50,
+      'rcp|storm-mh': 2800, 'rcp|inlet-c': 1800, 'rcp|inlet-e': 2200, 'rcp|outfall': 3500,
+      'rcp|bubbleup': 2400, 'rcp|elbow90': 180, 'rcp|tee': 320, 'rcp|reducer': 240, 'rcp|riser': 450,
+      'hdpe|storm-mh': 2800, 'hdpe|inlet-c': 1800, 'hdpe|inlet-e': 2200, 'hdpe|outfall': 3500,
+      'hdpe|bubbleup': 2400, 'hdpe|elbow90': 120, 'hdpe|tee': 200, 'hdpe|reducer': 160, 'hdpe|riser': 350,
+      'ads|storm-mh': 2800, 'ads|inlet-c': 1800, 'ads|inlet-e': 2200, 'ads|outfall': 3500,
+      'ads|bubbleup': 2400, 'ads|elbow90': 85, 'ads|tee': 140, 'ads|reducer': 110, 'ads|riser': 280,
+      'pvc-sdr|storm-mh': 2800, 'pvc-sdr|inlet-c': 1800, 'pvc-sdr|inlet-e': 2200, 'pvc-sdr|outfall': 3500,
+      'pvc-sdr|bubbleup': 2400, 'pvc-sdr|elbow90': 45, 'pvc-sdr|tee': 85, 'pvc-sdr|reducer': 65, 'pvc-sdr|riser': 180,
+    }
+  },
+  commercial: {
+    name: 'Commercial Mechanical',
+    materials: [
+      { id: 'steel-blk', name: 'Black Steel', spec: 'Sch 40', color: '#333' },
+      { id: 'steel-galv', name: 'Galvanized', spec: 'Sch 40', color: '#999' },
+      { id: 'copper-k', name: 'Copper Type K', spec: 'Hard', color: '#b87333' },
+      { id: 'grooved', name: 'Grooved', spec: 'Victaulic', color: '#c05746' },
+    ],
+    sizes: [
+      { label: '1/2"', value: 0.5 }, { label: '3/4"', value: 0.75 },
+      { label: '1"', value: 1 }, { label: '1-1/4"', value: 1.25 },
+      { label: '1-1/2"', value: 1.5 }, { label: '2"', value: 2 },
+      { label: '2-1/2"', value: 2.5 }, { label: '3"', value: 3 },
+      { label: '4"', value: 4 }, { label: '6"', value: 6 },
+    ],
+    fittings: [
+      { id: 'elbow90', name: '90° Elbow', icon: '⌐' },
+      { id: 'elbow45', name: '45° Elbow', icon: '∠' },
+      { id: 'tee', name: 'Tee', icon: '⊤' },
+      { id: 'coupling', name: 'Coupling', icon: '⊟' },
+      { id: 'reducer', name: 'Reducer', icon: '◁' },
+      { id: 'union', name: 'Union', icon: '⊝' },
+      { id: 'flange', name: 'Flange', icon: '⊛' },
+      { id: 'valve-gate', name: 'Gate Valve', icon: '⊳' },
+      { id: 'valve-check', name: 'Check Valve', icon: '▷' },
+    ],
+    defaultPrices: {
+      'steel-blk|pipe': 5.50, 'steel-galv|pipe': 6.80, 'copper-k|pipe': 8.00, 'grooved|pipe': 7.20,
+      'steel-blk|elbow90': 6.00, 'steel-blk|elbow45': 7.00, 'steel-blk|tee': 9.00,
+      'steel-blk|coupling': 3.00, 'steel-blk|reducer': 8.00, 'steel-blk|union': 15.00,
+      'steel-blk|flange': 22.00, 'steel-blk|valve-gate': 45.00, 'steel-blk|valve-check': 55.00,
+    }
+  },
+  fire: {
+    name: 'Fire Protection',
+    materials: [
+      { id: 'sch10', name: 'Sch 10', spec: 'Black Steel', color: '#c05746' },
+      { id: 'sch40', name: 'Sch 40', spec: 'Black Steel', color: '#8b4f2b' },
+      { id: 'cpvc-fire', name: 'CPVC (BlazeMaster)', spec: 'Listed', color: '#c4922a' },
+    ],
+    sizes: [
+      { label: '3/4"', value: 0.75 }, { label: '1"', value: 1 },
+      { label: '1-1/4"', value: 1.25 }, { label: '1-1/2"', value: 1.5 },
+      { label: '2"', value: 2 }, { label: '2-1/2"', value: 2.5 },
+      { label: '3"', value: 3 }, { label: '4"', value: 4 },
+      { label: '6"', value: 6 }, { label: '8"', value: 8 },
+    ],
+    fittings: [
+      { id: 'elbow90', name: '90° Elbow', icon: '⌐' },
+      { id: 'elbow45', name: '45° Elbow', icon: '∠' },
+      { id: 'tee', name: 'Tee', icon: '⊤' },
+      { id: 'cross', name: 'Cross', icon: '✚' },
+      { id: 'reducer', name: 'Reducer', icon: '◁' },
+      { id: 'head-pend', name: 'Pendent Head', icon: '⊙' },
+      { id: 'head-up', name: 'Upright Head', icon: '⦿' },
+      { id: 'head-sw', name: 'Sidewall Head', icon: '◐' },
+      { id: 'alarm-valve', name: 'Alarm Valve', icon: '⊳' },
+    ],
+    defaultPrices: {
+      'sch10|pipe': 4.20, 'sch40|pipe': 5.50, 'cpvc-fire|pipe': 3.80,
+      'sch10|elbow90': 5.00, 'sch10|elbow45': 5.50, 'sch10|tee': 8.00,
+      'sch10|cross': 12.00, 'sch10|reducer': 6.00, 'sch10|head-pend': 14.00,
+      'sch10|head-up': 14.00, 'sch10|head-sw': 18.00, 'sch10|alarm-valve': 850.00,
+    }
+  }
+};
+
+// =====================================================
 // STATE
-// =============================================
-const state = {
+// =====================================================
+const S = {
+  profile: 'residential',
   tool: 'select',
-  pipeType: 'copper',
-  pipeSize: 0.75,
-  selectedFitting: null,
-  scale: 1, // 1 inch on screen = 1 ft real
-  zoom: 1,
-  panX: 0,
-  panY: 0,
-  isPanning: false,
-  panStart: { x: 0, y: 0 },
-  isDrawing: false,
-  drawStart: null,
-  pipes: [],       // { id, points: [{x,y}], type, size, nodes: [] }
-  fittings: [],    // { id, x, y, type, fitting, size }
+  mat: null,  // current material id
+  size: null, // current size value
+  fitType: null,
+  scale: 1,
+  zoom: 1, panX: 0, panY: 0,
+  isPanning: false, panStart: { x: 0, y: 0 },
+  isDrawing: false, drawStart: null,
+  pipes: [],
+  fittings: [],
   undoStack: [],
   selectedId: null,
-  blueprintLoaded: false,
+  prices: {},
   nextId: 1,
+  bpLoaded: false,
 };
 
-const PIPE_COLORS = {
-  copper: '#b87333',
-  'pex-red': '#e63946',
-  'pex-blue': '#457b9d',
-  pvc: '#8d99ae',
-  cpvc: '#f4a261',
-};
-
-const PIPE_LABELS = {
-  copper: 'Copper Type L',
-  'pex-red': 'PEX (Hot)',
-  'pex-blue': 'PEX (Cold)',
-  pvc: 'PVC Sch 40',
-  cpvc: 'CPVC',
-};
-
-const FITTING_LABELS = {
-  elbow90: '90° Elbow',
-  elbow45: '45° Elbow',
-  tee: 'Tee',
-  coupling: 'Coupling',
-  reducer: 'Reducer',
-  valve: 'Ball Valve',
-  cleanout: 'Cleanout',
-  cap: 'Cap',
-  wye: 'Wye',
-};
-
-const FITTING_SYMBOLS = {
-  elbow90: '⌐',
-  elbow45: '∠',
-  tee: '⊤',
-  coupling: '⊟',
-  reducer: '◁',
-  valve: '⊳',
-  cleanout: '⊙',
-  cap: '⊣',
-  wye: '⋎',
-};
-
-// =============================================
+// =====================================================
 // INIT
-// =============================================
-const svg = document.getElementById('canvasSvg');
-const canvasGroup = document.getElementById('canvasGroup');
-const pipesLayer = document.getElementById('pipesLayer');
-const fittingsLayer = document.getElementById('fittingsLayer');
-const nodesLayer = document.getElementById('nodesLayer');
-const previewLayer = document.getElementById('previewLayer');
-const canvasArea = document.getElementById('canvasArea');
+// =====================================================
+const svgEl = document.getElementById('svg');
+const world = document.getElementById('world');
+const pipeG = document.getElementById('pipeG');
+const fitG = document.getElementById('fitG');
+const prevG = document.getElementById('prevG');
 
-// =============================================
-// TOOLS
-// =============================================
-function setTool(tool) {
-  state.tool = tool;
-  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('tool' + tool.charAt(0).toUpperCase() + tool.slice(1));
-  if (btn) btn.classList.add('active');
-
-  // Cancel any in-progress drawing
-  if (tool !== 'pipe') {
-    state.isDrawing = false;
-    state.drawStart = null;
-    previewLayer.innerHTML = '';
-  }
-
-  svg.style.cursor = tool === 'pan' ? 'grab' : tool === 'pipe' ? 'crosshair' : tool === 'fitting' ? 'copy' : tool === 'erase' ? 'pointer' : tool === 'measure' ? 'crosshair' : 'default';
+function init() {
+  loadProfile('residential');
+  updateStatus();
 }
 
-function selectPipeType(el) {
-  document.querySelectorAll('.pipe-type-card').forEach(c => c.classList.remove('selected'));
+// =====================================================
+// PROFILE SYSTEM
+// =====================================================
+function selectProfile(el) {
+  document.querySelectorAll('.profile-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
-  state.pipeType = el.dataset.type;
+  const p = el.dataset.profile;
+  loadProfile(p);
 }
 
-function selectSize(el) {
-  document.querySelectorAll('.size-chip').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  state.pipeSize = parseFloat(el.dataset.size);
+function loadProfile(pid) {
+  S.profile = pid;
+  const prof = PROFILES[pid];
+
+  // Copy default prices
+  S.prices = { ...prof.defaultPrices };
+
+  // Set defaults
+  S.mat = prof.materials[0].id;
+  S.size = prof.sizes[1]?.value || prof.sizes[0].value;
+  S.fitType = prof.fittings[0].id;
+
+  // Render material cards
+  document.getElementById('matGrid').innerHTML = prof.materials.map(m =>
+    `<div class="mat-card${m.id === S.mat ? ' sel' : ''}" data-mat="${m.id}" onclick="pickMat(this)">
+      <div class="mat-swatch" style="background:${m.color}"></div>
+      <div class="mat-name">${m.name}</div>
+      <div class="mat-spec">${m.spec}</div>
+    </div>`
+  ).join('');
+
+  // Render sizes
+  document.getElementById('sizeRow').innerHTML = prof.sizes.map(s =>
+    `<span class="chip${s.value === S.size ? ' sel' : ''}" data-size="${s.value}" onclick="pickSize(this)">${s.label}</span>`
+  ).join('');
+
+  // Render fittings
+  document.getElementById('fitGrid').innerHTML = prof.fittings.map(f =>
+    `<button class="fit-btn${f.id === S.fitType ? ' sel' : ''}" data-fit="${f.id}" onclick="pickFit(this)">
+      <span class="fit-icon">${f.icon}</span>
+      <span class="fit-label">${f.name}</span>
+    </button>`
+  ).join('');
+
+  document.getElementById('sProfile').textContent = `Profile: ${prof.name}`;
+  updatePriceList();
+  updateBOM();
 }
 
-function selectFitting(el) {
-  document.querySelectorAll('.fitting-btn').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
-  state.selectedFitting = el.dataset.fitting;
+function pickMat(el) {
+  document.querySelectorAll('.mat-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  S.mat = el.dataset.mat;
+}
+
+function pickSize(el) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  S.size = parseFloat(el.dataset.size);
+}
+
+function pickFit(el) {
+  document.querySelectorAll('.fit-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  S.fitType = el.dataset.fit;
   setTool('fitting');
 }
 
-// =============================================
-// CANVAS INTERACTIONS
-// =============================================
-function getSvgPoint(e) {
-  const rect = svg.getBoundingClientRect();
-  return {
-    x: (e.clientX - rect.left - state.panX) / state.zoom,
-    y: (e.clientY - rect.top - state.panY) / state.zoom,
-  };
+// =====================================================
+// TOOL SWITCHING
+// =====================================================
+function setTool(t) {
+  S.tool = t;
+  document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.tbtn[data-tool="${t}"]`)?.classList.add('active');
+  if (t !== 'pipe') { S.isDrawing = false; S.drawStart = null; prevG.innerHTML = ''; }
+  svgEl.style.cursor = t === 'pan' ? 'grab' : t === 'pipe' ? 'crosshair' : t === 'fitting' ? 'copy' : t === 'erase' ? 'pointer' : 'default';
 }
 
-function snapToGrid(val, gridSize = 12) {
-  return Math.round(val / gridSize) * gridSize;
+// =====================================================
+// CANVAS EVENTS
+// =====================================================
+function svgPt(e) {
+  const r = svgEl.getBoundingClientRect();
+  return { x: (e.clientX - r.left - S.panX) / S.zoom, y: (e.clientY - r.top - S.panY) / S.zoom };
 }
 
-svg.addEventListener('mousedown', (e) => {
-  if (e.button === 2) return; // right click handled separately
+function snap(v) { return Math.round(v / 12) * 12; }
 
-  if (state.tool === 'pan' || (e.button === 1) || (e.altKey)) {
-    state.isPanning = true;
-    state.panStart = { x: e.clientX - state.panX, y: e.clientY - state.panY };
-    svg.style.cursor = 'grabbing';
+function getColor(matId) {
+  const prof = PROFILES[S.profile];
+  return prof.materials.find(m => m.id === matId)?.color || '#999';
+}
+
+function getMatName(matId) {
+  const prof = PROFILES[S.profile];
+  return prof.materials.find(m => m.id === matId)?.name || matId;
+}
+
+function getFitName(fitId) {
+  const prof = PROFILES[S.profile];
+  return prof.fittings.find(f => f.id === fitId)?.name || fitId;
+}
+
+function getFitIcon(fitId) {
+  const prof = PROFILES[S.profile];
+  return prof.fittings.find(f => f.id === fitId)?.icon || '•';
+}
+
+function sizeLabel(v) {
+  if (v === 0.5) return '1/2"'; if (v === 0.75) return '3/4"';
+  if (v === 1.25) return '1-1/4"'; if (v === 1.5) return '1-1/2"';
+  if (v === 2.5) return '2-1/2"';
+  return v + '"';
+}
+
+svgEl.addEventListener('mousedown', e => {
+  if (e.button === 2) return;
+  if (S.tool === 'pan' || e.button === 1 || e.altKey) {
+    S.isPanning = true;
+    S.panStart = { x: e.clientX - S.panX, y: e.clientY - S.panY };
+    svgEl.style.cursor = 'grabbing';
     return;
   }
-
-  const pt = getSvgPoint(e);
-
-  if (state.tool === 'pipe') {
-    if (!state.isDrawing) {
-      state.isDrawing = true;
-      state.drawStart = { x: snapToGrid(pt.x), y: snapToGrid(pt.y) };
-    } else {
-      const endPt = { x: snapToGrid(pt.x), y: snapToGrid(pt.y) };
-      addPipe(state.drawStart, endPt);
-      state.drawStart = endPt; // chain pipes
+  const pt = svgPt(e);
+  if (S.tool === 'pipe') {
+    if (!S.isDrawing) { S.isDrawing = true; S.drawStart = { x: snap(pt.x), y: snap(pt.y) }; }
+    else {
+      const end = { x: snap(pt.x), y: snap(pt.y) };
+      addPipe(S.drawStart, end);
+      S.drawStart = end;
     }
   }
+  if (S.tool === 'fitting' && S.fitType) addFitting(snap(pt.x), snap(pt.y));
+  if (S.tool === 'select') { S.selectedId = null; renderCanvas(); }
+});
 
-  if (state.tool === 'fitting' && state.selectedFitting) {
-    addFitting(snapToGrid(pt.x), snapToGrid(pt.y));
-  }
-
-  if (state.tool === 'select') {
-    // Deselect
-    state.selectedId = null;
-    renderAll();
+svgEl.addEventListener('mousemove', e => {
+  const pt = svgPt(e);
+  document.getElementById('sCoords').textContent = `${Math.round(pt.x)}, ${Math.round(pt.y)}`;
+  if (S.isPanning) { S.panX = e.clientX - S.panStart.x; S.panY = e.clientY - S.panStart.y; updateXform(); return; }
+  if (S.tool === 'pipe' && S.isDrawing && S.drawStart) {
+    const end = { x: snap(pt.x), y: snap(pt.y) };
+    const c = getColor(S.mat);
+    prevG.innerHTML = `<line x1="${S.drawStart.x}" y1="${S.drawStart.y}" x2="${end.x}" y2="${end.y}" stroke="${c}" stroke-width="3" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.6"/><circle cx="${end.x}" cy="${end.y}" r="4" fill="${c}" opacity="0.4"/>`;
   }
 });
 
-svg.addEventListener('mousemove', (e) => {
-  const pt = getSvgPoint(e);
-  document.getElementById('statusCoords').textContent = `${Math.round(pt.x)}, ${Math.round(pt.y)}`;
+svgEl.addEventListener('mouseup', () => { if (S.isPanning) { S.isPanning = false; svgEl.style.cursor = S.tool === 'pan' ? 'grab' : 'default'; } });
+svgEl.addEventListener('dblclick', () => { if (S.tool === 'pipe' && S.isDrawing) { S.isDrawing = false; S.drawStart = null; prevG.innerHTML = ''; toast('Pipe run completed'); } });
 
-  if (state.isPanning) {
-    state.panX = e.clientX - state.panStart.x;
-    state.panY = e.clientY - state.panStart.y;
-    updateTransform();
-    return;
-  }
-
-  if (state.tool === 'pipe' && state.isDrawing && state.drawStart) {
-    const endPt = { x: snapToGrid(pt.x), y: snapToGrid(pt.y) };
-    previewLayer.innerHTML = `
-      <line x1="${state.drawStart.x}" y1="${state.drawStart.y}"
-            x2="${endPt.x}" y2="${endPt.y}"
-            stroke="${PIPE_COLORS[state.pipeType]}" stroke-width="3"
-            stroke-dasharray="6 4" stroke-linecap="round" opacity="0.7"/>
-      <circle cx="${endPt.x}" cy="${endPt.y}" r="4" fill="${PIPE_COLORS[state.pipeType]}" opacity="0.5"/>
-    `;
-  }
-});
-
-svg.addEventListener('mouseup', () => {
-  if (state.isPanning) {
-    state.isPanning = false;
-    svg.style.cursor = state.tool === 'pan' ? 'grab' : 'default';
-  }
-});
-
-svg.addEventListener('dblclick', () => {
-  if (state.tool === 'pipe' && state.isDrawing) {
-    state.isDrawing = false;
-    state.drawStart = null;
-    previewLayer.innerHTML = '';
-    showToast('Pipe run completed');
-  }
-});
-
-// Mouse wheel zoom
-canvasArea.addEventListener('wheel', (e) => {
+document.getElementById('canvasWrap').addEventListener('wheel', e => {
   e.preventDefault();
-  const delta = e.deltaY > 0 ? -0.1 : 0.1;
-  const newZoom = Math.max(0.1, Math.min(5, state.zoom + delta));
-  state.zoom = newZoom;
-  updateTransform();
-  document.getElementById('zoomLevel').textContent = Math.round(state.zoom * 100) + '%';
+  S.zoom = Math.max(0.1, Math.min(5, S.zoom + (e.deltaY > 0 ? -0.1 : 0.1)));
+  updateXform();
+  document.getElementById('zoomVal').textContent = Math.round(S.zoom * 100) + '%';
 }, { passive: false });
 
-// Keyboard shortcuts
-document.addEventListener('keydown', (e) => {
+document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT') return;
   switch(e.key.toLowerCase()) {
-    case 'v': setTool('select'); break;
-    case 'h': setTool('pan'); break;
-    case 'p': setTool('pipe'); break;
-    case 'f': setTool('fitting'); break;
-    case 'm': setTool('measure'); break;
-    case 'e': setTool('erase'); break;
-    case 'escape':
-      state.isDrawing = false;
-      state.drawStart = null;
-      previewLayer.innerHTML = '';
-      closeExport();
-      break;
-    case 'z':
-      if (e.metaKey || e.ctrlKey) undoAction();
-      break;
-    case 'backspace':
-    case 'delete':
-      deleteSelected();
-      break;
+    case 'v': setTool('select'); break; case 'h': setTool('pan'); break;
+    case 'p': setTool('pipe'); break; case 'f': setTool('fitting'); break;
+    case 'm': setTool('measure'); break; case 'e': setTool('erase'); break;
+    case 'escape': S.isDrawing = false; S.drawStart = null; prevG.innerHTML = ''; closeExport(); break;
+    case 'z': if (e.metaKey || e.ctrlKey) undo(); break;
+    case 'backspace': case 'delete': deleteSelected(); break;
   }
 });
 
-// Right-click context menu
-svg.addEventListener('contextmenu', (e) => {
+svgEl.addEventListener('contextmenu', e => {
   e.preventDefault();
-  if (state.tool === 'pipe' && state.isDrawing) {
-    state.isDrawing = false;
-    state.drawStart = null;
-    previewLayer.innerHTML = '';
-    showToast('Pipe run completed');
-    return;
-  }
+  if (S.tool === 'pipe' && S.isDrawing) { S.isDrawing = false; S.drawStart = null; prevG.innerHTML = ''; toast('Pipe run completed'); }
 });
 
-// =============================================
-// DATA OPERATIONS
-// =============================================
-function genId() {
-  return state.nextId++;
-}
+function updateXform() { world.setAttribute('transform', `translate(${S.panX},${S.panY}) scale(${S.zoom})`); }
+
+// =====================================================
+// DATA
+// =====================================================
+function gid() { return S.nextId++; }
 
 function saveUndo() {
-  state.undoStack.push({
-    pipes: JSON.parse(JSON.stringify(state.pipes)),
-    fittings: JSON.parse(JSON.stringify(state.fittings)),
-  });
-  if (state.undoStack.length > 50) state.undoStack.shift();
+  S.undoStack.push({ pipes: JSON.parse(JSON.stringify(S.pipes)), fittings: JSON.parse(JSON.stringify(S.fittings)) });
+  if (S.undoStack.length > 50) S.undoStack.shift();
 }
 
-function undoAction() {
-  if (state.undoStack.length === 0) return;
-  const prev = state.undoStack.pop();
-  state.pipes = prev.pipes;
-  state.fittings = prev.fittings;
-  renderAll();
-  updateStatus();
-  showToast('Undone');
+function undo() {
+  if (!S.undoStack.length) return;
+  const p = S.undoStack.pop();
+  S.pipes = p.pipes; S.fittings = p.fittings;
+  renderCanvas(); updateStatus(); updateBOM();
+  toast('Undone');
 }
 
-function addPipe(startPt, endPt) {
+function addPipe(a, b) {
   saveUndo();
-  const pipe = {
-    id: genId(),
-    x1: startPt.x, y1: startPt.y,
-    x2: endPt.x, y2: endPt.y,
-    type: state.pipeType,
-    size: state.pipeSize,
-  };
-  state.pipes.push(pipe);
-  renderAll();
-  updateStatus();
-  updateMaterials();
+  S.pipes.push({ id: gid(), x1: a.x, y1: a.y, x2: b.x, y2: b.y, mat: S.mat, size: S.size });
+  renderCanvas(); updateStatus(); updateBOM();
 }
 
 function addFitting(x, y) {
   saveUndo();
-  const fitting = {
-    id: genId(),
-    x, y,
-    fitting: state.selectedFitting,
-    type: state.pipeType,
-    size: state.pipeSize,
-  };
-  state.fittings.push(fitting);
-  renderAll();
-  updateStatus();
-  updateMaterials();
-  showToast(`${FITTING_LABELS[state.selectedFitting]} placed`);
+  S.fittings.push({ id: gid(), x, y, fit: S.fitType, mat: S.mat, size: S.size });
+  renderCanvas(); updateStatus(); updateBOM();
+  toast(`${getFitName(S.fitType)} placed`);
 }
 
 function deleteSelected() {
-  if (!state.selectedId) return;
+  if (!S.selectedId) return;
   saveUndo();
-  state.pipes = state.pipes.filter(p => p.id !== state.selectedId);
-  state.fittings = state.fittings.filter(f => f.id !== state.selectedId);
-  state.selectedId = null;
-  renderAll();
-  updateStatus();
-  updateMaterials();
-  hideContextMenu();
-  showToast('Deleted');
+  S.pipes = S.pipes.filter(p => p.id !== S.selectedId);
+  S.fittings = S.fittings.filter(f => f.id !== S.selectedId);
+  S.selectedId = null;
+  renderCanvas(); updateStatus(); updateBOM();
+  toast('Deleted');
 }
 
-function duplicateSelected() {
-  hideContextMenu();
-  // Simple duplicate offset
-  const pipe = state.pipes.find(p => p.id === state.selectedId);
-  if (pipe) {
-    saveUndo();
-    const np = { ...pipe, id: genId(), x1: pipe.x1 + 24, y1: pipe.y1 + 24, x2: pipe.x2 + 24, y2: pipe.y2 + 24 };
-    state.pipes.push(np);
-  }
-  const fitting = state.fittings.find(f => f.id === state.selectedId);
-  if (fitting) {
-    saveUndo();
-    const nf = { ...fitting, id: genId(), x: fitting.x + 24, y: fitting.y + 24 };
-    state.fittings.push(nf);
-  }
-  renderAll();
-  updateStatus();
-  updateMaterials();
-}
-
-// =============================================
-// RENDERING
-// =============================================
-function renderAll() {
-  // Pipes
-  pipesLayer.innerHTML = state.pipes.map(p => {
-    const selected = p.id === state.selectedId;
-    return `
-      <line x1="${p.x1}" y1="${p.y1}" x2="${p.x2}" y2="${p.y2}"
-            stroke="${PIPE_COLORS[p.type]}" stroke-width="${selected ? 5 : 3}"
-            stroke-linecap="round" class="pipe-run ${p.type}"
-            data-id="${p.id}"
-            ${selected ? 'filter="url(#glow)"' : ''}
-            onclick="selectItem(${p.id})"
-            oncontextmenu="event.preventDefault(); selectItem(${p.id}); showContextMenu(event)"
-      />
-      ${selected ? `
-        <circle cx="${p.x1}" cy="${p.y1}" r="5" fill="white" stroke="${PIPE_COLORS[p.type]}" stroke-width="2" class="node-point"/>
-        <circle cx="${p.x2}" cy="${p.y2}" r="5" fill="white" stroke="${PIPE_COLORS[p.type]}" stroke-width="2" class="node-point"/>
-      ` : ''}
-    `;
+// =====================================================
+// RENDER
+// =====================================================
+function renderCanvas() {
+  pipeG.innerHTML = S.pipes.map(p => {
+    const sel = p.id === S.selectedId;
+    const c = getColor(p.mat);
+    return `<line x1="${p.x1}" y1="${p.y1}" x2="${p.x2}" y2="${p.y2}" stroke="${c}" stroke-width="${sel?5:3}" stroke-linecap="round" style="cursor:pointer" onclick="selectItem(${p.id})" oncontextmenu="event.preventDefault();selectItem(${p.id})"/>${sel?`<circle cx="${p.x1}" cy="${p.y1}" r="5" fill="white" stroke="${c}" stroke-width="2"/><circle cx="${p.x2}" cy="${p.y2}" r="5" fill="white" stroke="${c}" stroke-width="2"/>`:``}`;
   }).join('');
 
-  // Fittings
-  fittingsLayer.innerHTML = state.fittings.map(f => {
-    const selected = f.id === state.selectedId;
-    const color = PIPE_COLORS[f.type];
-    return `
-      <g class="fitting-marker" data-id="${f.id}"
-         onclick="selectItem(${f.id})"
-         oncontextmenu="event.preventDefault(); selectItem(${f.id}); showContextMenu(event)">
-        <circle cx="${f.x}" cy="${f.y}" r="${selected ? 14 : 12}"
-                fill="${selected ? color : 'white'}" stroke="${color}" stroke-width="2.5"/>
-        <text x="${f.x}" y="${f.y}" text-anchor="middle" dominant-baseline="central"
-              font-size="12" font-weight="600"
-              fill="${selected ? 'white' : color}"
-              style="pointer-events:none; user-select:none;">${FITTING_SYMBOLS[f.fitting] || '•'}</text>
-      </g>
-    `;
+  fitG.innerHTML = S.fittings.map(f => {
+    const sel = f.id === S.selectedId;
+    const c = getColor(f.mat);
+    return `<g style="cursor:pointer" onclick="selectItem(${f.id})" oncontextmenu="event.preventDefault();selectItem(${f.id})"><circle cx="${f.x}" cy="${f.y}" r="${sel?14:11}" fill="${sel?c:'white'}" stroke="${c}" stroke-width="2.5"/><text x="${f.x}" y="${f.y}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="600" fill="${sel?'white':c}" style="pointer-events:none;user-select:none">${getFitIcon(f.fit)}</text></g>`;
   }).join('');
 }
 
-function selectItem(id) {
-  state.selectedId = id;
-  renderAll();
-}
+function selectItem(id) { S.selectedId = id; renderCanvas(); }
 
-function updateTransform() {
-  canvasGroup.setAttribute('transform', `translate(${state.panX},${state.panY}) scale(${state.zoom})`);
-}
-
-// =============================================
-// MATERIALS
-// =============================================
-function getPipeLength(pipe) {
-  const dx = pipe.x2 - pipe.x1;
-  const dy = pipe.y2 - pipe.y1;
-  const pixelLen = Math.sqrt(dx * dx + dy * dy);
-  return (pixelLen / 48) * state.scale; // convert pixels to feet using scale
+// =====================================================
+// BOM
+// =====================================================
+function pipeLen(p) {
+  const dx = p.x2 - p.x1, dy = p.y2 - p.y1;
+  return (Math.sqrt(dx*dx + dy*dy) / 48) * S.scale;
 }
 
 function computeBOM() {
   const bom = {};
-
-  // Pipes — group by type + size, sum length
-  state.pipes.forEach(p => {
-    const key = `pipe|${p.type}|${p.size}`;
-    if (!bom[key]) {
-      bom[key] = { category: 'pipe', type: p.type, size: p.size, qty: 0, unit: 'ft' };
-    }
-    bom[key].qty += getPipeLength(p);
+  S.pipes.forEach(p => {
+    const k = `pipe|${p.mat}|${p.size}`;
+    if (!bom[k]) bom[k] = { cat: 'pipe', mat: p.mat, size: p.size, qty: 0, unit: 'ft' };
+    bom[k].qty += pipeLen(p);
   });
-
-  // Fittings — group by fitting + type + size, count
-  state.fittings.forEach(f => {
-    const key = `fitting|${f.fitting}|${f.type}|${f.size}`;
-    if (!bom[key]) {
-      bom[key] = { category: 'fitting', fitting: f.fitting, type: f.type, size: f.size, qty: 0, unit: 'ea' };
-    }
-    bom[key].qty += 1;
+  S.fittings.forEach(f => {
+    const k = `fit|${f.fit}|${f.mat}|${f.size}`;
+    if (!bom[k]) bom[k] = { cat: 'fitting', fit: f.fit, mat: f.mat, size: f.size, qty: 0, unit: 'ea' };
+    bom[k].qty += 1;
   });
-
   return Object.values(bom);
 }
 
-function updateMaterials() {
-  const bom = computeBOM();
-  const container = document.getElementById('materialsList');
+function getPrice(item) {
+  if (item.cat === 'pipe') return S.prices[`${item.mat}|pipe`] || 0;
+  return S.prices[`${item.mat}|${item.fit}`] || 0;
+}
 
-  if (bom.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">📋</div>
-        <div class="empty-state-text">No materials yet.<br>Draw pipe runs and place fittings to build your material list.</div>
-      </div>`;
+function updateBOM() {
+  const bom = computeBOM();
+  const list = document.getElementById('bomList');
+
+  if (!bom.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No materials yet.<br>Draw pipe runs and place fittings.</div></div>';
+    updateTotals(bom);
     return;
   }
 
-  const sizeLabel = (s) => {
-    if (s === 0.5) return '1/2"';
-    if (s === 0.75) return '3/4"';
-    if (s === 1.5) return '1-1/2"';
-    return s + '"';
-  };
-
-  container.innerHTML = bom.map(item => {
-    const color = PIPE_COLORS[item.type];
-    let name, detail;
-    if (item.category === 'pipe') {
-      name = `${PIPE_LABELS[item.type]}`;
-      detail = `${sizeLabel(item.size)} pipe`;
-    } else {
-      name = FITTING_LABELS[item.fitting];
-      detail = `${sizeLabel(item.size)} ${PIPE_LABELS[item.type]}`;
-    }
-    const qtyStr = item.unit === 'ft' ? item.qty.toFixed(1) : item.qty;
-    return `
-      <div class="material-item animate-in">
-        <div class="material-swatch" style="background:${color}"></div>
-        <div class="material-info">
-          <div class="material-name">${name}</div>
-          <div class="material-detail">${detail}</div>
-        </div>
-        <div class="material-qty">${qtyStr} <span class="material-unit">${item.unit}</span></div>
-      </div>
-    `;
+  list.innerHTML = bom.map(item => {
+    const c = getColor(item.mat);
+    const name = item.cat === 'pipe' ? `${getMatName(item.mat)} Pipe` : getFitName(item.fit);
+    const detail = `${sizeLabel(item.size)} ${getMatName(item.mat)}`;
+    const q = item.unit === 'ft' ? item.qty.toFixed(1) : item.qty;
+    const price = getPrice(item) * (item.unit === 'ft' ? item.qty : item.qty);
+    return `<div class="bom-item"><div class="bom-swatch" style="background:${c}"></div><div class="bom-info"><div class="bom-name">${name}</div><div class="bom-detail">${detail}</div></div><div class="bom-nums"><div class="bom-qty">${q} ${item.unit}</div><div class="bom-price">$${price.toFixed(2)}</div></div></div>`;
   }).join('');
+
+  updateTotals(bom);
+}
+
+function updateTotals(bom) {
+  if (!bom) bom = computeBOM();
+  let matTotal = 0;
+  bom.forEach(item => { matTotal += getPrice(item) * item.qty; });
+  const tax = matTotal * 0.08;
+  document.getElementById('totalMat').textContent = '$' + matTotal.toFixed(2);
+  document.getElementById('totalTax').textContent = '$' + tax.toFixed(2);
+  document.getElementById('totalGrand').textContent = '$' + (matTotal + tax).toFixed(2);
 }
 
 function updateStatus() {
-  document.getElementById('statusPipes').textContent = `Pipes: ${state.pipes.length}`;
-  document.getElementById('statusFittings').textContent = `Fittings: ${state.fittings.length}`;
-  const totalFt = state.pipes.reduce((sum, p) => sum + getPipeLength(p), 0);
-  document.getElementById('statusLength').textContent = `Total: ${totalFt.toFixed(1)} ft`;
+  document.getElementById('sPipes').textContent = `Pipes: ${S.pipes.length}`;
+  document.getElementById('sFittings').textContent = `Fittings: ${S.fittings.length}`;
+  const ft = S.pipes.reduce((s, p) => s + pipeLen(p), 0);
+  document.getElementById('sLength').textContent = `Total: ${ft.toFixed(1)} ft`;
 }
 
 function updateScale() {
-  const val = parseFloat(document.getElementById('scaleValue').value);
-  if (!isNaN(val) && val > 0) {
-    state.scale = val;
-    updateStatus();
-    updateMaterials();
-  }
+  const v = parseFloat(document.getElementById('scaleIn').value);
+  if (!isNaN(v) && v > 0) { S.scale = v; updateStatus(); updateBOM(); }
 }
 
-// =============================================
+// =====================================================
+// PRICING PANEL
+// =====================================================
+function updatePriceList() {
+  const prof = PROFILES[S.profile];
+  let html = '';
+
+  // Pipe prices
+  prof.materials.forEach(m => {
+    const key = `${m.id}|pipe`;
+    const price = S.prices[key] || 0;
+    html += `<div class="bom-item"><div class="bom-swatch" style="background:${m.color}"></div><div class="bom-info"><div class="bom-name">${m.name} Pipe</div><div class="bom-detail">per linear foot</div></div><div class="bom-nums"><input class="project-input" style="width:60px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;" value="${price.toFixed(2)}" onchange="setPrice('${key}',this.value)"></div></div>`;
+  });
+
+  // Fitting prices (first material only for brevity, user can edit)
+  const m0 = prof.materials[0];
+  prof.fittings.forEach(f => {
+    const key = `${m0.id}|${f.id}`;
+    const price = S.prices[key] || 0;
+    html += `<div class="bom-item"><div class="bom-swatch" style="background:${m0.color}"></div><div class="bom-info"><div class="bom-name">${f.name}</div><div class="bom-detail">${m0.name} — each</div></div><div class="bom-nums"><input class="project-input" style="width:60px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;" value="${price.toFixed(2)}" onchange="setPrice('${key}',this.value)"></div></div>`;
+  });
+
+  document.getElementById('priceList').innerHTML = html;
+}
+
+function setPrice(key, val) {
+  const v = parseFloat(val);
+  if (!isNaN(v)) { S.prices[key] = v; updateBOM(); }
+}
+
+function resetPrices() {
+  S.prices = { ...PROFILES[S.profile].defaultPrices };
+  updatePriceList();
+  updateBOM();
+  toast('Prices reset to defaults');
+}
+
+// =====================================================
 // TABS
-// =============================================
+// =====================================================
 function switchTab(tab) {
-  document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
-  document.getElementById('panelProperties').style.display = tab === 'properties' ? 'block' : 'none';
-  document.getElementById('panelMaterials').style.display = tab === 'materials' ? 'block' : 'none';
+  document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panelProps').style.display = tab === 'props' ? 'block' : 'none';
+  document.getElementById('panelBom').style.display = tab === 'bom' ? 'block' : 'none';
+  document.getElementById('panelPricing').style.display = tab === 'pricing' ? 'block' : 'none';
 }
 
-// =============================================
-// FILE UPLOAD
-// =============================================
-function handleFileUpload(e) {
+// =====================================================
+// FILE UPLOAD + AI SIMULATION
+// =====================================================
+function handleUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = (ev) => {
+  reader.onload = ev => {
     activateCanvas();
-    const img = document.getElementById('blueprintImg');
+    const img = document.getElementById('bpImg');
     img.setAttribute('href', ev.target.result);
     img.style.display = 'block';
+    const tmp = new Image();
+    tmp.onload = () => { img.setAttribute('width', tmp.width); img.setAttribute('height', tmp.height); zoomFit(); };
+    tmp.src = ev.target.result;
+    S.bpLoaded = true;
 
-    // Size the image when loaded
-    const tempImg = new Image();
-    tempImg.onload = () => {
-      img.setAttribute('width', tempImg.width);
-      img.setAttribute('height', tempImg.height);
-      zoomFit();
-    };
-    tempImg.src = ev.target.result;
-
-    state.blueprintLoaded = true;
-    showToast('Blueprint loaded — set your scale, then start drawing');
+    // Simulate AI analysis
+    runAIAnalysis(file);
   };
   reader.readAsDataURL(file);
 }
 
+function runAIAnalysis(file) {
+  const overlay = document.getElementById('analyzing');
+  overlay.classList.add('active');
+
+  const banner = document.getElementById('aiBanner');
+  banner.classList.add('visible');
+
+  // Simulate AI processing delay
+  setTimeout(() => {
+    overlay.classList.remove('active');
+
+    // Generate mock AI suggestions based on profile
+    const prof = PROFILES[S.profile];
+    const suggestions = [];
+
+    if (S.profile === 'stormwater') {
+      suggestions.push(
+        { fit: 'storm-mh', mat: prof.materials[0].id, size: prof.sizes[2].value, qty: 3, desc: 'Storm manholes detected from plan labels' },
+        { fit: 'inlet-c', mat: prof.materials[0].id, size: prof.sizes[1].value, qty: 5, desc: 'Type C inlets identified' },
+        { fit: 'outfall', mat: prof.materials[0].id, size: prof.sizes[3].value, qty: 1, desc: 'Outfall structure at discharge point' },
+        { pipe: true, mat: prof.materials[0].id, size: prof.sizes[2].value, length: 480, desc: '~480 LF of 18" RCP identified' },
+        { pipe: true, mat: prof.materials[2].id, size: prof.sizes[1].value, length: 220, desc: '~220 LF of 15" ADS N-12 perforated' },
+      );
+    } else if (S.profile === 'residential') {
+      suggestions.push(
+        { pipe: true, mat: 'pex-hot', size: 0.75, length: 180, desc: '~180 LF of 3/4" PEX hot supply lines' },
+        { pipe: true, mat: 'pex-cold', size: 0.75, length: 210, desc: '~210 LF of 3/4" PEX cold supply lines' },
+        { pipe: true, mat: 'pvc-dwv', size: 3, length: 85, desc: '~85 LF of 3" PVC DWV drain lines' },
+        { fit: 'elbow90', mat: 'pex-hot', size: 0.75, qty: 14, desc: '14× 90° elbows on hot lines' },
+        { fit: 'tee', mat: 'pex-cold', size: 0.75, qty: 8, desc: '8× tees on cold distribution' },
+      );
+    } else {
+      suggestions.push(
+        { pipe: true, mat: prof.materials[0].id, size: prof.sizes[3].value, length: 320, desc: '~320 LF detected' },
+        { fit: prof.fittings[0].id, mat: prof.materials[0].id, size: prof.sizes[3].value, qty: 12, desc: '12× fittings identified' },
+      );
+    }
+
+    document.getElementById('aiBannerText').textContent = `Found ${suggestions.length} items. Review and accept below.`;
+
+    const sugContainer = document.getElementById('aiSuggestions');
+    sugContainer.innerHTML = suggestions.map((s, i) => {
+      const name = s.pipe ? `${getMatName(s.mat)} Pipe` : getFitName(s.fit);
+      const detail = s.pipe ? `${sizeLabel(s.size)} — ${s.length} ft` : `${sizeLabel(s.size)} — ×${s.qty}`;
+      return `<div class="ai-suggestion" id="sug${i}">
+        <div class="ai-sug-info">
+          <div class="ai-sug-name">${name}</div>
+          <div class="ai-sug-detail">${s.desc}</div>
+        </div>
+        <div class="ai-sug-actions">
+          <button class="ai-accept yes" title="Accept" onclick="acceptSuggestion(${i})">✓</button>
+          <button class="ai-accept no" title="Dismiss" onclick="dismissSuggestion(${i})">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Store suggestions for accept/dismiss
+    window._aiSugs = suggestions;
+
+    toast('AI analysis complete — review suggestions');
+  }, 2400);
+}
+
+function acceptSuggestion(idx) {
+  const s = window._aiSugs[idx];
+  if (!s) return;
+  saveUndo();
+
+  if (s.pipe) {
+    // Add pipe as a representative line on canvas
+    const baseX = 100 + (idx * 60);
+    const len = Math.min(s.length, 400);
+    S.pipes.push({ id: gid(), x1: baseX, y1: 200 + idx * 40, x2: baseX + len, y2: 200 + idx * 40, mat: s.mat, size: s.size });
+  } else {
+    // Add fittings
+    for (let i = 0; i < s.qty; i++) {
+      S.fittings.push({ id: gid(), x: 120 + i * 30, y: 300 + idx * 40, fit: s.fit, mat: s.mat, size: s.size });
+    }
+  }
+
+  document.getElementById('sug' + idx).style.opacity = '0.3';
+  document.getElementById('sug' + idx).style.pointerEvents = 'none';
+  renderCanvas(); updateStatus(); updateBOM();
+  toast('Accepted');
+}
+
+function dismissSuggestion(idx) {
+  document.getElementById('sug' + idx).style.opacity = '0.3';
+  document.getElementById('sug' + idx).style.pointerEvents = 'none';
+  toast('Dismissed');
+}
+
 function startBlank() {
   activateCanvas();
-  showToast('Blank canvas ready — start drawing pipe runs');
+  toast('Blank canvas — start drawing');
 }
 
 function activateCanvas() {
-  document.getElementById('canvasEmpty').style.display = 'none';
-  svg.style.display = 'block';
-  document.getElementById('zoomControls').style.display = 'flex';
+  document.getElementById('uploadScreen').style.display = 'none';
+  svgEl.style.display = 'block';
+  document.getElementById('zoomBar').style.display = 'flex';
   setTool('pipe');
 }
 
-// =============================================
+// =====================================================
 // ZOOM
-// =============================================
-function zoomIn() {
-  state.zoom = Math.min(5, state.zoom + 0.25);
-  updateTransform();
-  document.getElementById('zoomLevel').textContent = Math.round(state.zoom * 100) + '%';
-}
+// =====================================================
+function zoomIn() { S.zoom = Math.min(5, S.zoom + 0.25); updateXform(); document.getElementById('zoomVal').textContent = Math.round(S.zoom*100)+'%'; }
+function zoomOut() { S.zoom = Math.max(0.1, S.zoom - 0.25); updateXform(); document.getElementById('zoomVal').textContent = Math.round(S.zoom*100)+'%'; }
+function zoomFit() { S.zoom = 0.4; S.panX = 40; S.panY = 40; updateXform(); document.getElementById('zoomVal').textContent = Math.round(S.zoom*100)+'%'; }
 
-function zoomOut() {
-  state.zoom = Math.max(0.1, state.zoom - 0.25);
-  updateTransform();
-  document.getElementById('zoomLevel').textContent = Math.round(state.zoom * 100) + '%';
-}
-
-function zoomFit() {
-  state.zoom = 0.5;
-  state.panX = 40;
-  state.panY = 40;
-  updateTransform();
-  document.getElementById('zoomLevel').textContent = Math.round(state.zoom * 100) + '%';
-}
-
-// =============================================
-// CONTEXT MENU
-// =============================================
-function showContextMenu(e) {
-  const menu = document.getElementById('contextMenu');
-  menu.style.left = e.clientX + 'px';
-  menu.style.top = e.clientY + 'px';
-  menu.classList.add('visible');
-}
-
-function hideContextMenu() {
-  document.getElementById('contextMenu').classList.remove('visible');
-}
-
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.context-menu')) hideContextMenu();
-});
-
-// =============================================
+// =====================================================
 // EXPORT
-// =============================================
-function showExport() {
+// =====================================================
+function openExport() {
   const bom = computeBOM();
-  document.getElementById('exportProjectName').textContent = document.getElementById('projectName').value;
+  document.getElementById('exProjName').textContent = document.getElementById('projName').value;
 
-  const sizeLabel = (s) => {
-    if (s === 0.5) return '1/2"';
-    if (s === 0.75) return '3/4"';
-    if (s === 1.5) return '1-1/2"';
-    return s + '"';
-  };
-
-  if (bom.length === 0) {
-    document.getElementById('exportContent').innerHTML = '<div class="empty-state"><div class="empty-state-text">No materials to export yet.</div></div>';
+  if (!bom.length) {
+    document.getElementById('exContent').innerHTML = '<div class="empty"><div class="empty-text">No materials to export.</div></div>';
   } else {
-    let html = `<table class="export-table">
-      <thead><tr><th>Item</th><th>Material</th><th>Size</th><th style="text-align:right">Qty</th><th>Unit</th></tr></thead><tbody>`;
+    let total = 0;
+    let html = `<table class="ex-table"><thead><tr><th>Item</th><th>Material</th><th>Size</th><th class="r">Qty</th><th>Unit</th><th class="r">Unit $</th><th class="r">Ext $</th></tr></thead><tbody>`;
     bom.forEach(item => {
-      const name = item.category === 'pipe' ? `${PIPE_LABELS[item.type]} Pipe` : FITTING_LABELS[item.fitting];
-      const mat = PIPE_LABELS[item.type];
-      const size = sizeLabel(item.size);
-      const qty = item.unit === 'ft' ? item.qty.toFixed(1) : item.qty;
-      html += `<tr><td>${name}</td><td>${mat}</td><td>${size}</td><td class="qty-cell">${qty}</td><td>${item.unit}</td></tr>`;
+      const name = item.cat === 'pipe' ? `${getMatName(item.mat)} Pipe` : getFitName(item.fit);
+      const q = item.unit === 'ft' ? item.qty.toFixed(1) : item.qty;
+      const up = getPrice(item);
+      const ext = up * item.qty;
+      total += ext;
+      html += `<tr><td>${name}</td><td>${getMatName(item.mat)}</td><td>${sizeLabel(item.size)}</td><td class="r">${q}</td><td>${item.unit}</td><td class="r">$${up.toFixed(2)}</td><td class="r">$${ext.toFixed(2)}</td></tr>`;
     });
-    html += '</tbody></table>';
-    document.getElementById('exportContent').innerHTML = html;
+    const tax = total * 0.08;
+    html += `</tbody><tfoot><tr><td colspan="5"></td><td class="r">Subtotal</td><td class="r">$${total.toFixed(2)}</td></tr>`;
+    html += `<tr><td colspan="5"></td><td class="r">Tax (8%)</td><td class="r">$${tax.toFixed(2)}</td></tr>`;
+    html += `<tr><td colspan="5"></td><td class="r" style="font-size:14px">Total</td><td class="r" style="font-size:14px">$${(total+tax).toFixed(2)}</td></tr></tfoot></table>`;
+    document.getElementById('exContent').innerHTML = html;
   }
 
-  document.getElementById('exportModal').classList.add('visible');
+  document.getElementById('exportModal').classList.add('open');
 }
 
-function closeExport() {
-  document.getElementById('exportModal').classList.remove('visible');
-}
+function closeExport() { document.getElementById('exportModal').classList.remove('open'); }
 
 function copyBOM() {
   const bom = computeBOM();
-  const sizeLabel = (s) => {
-    if (s === 0.5) return '1/2"';
-    if (s === 0.75) return '3/4"';
-    if (s === 1.5) return '1-1/2"';
-    return s + '"';
-  };
-  let text = 'Item\tMaterial\tSize\tQty\tUnit\n';
+  let txt = 'Item\tMaterial\tSize\tQty\tUnit\tUnit Price\tExtended\n';
   bom.forEach(item => {
-    const name = item.category === 'pipe' ? `${PIPE_LABELS[item.type]} Pipe` : FITTING_LABELS[item.fitting];
-    text += `${name}\t${PIPE_LABELS[item.type]}\t${sizeLabel(item.size)}\t${item.unit === 'ft' ? item.qty.toFixed(1) : item.qty}\t${item.unit}\n`;
+    const name = item.cat === 'pipe' ? `${getMatName(item.mat)} Pipe` : getFitName(item.fit);
+    const q = item.unit === 'ft' ? item.qty.toFixed(1) : item.qty;
+    const up = getPrice(item);
+    txt += `${name}\t${getMatName(item.mat)}\t${sizeLabel(item.size)}\t${q}\t${item.unit}\t$${up.toFixed(2)}\t$${(up*item.qty).toFixed(2)}\n`;
   });
-  navigator.clipboard.writeText(text);
-  showToast('BOM copied to clipboard');
+  navigator.clipboard.writeText(txt);
+  toast('Copied to clipboard');
 }
 
 function downloadCSV() {
   const bom = computeBOM();
-  const sizeLabel = (s) => {
-    if (s === 0.5) return '1/2"';
-    if (s === 0.75) return '3/4"';
-    if (s === 1.5) return '1-1/2"';
-    return s + '"';
-  };
-  let csv = 'Item,Material,Size,Qty,Unit\n';
+  let csv = 'Item,Material,Size,Qty,Unit,Unit Price,Extended\n';
   bom.forEach(item => {
-    const name = item.category === 'pipe' ? `${PIPE_LABELS[item.type]} Pipe` : FITTING_LABELS[item.fitting];
-    csv += `"${name}","${PIPE_LABELS[item.type]}","${sizeLabel(item.size)}",${item.unit === 'ft' ? item.qty.toFixed(1) : item.qty},${item.unit}\n`;
+    const name = item.cat === 'pipe' ? `${getMatName(item.mat)} Pipe` : getFitName(item.fit);
+    const q = item.unit === 'ft' ? item.qty.toFixed(1) : item.qty;
+    const up = getPrice(item);
+    csv += `"${name}","${getMatName(item.mat)}","${sizeLabel(item.size)}",${q},${item.unit},$${up.toFixed(2)},$${(up*item.qty).toFixed(2)}\n`;
   });
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
+  const blob = new Blob([csv], {type:'text/csv'});
   const a = document.createElement('a');
-  a.href = url;
-  a.download = (document.getElementById('projectName').value || 'takeoff') + '_BOM.csv';
+  a.href = URL.createObjectURL(blob);
+  a.download = (document.getElementById('projName').value||'piperunner')+'_BOM.csv';
   a.click();
-  URL.revokeObjectURL(url);
-  showToast('CSV downloaded');
+  toast('CSV downloaded');
 }
 
-// =============================================
+// =====================================================
 // TOAST
-// =============================================
-function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.classList.add('visible');
-  setTimeout(() => toast.classList.remove('visible'), 2200);
+// =====================================================
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
 }
 
-// =============================================
+// =====================================================
 // DRAG & DROP
-// =============================================
-const uploadZone = document.getElementById('uploadZone');
-if (uploadZone) {
-  ['dragenter', 'dragover'].forEach(ev => {
-    uploadZone.addEventListener(ev, (e) => {
-      e.preventDefault();
-      uploadZone.style.borderColor = 'var(--accent)';
-      uploadZone.style.background = 'rgba(255,255,255,0.95)';
-    });
-  });
-  ['dragleave', 'drop'].forEach(ev => {
-    uploadZone.addEventListener(ev, (e) => {
-      e.preventDefault();
-      uploadZone.style.borderColor = '';
-      uploadZone.style.background = '';
-    });
-  });
-  uploadZone.addEventListener('drop', (e) => {
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      document.getElementById('fileInput').files = dt.files;
-      handleFileUpload({ target: { files: [file] } });
-    }
+// =====================================================
+const drop = document.getElementById('uploadDrop');
+if (drop) {
+  ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('dragover'); }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('dragover'); }));
+  drop.addEventListener('drop', e => {
+    const f = e.dataTransfer.files[0];
+    if (f) { const dt = new DataTransfer(); dt.items.add(f); document.getElementById('fileIn').files = dt.files; handleUpload({target:{files:[f]}}); }
   });
 }
-
-// Prevent default drag on the whole page
 document.addEventListener('dragover', e => e.preventDefault());
 document.addEventListener('drop', e => e.preventDefault());
 
-// =============================================
-// INIT STATE
-// =============================================
-updateStatus();
-updateMaterials();
+// =====================================================
+// BOOT
+// =====================================================
+init();
 </script>
+
 </body>
 </html>
