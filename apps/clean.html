@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Cleaning Checklist</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+```
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f5f5f7;
+  color: #1d1d1f;
+  padding: 20px;
+  padding-bottom: 100px;
+  line-height: 1.5;
+}
+
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #1d1d1f;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: #86868b;
+  margin-bottom: 24px;
+}
+
+.section {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  cursor: pointer;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.section-time {
+  font-size: 14px;
+  color: #86868b;
+  background: #f5f5f7;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.circuit-num {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #007aff, #5856d6);
+  color: white;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 28px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 10px;
+}
+
+.task-list {
+  list-style: none;
+}
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.task-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.task-item input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  margin-right: 14px;
+  margin-top: 2px;
+  accent-color: #34c759;
+  flex-shrink: 0;
+}
+
+.task-item label {
+  font-size: 17px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.task-item input:checked + label {
+  text-decoration: line-through;
+  color: #86868b;
+}
+
+.task-hint {
+  font-size: 14px;
+  color: #86868b;
+  margin-top: 4px;
+  display: block;
+}
+
+.micro-section {
+  background: linear-gradient(135deg, #f5f5f7, #e8e8ed);
+}
+
+.micro-title {
+  color: #ff9500;
+}
+
+.reset-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  background: #1d1d1f;
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.reset-btn:active {
+  transform: scale(0.98);
+}
+
+.progress-bar {
+  height: 4px;
+  background: #e8e8ed;
+  border-radius: 2px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #34c759, #30d158);
+  width: 0%;
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+.verse {
+  text-align: center;
+  font-style: italic;
+  color: #86868b;
+  font-size: 14px;
+  padding: 16px;
+  margin-top: 8px;
+}
+
+.collapsed .task-list {
+  display: none;
+}
+
+.collapse-icon {
+  font-size: 20px;
+  color: #86868b;
+  transition: transform 0.2s;
+}
+
+.collapsed .collapse-icon {
+  transform: rotate(-90deg);
+}
+```
+
+  </style>
+</head>
+<body>
+  <h1>🏠 Power Clean</h1>
+  <p class="subtitle">90 minutes · 6 circuits · You've got this</p>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <!-- Circuit 1 -->
+
+  <div class="section" data-circuit="1">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-title"><span class="circuit-num">1</span>The Harvest</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="section-time">15 min</span>
+        <span class="collapse-icon">▼</span>
+      </div>
+    </div>
+    <ul class="task-list">
+      <li class="task-item">
+        <input type="checkbox" id="t1" onchange="updateProgress()">
+        <label for="t1">Grab basket/bin for collecting</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t2" onchange="updateProgress()">
+        <label for="t2">Living room — collect trash, dishes, clothes, misplaced items</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t3" onchange="updateProgress()">
+        <label for="t3">Kitchen — collect trash, dishes</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t4" onchange="updateProgress()">
+        <label for="t4">Bedroom 1 — collect everything</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t5" onchange="updateProgress()">
+        <label for="t5">Bedroom 2 — collect everything</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t6" onchange="updateProgress()">
+        <label for="t6">Bedroom 3 — collect everything</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t7" onchange="updateProgress()">
+        <label for="t7">Bathrooms — collect trash, towels</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t8" onchange="updateProgress()">
+        <label for="t8">Play area — collect toys into bins, trash out</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t9" onchange="updateProgress()">
+        <label for="t9">Laundry room — start a load if needed</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t10" onchange="updateProgress()">
+        <label for="t10">Dump trash, dishes to sink, clothes to laundry</label>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Circuit 2 -->
+
+  <div class="section" data-circuit="2">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-title"><span class="circuit-num">2</span>Surfaces</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="section-time">20 min</span>
+        <span class="collapse-icon">▼</span>
+      </div>
+    </div>
+    <ul class="task-list">
+      <li class="task-item">
+        <input type="checkbox" id="t11" onchange="updateProgress()">
+        <label for="t11">Grab spray bottle + microfiber cloth<span class="task-hint">Separate cloth for toilets</span></label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t12" onchange="updateProgress()">
+        <label for="t12">Kitchen — counters, stovetop, table, appliance fronts</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t13" onchange="updateProgress()">
+        <label for="t13">Bathroom 1 — counter, mirror, toilet exterior</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t14" onchange="updateProgress()">
+        <label for="t14">Bathroom 2 — counter, mirror, toilet exterior</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t15" onchange="updateProgress()">
+        <label for="t15">Living room — TV stand, coffee table, shelves</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t16" onchange="updateProgress()">
+        <label for="t16">Bedrooms — nightstands, dressers (quick wipe)</label>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Circuit 3 -->
+
+  <div class="section" data-circuit="3">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-title"><span class="circuit-num">3</span>Floors — Dry</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="section-time">15 min</span>
+        <span class="collapse-icon">▼</span>
+      </div>
+    </div>
+    <ul class="task-list">
+      <li class="task-item">
+        <input type="checkbox" id="t17" onchange="updateProgress()">
+        <label for="t17">Bedrooms — vacuum/sweep</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t18" onchange="updateProgress()">
+        <label for="t18">Play area — vacuum/sweep</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t19" onchange="updateProgress()">
+        <label for="t19">Living room — vacuum/sweep</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t20" onchange="updateProgress()">
+        <label for="t20">Kitchen — sweep</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t21" onchange="updateProgress()">
+        <label for="t21">Bathrooms — sweep</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t22" onchange="updateProgress()">
+        <label for="t22">Laundry room — sweep</label>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Circuit 4 -->
+
+  <div class="section" data-circuit="4">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-title"><span class="circuit-num">4</span>Floors — Wet</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="section-time">15 min</span>
+        <span class="collapse-icon">▼</span>
+      </div>
+    </div>
+    <ul class="task-list">
+      <li class="task-item">
+        <input type="checkbox" id="t23" onchange="updateProgress()">
+        <label for="t23">Kitchen — mop</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t24" onchange="updateProgress()">
+        <label for="t24">Bathroom 1 — mop</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t25" onchange="updateProgress()">
+        <label for="t25">Bathroom 2 — mop</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t26" onchange="updateProgress()">
+        <label for="t26">Laundry room — mop</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t27" onchange="updateProgress()">
+        <label for="t27">Any other hard floors — mop</label>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Circuit 5 -->
+
+  <div class="section" data-circuit="5">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-title"><span class="circuit-num">5</span>Bathrooms Deep</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="section-time">15 min</span>
+        <span class="collapse-icon">▼</span>
+      </div>
+    </div>
+    <ul class="task-list">
+      <li class="task-item">
+        <input type="checkbox" id="t28" onchange="updateProgress()">
+        <label for="t28">Bathroom 1 — toilet bowl scrub + flush</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t29" onchange="updateProgress()">
+        <label for="t29">Bathroom 1 — shower/tub quick scrub</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t30" onchange="updateProgress()">
+        <label for="t30">Bathroom 1 — shake out bath mat</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t31" onchange="updateProgress()">
+        <label for="t31">Bathroom 2 — toilet bowl scrub + flush</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t32" onchange="updateProgress()">
+        <label for="t32">Bathroom 2 — shower/tub quick scrub</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t33" onchange="updateProgress()">
+        <label for="t33">Bathroom 2 — shake out bath mat</label>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Circuit 6 -->
+
+  <div class="section" data-circuit="6">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-title"><span class="circuit-num">6</span>The Return</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="section-time">10 min</span>
+        <span class="collapse-icon">▼</span>
+      </div>
+    </div>
+    <ul class="task-list">
+      <li class="task-item">
+        <input type="checkbox" id="t34" onchange="updateProgress()">
+        <label for="t34">Put away everything in your collection basket</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t35" onchange="updateProgress()">
+        <label for="t35">Quick scan each room — anything out of place?</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t36" onchange="updateProgress()">
+        <label for="t36">Move laundry to dryer if needed</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="t37" onchange="updateProgress()">
+        <label for="t37">Take out trash to bins outside</label>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Micro Tasks -->
+
+  <div class="section micro-section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-title"><span class="micro-title">⚡</span> Micro Tasks</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="section-time">5-10 min each</span>
+        <span class="collapse-icon">▼</span>
+      </div>
+    </div>
+    <p style="font-size:14px;color:#86868b;margin-bottom:12px;">Pick one whenever you have a spare moment</p>
+    <ul class="task-list">
+      <li class="task-item">
+        <input type="checkbox" id="m1" onchange="updateProgress()">
+        <label for="m1">Wipe kitchen appliances (microwave inside, toaster, coffee maker)</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="m2" onchange="updateProgress()">
+        <label for="m2">Clean one mirror</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="m3" onchange="updateProgress()">
+        <label for="m3">Dust one room (fan, shelves, baseboards)</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="m4" onchange="updateProgress()">
+        <label for="m4">Vacuum one room</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="m5" onchange="updateProgress()">
+        <label for="m5">Organize one drawer or cabinet</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="m6" onchange="updateProgress()">
+        <label for="m6">Wash and put away dishes</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="m7" onchange="updateProgress()">
+        <label for="m7">Fold and put away one load of laundry</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="m8" onchange="updateProgress()">
+        <label for="m8">Wipe light switches and door handles</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="m9" onchange="updateProgress()">
+        <label for="m9">Quick-clean one toilet</label>
+      </li>
+      <li class="task-item">
+        <input type="checkbox" id="m10" onchange="updateProgress()">
+        <label for="m10">Wipe down windowsills</label>
+      </li>
+    </ul>
+  </div>
+
+  <p class="verse">"Whatever you do, work heartily, as for the Lord and not for men."<br>— Colossians 3:23</p>
+
+<button class="reset-btn" onclick="resetAll()">Reset All Checkboxes</button>
+
+  <script>
+    // Load saved state
+    document.addEventListener('DOMContentLoaded', function() {
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(cb => {
+        const saved = localStorage.getItem(cb.id);
+        if (saved === 'true') {
+          cb.checked = true;
+        }
+      });
+      updateProgress();
+    });
+
+    function updateProgress() {
+      const mainTasks = document.querySelectorAll('[id^="t"]');
+      const checked = Array.from(mainTasks).filter(cb => cb.checked).length;
+      const total = mainTasks.length;
+      const percent = (checked / total) * 100;
+      document.getElementById('progressFill').style.width = percent + '%';
+      
+      // Save state
+      const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+      allCheckboxes.forEach(cb => {
+        localStorage.setItem(cb.id, cb.checked);
+      });
+    }
+
+    function resetAll() {
+      if (confirm('Reset all checkboxes? This will clear your progress.')) {
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+          cb.checked = false;
+          localStorage.removeItem(cb.id);
+        });
+        updateProgress();
+      }
+    }
+
+    function toggleSection(header) {
+      header.parentElement.classList.toggle('collapsed');
+    }
+  </script>
+
+</body>
+</html>
