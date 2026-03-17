@@ -9,24 +9,24 @@
 <meta name="apple-mobile-web-app-title" content="ADHD Playbook">
 <title>The ADHD Playbook</title>
 <style>
-  :root {
-    --bg: #F5F0EB;
-    --surface: #FFFFFF;
-    --text: #2A2522;
-    --text-secondary: #6B6360;
-    --text-tertiary: #9E9693;
-    --accent: #3B6F9E;
-    --accent-light: #E8F0F7;
-    --warm: #8B6914;
-    --warm-light: #FDF8EE;
-    --border: rgba(0,0,0,0.06);
-    --radius: 16px;
-    --radius-sm: 12px;
-    --shadow-sm: 0 1px 3px rgba(60,40,20,0.05), 0 1px 2px rgba(60,40,20,0.08);
-    --shadow-md: 0 4px 16px rgba(60,40,20,0.07), 0 1px 4px rgba(60,40,20,0.05);
-    --font: -apple-system, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
-    --font-serif: 'New York', 'Iowan Old Style', Georgia, serif;
-  }
+:root {
+  --bg: #F5F0EB;
+  --surface: #FFFFFF;
+  --text: #2A2522;
+  --text-secondary: #6B6360;
+  --text-tertiary: #9E9693;
+  --accent: #3B6F9E;
+  --accent-light: #E8F0F7;
+  --warm: #8B6914;
+  --warm-light: #FDF8EE;
+  --border: rgba(0,0,0,0.06);
+  --radius: 16px;
+  --radius-sm: 12px;
+  --shadow-sm: 0 1px 3px rgba(60,40,20,0.05), 0 1px 2px rgba(60,40,20,0.08);
+  --shadow-md: 0 4px 16px rgba(60,40,20,0.07), 0 1px 4px rgba(60,40,20,0.05);
+  --font: -apple-system, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+  --font-serif: "New York", "Iowan Old Style", Georgia, serif;
+}
 
 - { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -47,7 +47,6 @@ background: linear-gradient(180deg, #F5F0EB 0%, #EDE6DF 50%, #F0EBE5 100%);
 background-attachment: fixed;
 }
 
-/* ===== APP SHELL ===== */
 .app {
 max-width: 430px;
 margin: 0 auto;
@@ -55,7 +54,6 @@ padding: 0 20px;
 padding-bottom: 48px;
 }
 
-/* ===== HEADER ===== */
 .header {
 padding: 56px 0 8px;
 text-align: center;
@@ -83,7 +81,6 @@ color: var(–text);
 font-weight: 500;
 }
 
-/* ===== BUTTON GRID ===== */
 .feelings {
 display: flex;
 flex-direction: column;
@@ -116,9 +113,7 @@ transform: scale(0.97);
 box-shadow: none;
 }
 
-.feeling-btn .label-group {
-flex: 1;
-}
+.feeling-btn .label-group { flex: 1; }
 
 .feeling-btn .prefix {
 font-size: 12px;
@@ -145,16 +140,14 @@ flex-shrink: 0;
 color: var(–text-tertiary);
 }
 
-/* per-button tint: colored left border + faint background wash */
-.feeling-btn[data-key=“cant-start”]     { border-left-color: #D4A06A; background: linear-gradient(90deg, #FBF3EB 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“cant-focus”]     { border-left-color: #6998BF; background: linear-gradient(90deg, #EDF3F9 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“cant-decide”]    { border-left-color: #A98DC5; background: linear-gradient(90deg, #F4EFF9 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“feeling-behind”]  { border-left-color: #C47A7A; background: linear-gradient(90deg, #F9EDED 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“overwhelmed”]     { border-left-color: #D9A54B; background: linear-gradient(90deg, #FBF4E6 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“restless”]        { border-left-color: #6DAE8A; background: linear-gradient(90deg, #ECF5F0 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“feeling-nothing”] { border-left-color: #94A3AF; background: linear-gradient(90deg, #EFF2F4 0%, #FFFFFF 40%); }
+.feeling-btn[data-key=“cant-start”]       { border-left-color: #D4A06A; background: linear-gradient(90deg, #FBF3EB 0%, #FFFFFF 40%); }
+.feeling-btn[data-key=“cant-focus”]       { border-left-color: #6998BF; background: linear-gradient(90deg, #EDF3F9 0%, #FFFFFF 40%); }
+.feeling-btn[data-key=“cant-decide”]      { border-left-color: #A98DC5; background: linear-gradient(90deg, #F4EFF9 0%, #FFFFFF 40%); }
+.feeling-btn[data-key=“feeling-behind”]   { border-left-color: #C47A7A; background: linear-gradient(90deg, #F9EDED 0%, #FFFFFF 40%); }
+.feeling-btn[data-key=“overwhelmed”]      { border-left-color: #D9A54B; background: linear-gradient(90deg, #FBF4E6 0%, #FFFFFF 40%); }
+.feeling-btn[data-key=“restless”]         { border-left-color: #6DAE8A; background: linear-gradient(90deg, #ECF5F0 0%, #FFFFFF 40%); }
+.feeling-btn[data-key=“feeling-nothing”]  { border-left-color: #94A3AF; background: linear-gradient(90deg, #EFF2F4 0%, #FFFFFF 40%); }
 
-/* ===== RESULT VIEW ===== */
 .result-view {
 display: none;
 animation: fadeUp 0.35s ease both;
@@ -183,10 +176,7 @@ gap: 4px;
 margin-top: 40px;
 }
 
-.back-btn svg {
-width: 18px;
-height: 18px;
-}
+.back-btn svg { width: 18px; height: 18px; }
 
 .result-header {
 margin-top: 8px;
@@ -210,7 +200,6 @@ color: var(–text);
 line-height: 1.2;
 }
 
-/* ===== CARDS ===== */
 .card {
 background: var(–surface);
 border-radius: var(–radius);
@@ -228,7 +217,6 @@ margin-bottom: 10px;
 color: var(–text-tertiary);
 }
 
-/* Strategy card */
 .card.strategy {
 background: var(–accent-light);
 box-shadow: none;
@@ -245,7 +233,6 @@ color: var(–text);
 letter-spacing: -0.1px;
 }
 
-/* Verse card */
 .card.verse {
 background: var(–warm-light);
 box-shadow: none;
@@ -261,16 +248,13 @@ line-height: 1.55;
 color: #4A3F2F;
 }
 
-/* Mantras */
 .card.mantras .content {
 font-size: 16px;
 line-height: 1.5;
 color: var(–text-secondary);
 }
 
-.card.mantras .mantra-item {
-padding: 8px 0;
-}
+.card.mantras .mantra-item { padding: 8px 0; }
 
 .card.mantras .mantra-item + .mantra-item {
 border-top: 1px solid var(–border);
@@ -282,7 +266,6 @@ color: var(–text);
 font-size: 16px;
 }
 
-/* Resources */
 .card.resources .resource-link {
 display: flex;
 align-items: center;
@@ -329,7 +312,6 @@ color: var(–text-tertiary);
 flex-shrink: 0;
 }
 
-/* Shuffle button */
 .shuffle-btn {
 appearance: none;
 -webkit-appearance: none;
@@ -354,32 +336,21 @@ letter-spacing: -0.1px;
 }
 
 .shuffle-btn:active { transform: scale(0.97); }
+.shuffle-btn svg { width: 16px; height: 16px; }
 
-.shuffle-btn svg {
-width: 16px;
-height: 16px;
-}
-
-/* ===== HIDDEN STATE ===== */
 .home-view.hidden { display: none; }
 </style>
 
 </head>
 <body>
 <div class="app">
-
-  <!-- HOME VIEW -->
-
   <div class="home-view" id="homeView">
     <div class="header">
       <h1>The ADHD Playbook</h1>
-      <p class="prompt">Right now, <em>I&#8217;m feeling...</em></p>
+      <p class="prompt">Right now, <em>I'm feeling...</em></p>
     </div>
     <div class="feelings" id="feelings"></div>
   </div>
-
-  <!-- RESULT VIEW -->
-
   <div class="result-view" id="resultView">
     <button class="back-btn" id="backBtn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -387,7 +358,7 @@ height: 16px;
     </button>
     <div class="result-header">
       <div class="feeling-label" id="resultFeeling"></div>
-      <h2 id="resultTitle">Here&#8217;s your play.</h2>
+      <h2 id="resultTitle">Here's your play.</h2>
     </div>
     <div id="resultCards"></div>
     <button class="shuffle-btn" id="shuffleBtn">
@@ -395,35 +366,29 @@ height: 16px;
       Different play
     </button>
   </div>
-
 </div>
-
 <script>
-// ============================================================
-// DATA — keys use simple hyphenated slugs (no apostrophes)
-// ============================================================
-const PLAYBOOK = {
+var PLAYBOOK = {
   "cant-start": {
-    label: "stuck",
-    displayName: "can\u2019t start",
+    display: "stuck",
     strategies: [
-      "Pick the smallest physical movement. Not the task\u2009\u2014\u2009the first motion. \u2018Open the doc.\u2019 That\u2019s it.",
+      "Pick the smallest physical movement. Not the task \u2014 the first motion. Open the doc. That\u2019s it.",
       "Set a 2-minute timer. You only have to work for 2 minutes. Most of the time, you won\u2019t stop.",
-      "Narrate out loud what you\u2019re about to do. \u2018I\u2019m going to stand up, walk to the desk, open my laptop.\u2019",
-      "Put on one specific song\u2009\u2014\u2009your launch song. Pair starting with a sensory ritual your brain can latch onto.",
-      "Text a friend: \u2018I\u2019m about to start X.\u2019 Accountability with a witness breaks the freeze."
+      "Narrate out loud what you\u2019re about to do. I\u2019m going to stand up, walk to the desk, open my laptop.",
+      "Put on one specific song \u2014 your launch song. Pair starting with a sensory ritual your brain can latch onto.",
+      "Text a friend: I\u2019m about to start X. Accountability with a witness breaks the freeze."
     ],
     verses: [
-      "Whatever your hand finds to do, do it with your might.\u2003\u2014 Ecclesiastes 9:10",
-      "I can do all things through Him who strengthens me.\u2003\u2014 Philippians 4:13",
-      "Commit your work to the Lord, and your plans will be established.\u2003\u2014 Proverbs 16:3",
-      "The soul of the diligent is richly supplied.\u2003\u2014 Proverbs 13:4",
-      "Whatever you do, work heartily, as for the Lord.\u2003\u2014 Colossians 3:23"
+      "Whatever your hand finds to do, do it with your might. \u2014 Ecclesiastes 9:10",
+      "I can do all things through Him who strengthens me. \u2014 Philippians 4:13",
+      "Commit your work to the Lord, and your plans will be established. \u2014 Proverbs 16:3",
+      "The soul of the diligent is richly supplied. \u2014 Proverbs 13:4",
+      "Whatever you do, work heartily, as for the Lord. \u2014 Colossians 3:23"
     ],
     mantras: [
       "Motion before motivation.",
       "Start ugly. Clean it up later.",
-      "The hardest step is the first one\u2009\u2014\u2009and it\u2019s already behind you.",
+      "The hardest step is the first one \u2014 and it\u2019s already behind you.",
       "You don\u2019t need to feel ready. You just need to begin.",
       "Doing it badly still counts as doing it."
     ],
@@ -436,21 +401,20 @@ const PLAYBOOK = {
     ]
   },
   "cant-focus": {
-    label: "unfocused",
-    displayName: "can\u2019t focus",
+    display: "unfocused",
     strategies: [
-      "Body double. FaceTime a friend, go to a caf\u00e9, or put on a study-with-me livestream.",
+      "Body double. FaceTime a friend, go to a cafe, or put on a study-with-me livestream.",
       "Take a 15-minute phone-free walk outside. Let your brain reset without input.",
-      "Switch to a physical medium\u2009\u2014\u2009pen and paper, whiteboard, sticky notes. Change the texture of the work.",
+      "Switch to a physical medium \u2014 pen and paper, whiteboard, sticky notes. Change the texture of the work.",
       "Pomodoro: 25 minutes on, 5 off. Set the timer where you can see it counting down.",
       "Put on brown noise or one song on repeat. Give your restless brain a track to ride on."
     ],
     verses: [
-      "Let us run with endurance the race set before us, looking to Jesus.\u2003\u2014 Hebrews 12:1\u20132",
-      "Set your minds on things above, not on things on earth.\u2003\u2014 Colossians 3:2",
-      "Be still, and know that I am God.\u2003\u2014 Psalm 46:10",
-      "Look carefully how you walk, making the best use of the time.\u2003\u2014 Ephesians 5:15\u201316",
-      "A double-minded man is unstable in all his ways.\u2003\u2014 James 1:8"
+      "Let us run with endurance the race set before us, looking to Jesus. \u2014 Hebrews 12:1-2",
+      "Set your minds on things above, not on things on earth. \u2014 Colossians 3:2",
+      "Be still, and know that I am God. \u2014 Psalm 46:10",
+      "Look carefully how you walk, making the best use of the time. \u2014 Ephesians 5:15-16",
+      "A double-minded man is unstable in all his ways. \u2014 James 1:8"
     ],
     mantras: [
       "Protect the window. Guard the hour.",
@@ -468,21 +432,20 @@ const PLAYBOOK = {
     ]
   },
   "cant-decide": {
-    label: "paralyzed",
-    displayName: "can\u2019t decide",
+    display: "paralyzed",
     strategies: [
-      "Flip a coin. Not to let the coin decide\u2009\u2014\u2009but to notice how you feel when it lands. That\u2019s your answer.",
+      "Flip a coin. Not to let the coin decide \u2014 but to notice how you feel when it lands. That\u2019s your answer.",
       "Set a 5-minute timer. Pick one option and commit until it ends. Any direction beats standing still.",
       "Write only two options. Cross out the one that makes you relieved. Do the other one.",
-      "Ask: \u2018What would I tell a friend to do?\u2019 Then take your own advice.",
-      "Lower the stakes: \u2018I\u2019m going to try this for today.\u2019 Not forever. Just today."
+      "Ask: What would I tell a friend to do? Then take your own advice.",
+      "Lower the stakes: I\u2019m going to try this for today. Not forever. Just today."
     ],
     verses: [
-      "Trust in the Lord with all your heart, and do not lean on your own understanding.\u2003\u2014 Proverbs 3:5",
-      "If any of you lacks wisdom, let him ask God, who gives generously.\u2003\u2014 James 1:5",
-      "Your word is a lamp to my feet and a light to my path.\u2003\u2014 Psalm 119:105",
-      "The heart of man plans his way, but the Lord establishes his steps.\u2003\u2014 Proverbs 16:9",
-      "God gave us a spirit not of fear but of power and love and self-control.\u2003\u2014 2 Timothy 1:7"
+      "Trust in the Lord with all your heart, and do not lean on your own understanding. \u2014 Proverbs 3:5",
+      "If any of you lacks wisdom, let him ask God, who gives generously. \u2014 James 1:5",
+      "Your word is a lamp to my feet and a light to my path. \u2014 Psalm 119:105",
+      "The heart of man plans his way, but the Lord establishes his steps. \u2014 Proverbs 16:9",
+      "God gave us a spirit not of fear but of power and love and self-control. \u2014 2 Timothy 1:7"
     ],
     mantras: [
       "A wrong decision is better than no decision.",
@@ -500,21 +463,20 @@ const PLAYBOOK = {
     ]
   },
   "feeling-behind": {
-    label: "behind",
-    displayName: "feeling behind",
+    display: "behind",
     strategies: [
-      "Done list. Write everything you did today\u2009\u2014\u2009even \u2018I got out of bed.\u2019 Evidence beats shame.",
+      "Done list. Write everything you did today \u2014 even just getting out of bed. Evidence beats shame.",
       "Name three things you accomplished this week. Say them out loud. Your brain won\u2019t track wins on its own.",
       "Unfollow or mute one account that makes you feel behind. Curate your inputs.",
-      "Set one benchmark that\u2019s yours\u2009\u2014\u2009not borrowed from someone else\u2019s timeline. Run your race.",
+      "Set one benchmark that\u2019s yours \u2014 not borrowed from someone else\u2019s timeline. Run your race.",
       "Write a 3-sentence letter to yourself from one year ago. You\u2019d be proud of more than you think."
     ],
     verses: [
-      "There is now no condemnation for those who are in Christ Jesus.\u2003\u2014 Romans 8:1",
-      "Let us not grow weary of doing good, for in due season we will reap.\u2003\u2014 Galatians 6:9",
-      "I know the plans I have for you, declares the Lord, plans for welfare and not for evil.\u2003\u2014 Jeremiah 29:11",
-      "He who began a good work in you will bring it to completion.\u2003\u2014 Philippians 1:6",
-      "Not that I have already obtained this or am already perfect, but I press on.\u2003\u2014 Philippians 3:12"
+      "There is now no condemnation for those who are in Christ Jesus. \u2014 Romans 8:1",
+      "Let us not grow weary of doing good, for in due season we will reap. \u2014 Galatians 6:9",
+      "I know the plans I have for you, declares the Lord, plans for welfare and not for evil. \u2014 Jeremiah 29:11",
+      "He who began a good work in you will bring it to completion. \u2014 Philippians 1:6",
+      "Not that I have already obtained this or am already perfect, but I press on. \u2014 Philippians 3:12"
     ],
     mantras: [
       "Behind is a story, not a verdict.",
@@ -525,28 +487,27 @@ const PLAYBOOK = {
     ],
     resources: [
       { title: "How to ADHD: Rejection Sensitivity", url: "https://www.youtube.com/watch?v=jM3azhiOy5E" },
-      { title: "Bren\u00e9 Brown: Shame vs. Guilt", url: "https://www.youtube.com/watch?v=psN1DORYYV0" },
+      { title: "Brene Brown: Shame vs. Guilt", url: "https://www.youtube.com/watch?v=psN1DORYYV0" },
       { title: "Barkley: ADHD and Self-Esteem", url: "https://www.youtube.com/watch?v=BzhbAK1pdPM" },
       { title: "Paul Tripp: Suffering and Shame", url: "https://www.youtube.com/watch?v=PTc_FoELt8s" },
       { title: "Piper: Grace for the Discouraged", url: "https://www.desiringgod.org/messages/sustained-by-sovereign-grace-the-future-of-the-fruit-of-the-spirit" }
     ]
   },
   "overwhelmed": {
-    label: "overwhelmed",
-    displayName: "overwhelmed",
+    display: "overwhelmed",
     strategies: [
       "Brain dump. Everything in your head onto paper. Every task, worry, thought. Then circle just one.",
       "Cancel or postpone one thing today. Give yourself permission to have less on the plate.",
       "Zoom in. Pick one room, one task, one email. Shrink the world down to arm\u2019s reach.",
-      "Say out loud: \u2018I don\u2019t have to do all of this today.\u2019 Hear yourself say it. Let it land.",
+      "Say out loud: I don\u2019t have to do all of this today. Hear yourself say it. Let it land.",
       "Set a shutdown time tonight. Everything after that hour is off-limits. Give your brain an end point."
     ],
     verses: [
-      "Cast all your anxiety on Him, because He cares for you.\u2003\u2014 1 Peter 5:7",
-      "Come to me, all who labor and are heavy laden, and I will give you rest.\u2003\u2014 Matthew 11:28",
-      "The Lord is near to the brokenhearted and saves the crushed in spirit.\u2003\u2014 Psalm 34:18",
-      "Do not be anxious about anything, but in everything by prayer let your requests be known to God.\u2003\u2014 Philippians 4:6",
-      "When the cares of my heart are many, your consolations cheer my soul.\u2003\u2014 Psalm 94:19"
+      "Cast all your anxiety on Him, because He cares for you. \u2014 1 Peter 5:7",
+      "Come to me, all who labor and are heavy laden, and I will give you rest. \u2014 Matthew 11:28",
+      "The Lord is near to the brokenhearted and saves the crushed in spirit. \u2014 Psalm 34:18",
+      "Do not be anxious about anything, but in everything by prayer let your requests be known to God. \u2014 Philippians 4:6",
+      "When the cares of my heart are many, your consolations cheer my soul. \u2014 Psalm 94:19"
     ],
     mantras: [
       "You don\u2019t have to solve the whole thing. Just the next piece.",
@@ -564,8 +525,7 @@ const PLAYBOOK = {
     ]
   },
   "restless": {
-    label: "restless",
-    displayName: "restless",
+    display: "restless",
     strategies: [
       "Move your body for 5 minutes. Walk, push-ups, jumping jacks. Get the buzz out, then sit down.",
       "Cold water on your wrists and face. 30 seconds. Resets your nervous system fast.",
@@ -574,43 +534,42 @@ const PLAYBOOK = {
       "Step outside barefoot for 2 minutes. Grass, concrete, whatever. Grounding is sensory input."
     ],
     verses: [
-      "Your body is a temple of the Holy Spirit.\u2003\u2014 1 Corinthians 6:19",
-      "He gives power to the faint, and to him who has no might He increases strength.\u2003\u2014 Isaiah 40:29",
-      "You formed my inward parts; you knitted me together in my mother\u2019s womb.\u2003\u2014 Psalm 139:13",
-      "The Lord your God is in your midst; He will quiet you by His love.\u2003\u2014 Zephaniah 3:17",
-      "In returning and rest you shall be saved; in quietness and trust shall be your strength.\u2003\u2014 Isaiah 30:15"
+      "Your body is a temple of the Holy Spirit. \u2014 1 Corinthians 6:19",
+      "He gives power to the faint, and to him who has no might He increases strength. \u2014 Isaiah 40:29",
+      "You formed my inward parts; you knitted me together. \u2014 Psalm 139:13",
+      "The Lord your God is in your midst; He will quiet you by His love. \u2014 Zephaniah 3:17",
+      "In returning and rest you shall be saved; in quietness and trust shall be your strength. \u2014 Isaiah 30:15"
     ],
     mantras: [
       "Your body is talking. Listen to it.",
       "Restless isn\u2019t broken. It\u2019s energy looking for a channel.",
       "Move first. Think second.",
-      "You\u2019re not lazy\u2009\u2014\u2009you\u2019re wired for motion.",
+      "You\u2019re not lazy \u2014 you\u2019re wired for motion.",
       "The buzz passes. It always passes."
     ],
     resources: [
-      { title: "How to ADHD: Exercise & the ADHD Brain", url: "https://www.youtube.com/watch?v=hFL6qRIJZ_Y" },
+      { title: "How to ADHD: Exercise and the ADHD Brain", url: "https://www.youtube.com/watch?v=hFL6qRIJZ_Y" },
       { title: "Dr. John Ratey: Spark", url: "https://www.youtube.com/watch?v=DsVzKCk066g" },
       { title: "Huberman: Movement to Reset Focus", url: "https://www.youtube.com/watch?v=SwQhKFMxmDY" },
-      { title: "ADHD & Hyperactivity in Adults", url: "https://www.youtube.com/watch?v=ouZrZa5pLXk" },
+      { title: "ADHD and Hyperactivity in Adults", url: "https://www.youtube.com/watch?v=ouZrZa5pLXk" },
       { title: "C.S. Lewis: Mere Christianity", url: "https://www.cslewis.com/mere-christianity/" }
     ]
   },
   "feeling-nothing": {
-    label: "flat",
-    displayName: "feeling nothing",
+    display: "nothing",
     strategies: [
-      "Lower the bar to \u2018exist with dignity.\u2019 Brush teeth. Drink water. Sit in sunlight. That\u2019s enough.",
-      "Put on a comfort show or album\u2009\u2014\u2009something familiar that doesn\u2019t ask anything of you.",
-      "Text one person. Just \u2018hey.\u2019 Connection is medicine even when you don\u2019t feel like taking it.",
+      "Lower the bar to exist with dignity. Brush teeth. Drink water. Sit in sunlight. That\u2019s enough.",
+      "Put on a comfort show or album \u2014 something familiar that doesn\u2019t ask anything of you.",
+      "Text one person. Just hey. Connection is medicine even when you don\u2019t feel like taking it.",
       "Write one sentence about how you feel. Just one. Naming the flat makes it less permanent.",
       "Go outside and look up. Sky, trees, clouds. Give your senses something gentle and real."
     ],
     verses: [
-      "He leads me beside still waters. He restores my soul.\u2003\u2014 Psalm 23:2\u20133",
-      "My grace is sufficient for you, for my power is made perfect in weakness.\u2003\u2014 2 Corinthians 12:9",
-      "The Lord is my shepherd; I shall not want.\u2003\u2014 Psalm 23:1",
-      "Weeping may tarry for the night, but joy comes with the morning.\u2003\u2014 Psalm 30:5",
-      "Take heart; I have overcome the world.\u2003\u2014 John 16:33"
+      "He leads me beside still waters. He restores my soul. \u2014 Psalm 23:2-3",
+      "My grace is sufficient for you, for my power is made perfect in weakness. \u2014 2 Corinthians 12:9",
+      "The Lord is my shepherd; I shall not want. \u2014 Psalm 23:1",
+      "Weeping may tarry for the night, but joy comes with the morning. \u2014 Psalm 30:5",
+      "Take heart; I have overcome the world. \u2014 John 16:33"
     ],
     mantras: [
       "Rest is not failure. It\u2019s faithfulness to your limits.",
@@ -629,125 +588,113 @@ const PLAYBOOK = {
   }
 };
 
-// ============================================================
-// LOGIC
-// ============================================================
+var feelingColors = {
+“cant-start”: “#D4A06A”,
+“cant-focus”: “#6998BF”,
+“cant-decide”: “#A98DC5”,
+“feeling-behind”: “#C47A7A”,
+“overwhelmed”: “#D9A54B”,
+“restless”: “#6DAE8A”,
+“feeling-nothing”: “#94A3AF”
+};
+
 function pick(arr, n) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a.slice(0, n);
+var a = arr.slice();
+for (var i = a.length - 1; i > 0; i–) {
+var j = Math.floor(Math.random() * (i + 1));
+var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+}
+return a.slice(0, n);
 }
 
 function getPlay(key) {
-  const b = PLAYBOOK[key];
-  return {
-    strategy: pick(b.strategies, 1)[0],
-    verse: pick(b.verses, 1)[0],
-    mantras: pick(b.mantras, 2),
-    resources: pick(b.resources, 2)
-  };
+var b = PLAYBOOK[key];
+return {
+strategy: pick(b.strategies, 1)[0],
+verse: pick(b.verses, 1)[0],
+mantras: pick(b.mantras, 2),
+resources: pick(b.resources, 2)
+};
 }
 
-// ============================================================
-// RENDER
-// ============================================================
-const homeView = document.getElementById("homeView");
-const resultView = document.getElementById("resultView");
-const feelingsEl = document.getElementById("feelings");
-const resultFeeling = document.getElementById("resultFeeling");
-const resultCards = document.getElementById("resultCards");
-const backBtn = document.getElementById("backBtn");
-const shuffleBtn = document.getElementById("shuffleBtn");
+var homeView = document.getElementById(“homeView”);
+var resultView = document.getElementById(“resultView”);
+var feelingsEl = document.getElementById(“feelings”);
+var resultFeeling = document.getElementById(“resultFeeling”);
+var resultCards = document.getElementById(“resultCards”);
+var backBtn = document.getElementById(“backBtn”);
+var shuffleBtn = document.getElementById(“shuffleBtn”);
 
-const chevronSVG = '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>';
+var chevronSVG = ‘<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>’;
+var linkIconSVG = ‘<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>’;
+var arrowSVG = ‘<svg class="resource-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>’;
 
-const linkIconSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+var keys = Object.keys(PLAYBOOK);
+for (var i = 0; i < keys.length; i++) {
+(function(key) {
+var btn = document.createElement(“button”);
+btn.className = “feeling-btn”;
+btn.setAttribute(“data-key”, key);
+btn.innerHTML = ‘<div class="label-group"><div class="prefix">I\u2019m feeling</div><div class="label">’ + PLAYBOOK[key].display + ‘</div></div>’ + chevronSVG;
+btn.addEventListener(“click”, function() { showResult(key); });
+feelingsEl.appendChild(btn);
+})(keys[i]);
+}
 
-const arrowSVG = '<svg class="resource-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>';
-
-const feelingColors = {
-  "cant-start": "#D4A06A",
-  "cant-focus": "#6998BF",
-  "cant-decide": "#A98DC5",
-  "feeling-behind": "#C47A7A",
-  "overwhelmed": "#D9A54B",
-  "restless": "#6DAE8A",
-  "feeling-nothing": "#94A3AF"
-};
-
-// Build buttons
-Object.keys(PLAYBOOK).forEach(key => {
-  const b = PLAYBOOK[key];
-  const btn = document.createElement("button");
-  btn.className = "feeling-btn";
-  btn.dataset.key = key;
-  btn.innerHTML = `
-    <div class="label-group">
-      <div class="prefix">I\u2019m feeling</div>
-      <div class="label">${b.label}</div>
-    </div>
-    ${chevronSVG}
-  `;
-  btn.addEventListener("click", () => showResult(key));
-  feelingsEl.appendChild(btn);
-});
-
-let currentKey = null;
+var currentKey = null;
 
 function showResult(key) {
-  currentKey = key;
-  const play = getPlay(key);
-  const b = PLAYBOOK[key];
+currentKey = key;
+var play = getPlay(key);
+var displayName = PLAYBOOK[key].display;
 
-  resultView.style.setProperty("--play-color", feelingColors[key]);
-  resultFeeling.textContent = "I\u2019m feeling " + b.label;
+resultView.style.setProperty(”–play-color”, feelingColors[key]);
+resultFeeling.textContent = “I\u2019m feeling “ + displayName;
 
-  resultCards.innerHTML = `
-    <div class="card strategy">
-      <div class="card-label">Try this</div>
-      <div class="content">${play.strategy}</div>
-    </div>
-    <div class="card verse">
-      <div class="card-label">Scripture</div>
-      <div class="content">${play.verse}</div>
-    </div>
-    <div class="card mantras">
-      <div class="card-label">Mantras</div>
-      <div class="content">
-        ${play.mantras.map(m => `<div class="mantra-item"><span class="mantra-text">${m}</span></div>`).join("")}
-      </div>
-    </div>
-    <div class="card resources">
-      <div class="card-label">Go deeper</div>
-      ${play.resources.map(r => `
-        <a class="resource-link" href="${r.url}" target="_blank" rel="noopener">
-          <div class="resource-icon">${linkIconSVG}</div>
-          <span class="resource-title">${r.title}</span>
-          ${arrowSVG}
-        </a>
-      `).join("")}
-    </div>
-  `;
+var h = “”;
+h += ‘<div class="card strategy">’;
+h += ‘<div class="card-label">Try this</div>’;
+h += ‘<div class="content">’ + play.strategy + ‘</div>’;
+h += ‘</div>’;
+h += ‘<div class="card verse">’;
+h += ‘<div class="card-label">Scripture</div>’;
+h += ‘<div class="content">’ + play.verse + ‘</div>’;
+h += ‘</div>’;
+h += ‘<div class="card mantras">’;
+h += ‘<div class="card-label">Mantras</div>’;
+h += ‘<div class="content">’;
+for (var i = 0; i < play.mantras.length; i++) {
+h += ‘<div class="mantra-item"><span class="mantra-text">’ + play.mantras[i] + ‘</span></div>’;
+}
+h += ‘</div></div>’;
+h += ‘<div class="card resources">’;
+h += ‘<div class="card-label">Go deeper</div>’;
+for (var j = 0; j < play.resources.length; j++) {
+var r = play.resources[j];
+h += ‘<a class="resource-link" href="' + r.url + '" target="_blank" rel="noopener">’;
+h += ‘<div class="resource-icon">’ + linkIconSVG + ‘</div>’;
+h += ‘<span class="resource-title">’ + r.title + ‘</span>’;
+h += arrowSVG + ‘</a>’;
+}
+h += ‘</div>’;
+resultCards.innerHTML = h;
 
-  homeView.classList.add("hidden");
-  resultView.classList.remove("active");
-  void resultView.offsetWidth;
-  resultView.classList.add("active");
-  window.scrollTo({ top: 0, behavior: "instant" });
+homeView.classList.add(“hidden”);
+resultView.classList.remove(“active”);
+void resultView.offsetWidth;
+resultView.classList.add(“active”);
+window.scrollTo({ top: 0, behavior: “auto” });
 }
 
-backBtn.addEventListener("click", () => {
-  resultView.classList.remove("active");
-  homeView.classList.remove("hidden");
-  currentKey = null;
-  window.scrollTo({ top: 0, behavior: "instant" });
+backBtn.addEventListener(“click”, function() {
+resultView.classList.remove(“active”);
+homeView.classList.remove(“hidden”);
+currentKey = null;
+window.scrollTo({ top: 0, behavior: “auto” });
 });
 
-shuffleBtn.addEventListener("click", () => {
-  if (currentKey) showResult(currentKey);
+shuffleBtn.addEventListener(“click”, function() {
+if (currentKey) showResult(currentKey);
 });
 </script>
 
