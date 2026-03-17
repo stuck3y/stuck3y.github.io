@@ -1,702 +1,819 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ADHD Playbook">
-<title>The ADHD Playbook</title>
-<style>
-:root {
-  --bg: #F5F0EB;
-  --surface: #FFFFFF;
-  --text: #2A2522;
-  --text-secondary: #6B6360;
-  --text-tertiary: #9E9693;
-  --accent: #3B6F9E;
-  --accent-light: #E8F0F7;
-  --warm: #8B6914;
-  --warm-light: #FDF8EE;
-  --border: rgba(0,0,0,0.06);
-  --radius: 16px;
-  --radius-sm: 12px;
-  --shadow-sm: 0 1px 3px rgba(60,40,20,0.05), 0 1px 2px rgba(60,40,20,0.08);
-  --shadow-md: 0 4px 16px rgba(60,40,20,0.07), 0 1px 4px rgba(60,40,20,0.05);
-  --font: -apple-system, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
-  --font-serif: "New York", "Iowan Old Style", Georgia, serif;
-}
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
+  />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ADHD Playbook" />
+  <title>The ADHD Playbook</title>
 
-- { margin: 0; padding: 0; box-sizing: border-box; }
+  <style>
+    :root {
+      --bg: #f5f0eb;
+      --surface: #ffffff;
+      --text: #2a2522;
+      --text-secondary: #6b6360;
+      --text-tertiary: #9e9693;
+      --accent: #3b6f9e;
+      --accent-light: #e8f0f7;
+      --warm: #8b6914;
+      --warm-light: #fdf8ee;
+      --border: rgba(0, 0, 0, 0.06);
+      --radius: 16px;
+      --radius-sm: 12px;
+      --shadow-sm: 0 1px 3px rgba(60, 40, 20, 0.05), 0 1px 2px rgba(60, 40, 20, 0.08);
+      --shadow-md: 0 4px 16px rgba(60, 40, 20, 0.07), 0 1px 4px rgba(60, 40, 20, 0.05);
+      --font: -apple-system, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+      --font-serif: "New York", "Iowan Old Style", Georgia, serif;
+    }
 
-html {
-font-family: var(–font);
-background: var(–bg);
-color: var(–text);
--webkit-font-smoothing: antialiased;
--webkit-text-size-adjust: 100%;
--webkit-tap-highlight-color: transparent;
-}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-body {
-min-height: 100dvh;
-padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
-overflow-x: hidden;
-background: linear-gradient(180deg, #F5F0EB 0%, #EDE6DF 50%, #F0EBE5 100%);
-background-attachment: fixed;
-}
+    html {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-.app {
-max-width: 430px;
-margin: 0 auto;
-padding: 0 20px;
-padding-bottom: 48px;
-}
+    body {
+      min-height: 100dvh;
+      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
+      overflow-x: hidden;
+      background: linear-gradient(180deg, #f5f0eb 0%, #ede6df 50%, #f0ebe5 100%);
+      background-attachment: fixed;
+    }
 
-.header {
-padding: 56px 0 8px;
-text-align: center;
-}
+    .app {
+      max-width: 430px;
+      margin: 0 auto;
+      padding: 0 20px 48px;
+    }
 
-.header h1 {
-font-size: 28px;
-font-weight: 700;
-letter-spacing: -0.5px;
-color: var(–text);
-line-height: 1.15;
-}
+    .header {
+      padding: 56px 0 8px;
+      text-align: center;
+    }
 
-.header .prompt {
-margin-top: 12px;
-font-size: 17px;
-color: var(–text-secondary);
-font-weight: 400;
-line-height: 1.4;
-}
+    .header h1 {
+      font-family: var(--font-serif);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text);
+      line-height: 1.15;
+    }
 
-.header .prompt em {
-font-style: normal;
-color: var(–text);
-font-weight: 500;
-}
+    .header .prompt {
+      margin-top: 12px;
+      font-family: var(--font-serif);
+      font-size: 17px;
+      color: var(--text-secondary);
+      font-weight: 400;
+      line-height: 1.4;
+    }
 
-.feelings {
-display: flex;
-flex-direction: column;
-gap: 10px;
-margin-top: 28px;
-}
+    .header .prompt em {
+      font-style: normal;
+      color: var(--text);
+      font-weight: 500;
+    }
 
-.feeling-btn {
-appearance: none;
--webkit-appearance: none;
-border: none;
-background: var(–surface);
-border-radius: var(–radius);
-padding: 18px 20px 18px 22px;
-text-align: left;
-cursor: pointer;
-box-shadow: var(–shadow-sm);
-transition: transform 0.2s ease, box-shadow 0.2s ease;
-display: flex;
-align-items: center;
-gap: 14px;
-width: 100%;
-position: relative;
-overflow: hidden;
-border-left: 4px solid transparent;
-}
+    .feelings {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 28px;
+    }
 
-.feeling-btn:active {
-transform: scale(0.97);
-box-shadow: none;
-}
+    .feeling-btn {
+      appearance: none;
+      -webkit-appearance: none;
+      border: none;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 18px 20px 18px 22px;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      border-left: 4px solid transparent;
+    }
 
-.feeling-btn .label-group { flex: 1; }
+    .feeling-btn:active {
+      transform: scale(0.97);
+      box-shadow: none;
+    }
 
-.feeling-btn .prefix {
-font-size: 12px;
-font-weight: 500;
-color: var(–text-tertiary);
-letter-spacing: 0.3px;
-text-transform: uppercase;
-line-height: 1;
-margin-bottom: 4px;
-}
+    .feeling-btn .label-group {
+      flex: 1;
+    }
 
-.feeling-btn .label {
-font-size: 18px;
-font-weight: 600;
-color: var(–text);
-letter-spacing: -0.2px;
-line-height: 1.25;
-}
+    .feeling-btn .prefix {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
 
-.feeling-btn .chevron {
-width: 20px;
-height: 20px;
-flex-shrink: 0;
-color: var(–text-tertiary);
-}
+    .feeling-btn .label {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.2px;
+      line-height: 1.25;
+    }
 
-.feeling-btn[data-key=“cant-start”]       { border-left-color: #D4A06A; background: linear-gradient(90deg, #FBF3EB 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“cant-focus”]       { border-left-color: #6998BF; background: linear-gradient(90deg, #EDF3F9 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“cant-decide”]      { border-left-color: #A98DC5; background: linear-gradient(90deg, #F4EFF9 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“feeling-behind”]   { border-left-color: #C47A7A; background: linear-gradient(90deg, #F9EDED 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“overwhelmed”]      { border-left-color: #D9A54B; background: linear-gradient(90deg, #FBF4E6 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“restless”]         { border-left-color: #6DAE8A; background: linear-gradient(90deg, #ECF5F0 0%, #FFFFFF 40%); }
-.feeling-btn[data-key=“feeling-nothing”]  { border-left-color: #94A3AF; background: linear-gradient(90deg, #EFF2F4 0%, #FFFFFF 40%); }
+    .feeling-btn .chevron {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      color: var(--text-tertiary);
+    }
 
-.result-view {
-display: none;
-animation: fadeUp 0.35s ease both;
-}
+    .feeling-btn[data-key="cant-start"] {
+      border-left-color: #d4a06a;
+      background: linear-gradient(90deg, #fbf3eb 0%, #ffffff 40%);
+    }
 
-.result-view.active { display: block; }
+    .feeling-btn[data-key="cant-focus"] {
+      border-left-color: #6998bf;
+      background: linear-gradient(90deg, #edf3f9 0%, #ffffff 40%);
+    }
 
-@keyframes fadeUp {
-from { opacity: 0; transform: translateY(16px); }
-to { opacity: 1; transform: translateY(0); }
-}
+    .feeling-btn[data-key="cant-decide"] {
+      border-left-color: #a98dc5;
+      background: linear-gradient(90deg, #f4eff9 0%, #ffffff 40%);
+    }
 
-.back-btn {
-appearance: none;
--webkit-appearance: none;
-border: none;
-background: none;
-cursor: pointer;
-font-size: 17px;
-font-weight: 400;
-color: var(–accent);
-padding: 16px 0;
-display: flex;
-align-items: center;
-gap: 4px;
-margin-top: 40px;
-}
+    .feeling-btn[data-key="feeling-behind"] {
+      border-left-color: #c47a7a;
+      background: linear-gradient(90deg, #f9eded 0%, #ffffff 40%);
+    }
 
-.back-btn svg { width: 18px; height: 18px; }
+    .feeling-btn[data-key="overwhelmed"] {
+      border-left-color: #d9a54b;
+      background: linear-gradient(90deg, #fbf4e6 0%, #ffffff 40%);
+    }
 
-.result-header {
-margin-top: 8px;
-margin-bottom: 32px;
-}
+    .feeling-btn[data-key="restless"] {
+      border-left-color: #6dae8a;
+      background: linear-gradient(90deg, #ecf5f0 0%, #ffffff 40%);
+    }
 
-.result-header .feeling-label {
-font-size: 14px;
-font-weight: 600;
-text-transform: uppercase;
-letter-spacing: 0.5px;
-color: var(–play-color, var(–text-tertiary));
-margin-bottom: 6px;
-}
+    .feeling-btn[data-key="feeling-nothing"] {
+      border-left-color: #94a3af;
+      background: linear-gradient(90deg, #eff2f4 0%, #ffffff 40%);
+    }
 
-.result-header h2 {
-font-size: 26px;
-font-weight: 700;
-letter-spacing: -0.4px;
-color: var(–text);
-line-height: 1.2;
-}
+    .result-view {
+      display: none;
+      animation: fadeUp 0.35s ease both;
+    }
 
-.card {
-background: var(–surface);
-border-radius: var(–radius);
-box-shadow: var(–shadow-sm);
-padding: 22px;
-margin-bottom: 14px;
-}
+    .result-view.active {
+      display: block;
+    }
 
-.card-label {
-font-size: 11px;
-font-weight: 600;
-text-transform: uppercase;
-letter-spacing: 0.8px;
-margin-bottom: 10px;
-color: var(–text-tertiary);
-}
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
-.card.strategy {
-background: var(–accent-light);
-box-shadow: none;
-border-top: 3px solid var(–play-color, var(–accent));
-}
+    .back-btn {
+      appearance: none;
+      -webkit-appearance: none;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 17px;
+      font-weight: 400;
+      color: var(--accent);
+      padding: 16px 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 40px;
+    }
 
-.card.strategy .card-label { color: var(–accent); }
+    .back-btn svg {
+      width: 18px;
+      height: 18px;
+    }
 
-.card.strategy .content {
-font-size: 19px;
-font-weight: 500;
-line-height: 1.45;
-color: var(–text);
-letter-spacing: -0.1px;
-}
+    .result-header {
+      margin-top: 8px;
+      margin-bottom: 32px;
+    }
 
-.card.verse {
-background: var(–warm-light);
-box-shadow: none;
-}
+    .result-header .feeling-label {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--play-color, var(--text-tertiary));
+      margin-bottom: 6px;
+    }
 
-.card.verse .card-label { color: var(–warm); }
+    .result-header h2 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      color: var(--text);
+      line-height: 1.2;
+    }
 
-.card.verse .content {
-font-family: var(–font-serif);
-font-size: 17px;
-font-style: italic;
-line-height: 1.55;
-color: #4A3F2F;
-}
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 22px;
+      margin-bottom: 14px;
+    }
 
-.card.mantras .content {
-font-size: 16px;
-line-height: 1.5;
-color: var(–text-secondary);
-}
+    .card-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 10px;
+      color: var(--text-tertiary);
+    }
 
-.card.mantras .mantra-item { padding: 8px 0; }
+    .card.strategy {
+      background: var(--accent-light);
+      box-shadow: none;
+      border-top: 3px solid var(--play-color, var(--accent));
+    }
 
-.card.mantras .mantra-item + .mantra-item {
-border-top: 1px solid var(–border);
-}
+    .card.strategy .card-label {
+      color: var(--accent);
+    }
 
-.card.mantras .mantra-text {
-font-weight: 500;
-color: var(–text);
-font-size: 16px;
-}
+    .card.strategy .content {
+      font-size: 19px;
+      font-weight: 500;
+      line-height: 1.45;
+      color: var(--text);
+      letter-spacing: -0.1px;
+    }
 
-.card.resources .resource-link {
-display: flex;
-align-items: center;
-gap: 12px;
-padding: 12px 0;
-text-decoration: none;
-color: var(–text);
--webkit-tap-highlight-color: transparent;
-}
+    .card.verse {
+      background: var(--warm-light);
+      box-shadow: none;
+    }
 
-.card.resources .resource-link + .resource-link {
-border-top: 1px solid var(–border);
-}
+    .card.verse .card-label {
+      color: var(--warm);
+    }
 
-.card.resources .resource-icon {
-width: 36px;
-height: 36px;
-border-radius: 10px;
-background: var(–accent-light);
-display: flex;
-align-items: center;
-justify-content: center;
-flex-shrink: 0;
-}
+    .card.verse .content {
+      font-family: var(--font-serif);
+      font-size: 17px;
+      font-style: italic;
+      line-height: 1.55;
+      color: #4a3f2f;
+    }
 
-.card.resources .resource-icon svg {
-width: 16px;
-height: 16px;
-color: var(–accent);
-}
+    .card.mantras .content {
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
 
-.card.resources .resource-title {
-font-size: 15px;
-font-weight: 500;
-line-height: 1.35;
-flex: 1;
-color: var(–text);
-}
+    .card.mantras .mantra-item {
+      padding: 8px 0;
+    }
 
-.card.resources .resource-arrow {
-width: 16px;
-height: 16px;
-color: var(–text-tertiary);
-flex-shrink: 0;
-}
+    .card.mantras .mantra-item + .mantra-item {
+      border-top: 1px solid var(--border);
+    }
 
-.shuffle-btn {
-appearance: none;
--webkit-appearance: none;
-border: none;
-background: var(–surface);
-border-radius: var(–radius);
-box-shadow: var(–shadow-sm);
-padding: 16px;
-width: 100%;
-cursor: pointer;
-font-size: 15px;
-font-weight: 500;
-color: var(–text-secondary);
-display: flex;
-align-items: center;
-justify-content: center;
-gap: 8px;
-margin-top: 8px;
-margin-bottom: 20px;
-transition: transform 0.15s ease;
-letter-spacing: -0.1px;
-}
+    .card.mantras .mantra-text {
+      font-weight: 500;
+      color: var(--text);
+      font-size: 16px;
+    }
 
-.shuffle-btn:active { transform: scale(0.97); }
-.shuffle-btn svg { width: 16px; height: 16px; }
+    .card.resources .resource-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      text-decoration: none;
+      color: var(--text);
+      -webkit-tap-highlight-color: transparent;
+    }
 
-.home-view.hidden { display: none; }
-</style>
+    .card.resources .resource-link + .resource-link {
+      border-top: 1px solid var(--border);
+    }
 
+    .card.resources .resource-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .card.resources .resource-icon svg {
+      width: 16px;
+      height: 16px;
+      color: var(--accent);
+    }
+
+    .card.resources .resource-title {
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.35;
+      flex: 1;
+      color: var(--text);
+    }
+
+    .card.resources .resource-arrow {
+      width: 16px;
+      height: 16px;
+      color: var(--text-tertiary);
+      flex-shrink: 0;
+    }
+
+    .shuffle-btn {
+      appearance: none;
+      -webkit-appearance: none;
+      border: none;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 16px;
+      width: 100%;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 8px;
+      margin-bottom: 20px;
+      transition: transform 0.15s ease;
+      letter-spacing: -0.1px;
+    }
+
+    .shuffle-btn:active {
+      transform: scale(0.97);
+    }
+
+    .shuffle-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .home-view.hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-<div class="app">
-  <div class="home-view" id="homeView">
-    <div class="header">
-      <h1>The ADHD Playbook</h1>
-      <p class="prompt">Right now, <em>I'm feeling...</em></p>
+  <div class="app">
+    <div class="home-view" id="homeView">
+      <div class="header">
+        <h1>The ADHD Playbook</h1>
+        <p class="prompt">Right now, <em>I'm feeling...</em></p>
+      </div>
+      <div class="feelings" id="feelings"></div>
     </div>
-    <div class="feelings" id="feelings"></div>
-  </div>
-  <div class="result-view" id="resultView">
-    <button class="back-btn" id="backBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      Back
-    </button>
-    <div class="result-header">
-      <div class="feeling-label" id="resultFeeling"></div>
-      <h2 id="resultTitle">Here's your play.</h2>
+
+    <div class="result-view" id="resultView">
+      <button class="back-btn" id="backBtn" type="button">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Back
+      </button>
+
+      <div class="result-header">
+        <div class="feeling-label" id="resultFeeling"></div>
+        <h2 id="resultTitle">Here's your play.</h2>
+      </div>
+
+      <div id="resultCards"></div>
+
+      <button class="shuffle-btn" id="shuffleBtn" type="button">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <polyline points="16 3 21 3 21 8"></polyline>
+          <line x1="4" y1="20" x2="21" y2="3"></line>
+          <polyline points="21 16 21 21 16 21"></polyline>
+          <line x1="15" y1="15" x2="21" y2="21"></line>
+          <line x1="4" y1="4" x2="9" y2="9"></line>
+        </svg>
+        Different play
+      </button>
     </div>
-    <div id="resultCards"></div>
-    <button class="shuffle-btn" id="shuffleBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
-      Different play
-    </button>
   </div>
-</div>
-<script>
-var PLAYBOOK = {
-  "cant-start": {
-    display: "stuck",
-    strategies: [
-      "Pick the smallest physical movement. Not the task \u2014 the first motion. Open the doc. That\u2019s it.",
-      "Set a 2-minute timer. You only have to work for 2 minutes. Most of the time, you won\u2019t stop.",
-      "Narrate out loud what you\u2019re about to do. I\u2019m going to stand up, walk to the desk, open my laptop.",
-      "Put on one specific song \u2014 your launch song. Pair starting with a sensory ritual your brain can latch onto.",
-      "Text a friend: I\u2019m about to start X. Accountability with a witness breaks the freeze."
-    ],
-    verses: [
-      "Whatever your hand finds to do, do it with your might. \u2014 Ecclesiastes 9:10",
-      "I can do all things through Him who strengthens me. \u2014 Philippians 4:13",
-      "Commit your work to the Lord, and your plans will be established. \u2014 Proverbs 16:3",
-      "The soul of the diligent is richly supplied. \u2014 Proverbs 13:4",
-      "Whatever you do, work heartily, as for the Lord. \u2014 Colossians 3:23"
-    ],
-    mantras: [
-      "Motion before motivation.",
-      "Start ugly. Clean it up later.",
-      "The hardest step is the first one \u2014 and it\u2019s already behind you.",
-      "You don\u2019t need to feel ready. You just need to begin.",
-      "Doing it badly still counts as doing it."
-    ],
-    resources: [
-      { title: "How to ADHD: How to Get Started", url: "https://www.youtube.com/watch?v=Uo08uS904Rg" },
-      { title: "Dr. Russell Barkley: The 30% Rule", url: "https://www.youtube.com/watch?v=_tpB-B8BXk0" },
-      { title: "Atomic Habits: Make It Easy", url: "https://jamesclear.com/habit-guide" },
-      { title: "The 2-Minute Rule Explained", url: "https://www.youtube.com/watch?v=dOImyOGN7dE" },
-      { title: "John Piper: Don\u2019t Waste Your Life", url: "https://www.desiringgod.org/messages/boasting-only-in-the-cross" }
-    ]
-  },
-  "cant-focus": {
-    display: "unfocused",
-    strategies: [
-      "Body double. FaceTime a friend, go to a cafe, or put on a study-with-me livestream.",
-      "Take a 15-minute phone-free walk outside. Let your brain reset without input.",
-      "Switch to a physical medium \u2014 pen and paper, whiteboard, sticky notes. Change the texture of the work.",
-      "Pomodoro: 25 minutes on, 5 off. Set the timer where you can see it counting down.",
-      "Put on brown noise or one song on repeat. Give your restless brain a track to ride on."
-    ],
-    verses: [
-      "Let us run with endurance the race set before us, looking to Jesus. \u2014 Hebrews 12:1-2",
-      "Set your minds on things above, not on things on earth. \u2014 Colossians 3:2",
-      "Be still, and know that I am God. \u2014 Psalm 46:10",
-      "Look carefully how you walk, making the best use of the time. \u2014 Ephesians 5:15-16",
-      "A double-minded man is unstable in all his ways. \u2014 James 1:8"
-    ],
-    mantras: [
-      "Protect the window. Guard the hour.",
-      "Not every thought deserves your attention right now.",
-      "Your brain wants novelty. Give it depth instead.",
-      "Focus isn\u2019t found. It\u2019s built, one minute at a time.",
-      "Come back. That\u2019s all. Just come back."
-    ],
-    resources: [
-      { title: "How to ADHD: Why Can\u2019t I Focus?", url: "https://www.youtube.com/watch?v=XLr2RKoD-oY" },
-      { title: "Dr. Huberman: Focus Toolkit", url: "https://www.youtube.com/watch?v=yb5zpo5WDG4" },
-      { title: "Brown Noise for Focus (10 hrs)", url: "https://www.youtube.com/watch?v=GSaJXDsb3N8" },
-      { title: "MacArthur: Discipline of the Mind", url: "https://www.gty.org/library/sermons-library/80-317/the-believers-armor-part-6" },
-      { title: "Body Doubling Explained", url: "https://www.youtube.com/watch?v=4lTMROSdSMc" }
-    ]
-  },
-  "cant-decide": {
-    display: "paralyzed",
-    strategies: [
-      "Flip a coin. Not to let the coin decide \u2014 but to notice how you feel when it lands. That\u2019s your answer.",
-      "Set a 5-minute timer. Pick one option and commit until it ends. Any direction beats standing still.",
-      "Write only two options. Cross out the one that makes you relieved. Do the other one.",
-      "Ask: What would I tell a friend to do? Then take your own advice.",
-      "Lower the stakes: I\u2019m going to try this for today. Not forever. Just today."
-    ],
-    verses: [
-      "Trust in the Lord with all your heart, and do not lean on your own understanding. \u2014 Proverbs 3:5",
-      "If any of you lacks wisdom, let him ask God, who gives generously. \u2014 James 1:5",
-      "Your word is a lamp to my feet and a light to my path. \u2014 Psalm 119:105",
-      "The heart of man plans his way, but the Lord establishes his steps. \u2014 Proverbs 16:9",
-      "God gave us a spirit not of fear but of power and love and self-control. \u2014 2 Timothy 1:7"
-    ],
-    mantras: [
-      "A wrong decision is better than no decision.",
-      "You\u2019re not choosing forever. You\u2019re choosing right now.",
-      "Clarity comes from action, not thought.",
-      "Done is a direction. Perfect is a trap.",
-      "Trust yourself enough to course-correct later."
-    ],
-    resources: [
-      { title: "How to ADHD: Analysis Paralysis", url: "https://www.youtube.com/watch?v=VBk8bOGKMV0" },
-      { title: "Barry Schwartz: Paradox of Choice", url: "https://www.youtube.com/watch?v=VO6XEQIsCoM" },
-      { title: "Tim Keller: Making Decisions with God", url: "https://www.youtube.com/watch?v=RM4qMBSRSMY" },
-      { title: "Dr. Hallowell: Decision Fatigue", url: "https://www.youtube.com/watch?v=iXbdSMgaKMo" },
-      { title: "Piper: How Do I Make Hard Decisions?", url: "https://www.desiringgod.org/interviews/how-do-i-make-hard-decisions" }
-    ]
-  },
-  "feeling-behind": {
-    display: "behind",
-    strategies: [
-      "Done list. Write everything you did today \u2014 even just getting out of bed. Evidence beats shame.",
-      "Name three things you accomplished this week. Say them out loud. Your brain won\u2019t track wins on its own.",
-      "Unfollow or mute one account that makes you feel behind. Curate your inputs.",
-      "Set one benchmark that\u2019s yours \u2014 not borrowed from someone else\u2019s timeline. Run your race.",
-      "Write a 3-sentence letter to yourself from one year ago. You\u2019d be proud of more than you think."
-    ],
-    verses: [
-      "There is now no condemnation for those who are in Christ Jesus. \u2014 Romans 8:1",
-      "Let us not grow weary of doing good, for in due season we will reap. \u2014 Galatians 6:9",
-      "I know the plans I have for you, declares the Lord, plans for welfare and not for evil. \u2014 Jeremiah 29:11",
-      "He who began a good work in you will bring it to completion. \u2014 Philippians 1:6",
-      "Not that I have already obtained this or am already perfect, but I press on. \u2014 Philippians 3:12"
-    ],
-    mantras: [
-      "Behind is a story, not a verdict.",
-      "Comparison is a thief. Don\u2019t let it in.",
-      "You\u2019re not late. You\u2019re on a different map.",
-      "Progress you can\u2019t see is still progress.",
-      "Grace means you don\u2019t have to earn your place."
-    ],
-    resources: [
-      { title: "How to ADHD: Rejection Sensitivity", url: "https://www.youtube.com/watch?v=jM3azhiOy5E" },
-      { title: "Brene Brown: Shame vs. Guilt", url: "https://www.youtube.com/watch?v=psN1DORYYV0" },
-      { title: "Barkley: ADHD and Self-Esteem", url: "https://www.youtube.com/watch?v=BzhbAK1pdPM" },
-      { title: "Paul Tripp: Suffering and Shame", url: "https://www.youtube.com/watch?v=PTc_FoELt8s" },
-      { title: "Piper: Grace for the Discouraged", url: "https://www.desiringgod.org/messages/sustained-by-sovereign-grace-the-future-of-the-fruit-of-the-spirit" }
-    ]
-  },
-  "overwhelmed": {
-    display: "overwhelmed",
-    strategies: [
-      "Brain dump. Everything in your head onto paper. Every task, worry, thought. Then circle just one.",
-      "Cancel or postpone one thing today. Give yourself permission to have less on the plate.",
-      "Zoom in. Pick one room, one task, one email. Shrink the world down to arm\u2019s reach.",
-      "Say out loud: I don\u2019t have to do all of this today. Hear yourself say it. Let it land.",
-      "Set a shutdown time tonight. Everything after that hour is off-limits. Give your brain an end point."
-    ],
-    verses: [
-      "Cast all your anxiety on Him, because He cares for you. \u2014 1 Peter 5:7",
-      "Come to me, all who labor and are heavy laden, and I will give you rest. \u2014 Matthew 11:28",
-      "The Lord is near to the brokenhearted and saves the crushed in spirit. \u2014 Psalm 34:18",
-      "Do not be anxious about anything, but in everything by prayer let your requests be known to God. \u2014 Philippians 4:6",
-      "When the cares of my heart are many, your consolations cheer my soul. \u2014 Psalm 94:19"
-    ],
-    mantras: [
-      "You don\u2019t have to solve the whole thing. Just the next piece.",
-      "Overwhelm is a signal to simplify, not a measure of how much you have to do.",
-      "Breathe first. Decide second.",
-      "Less on the list is more in the tank.",
-      "God didn\u2019t give you today to finish everything. He gave you today to be faithful in it."
-    ],
-    resources: [
-      { title: "How to ADHD: When Everything Is Too Much", url: "https://www.youtube.com/watch?v=H4YIucAE0b4" },
-      { title: "Dr. Hallowell: Driven to Distraction", url: "https://www.youtube.com/watch?v=tn03VBpSNZ4" },
-      { title: "Cal Newport: Time-Block Planning", url: "https://www.youtube.com/watch?v=eff9h1WYxSo" },
-      { title: "Spurgeon: Rest in God", url: "https://www.spurgeon.org/resource-library/sermons/rest-rest/" },
-      { title: "MacArthur: Anxious for Nothing", url: "https://www.gty.org/library/sermons-library/50-18/anxious-for-nothing-part-1" }
-    ]
-  },
-  "restless": {
-    display: "restless",
-    strategies: [
-      "Move your body for 5 minutes. Walk, push-ups, jumping jacks. Get the buzz out, then sit down.",
-      "Cold water on your wrists and face. 30 seconds. Resets your nervous system fast.",
-      "Stand up and work. Pace while you think. You don\u2019t have to be still to be productive.",
-      "Do a quick completable task: make the bed, empty the dishwasher, organize a drawer. Give your body a win.",
-      "Step outside barefoot for 2 minutes. Grass, concrete, whatever. Grounding is sensory input."
-    ],
-    verses: [
-      "Your body is a temple of the Holy Spirit. \u2014 1 Corinthians 6:19",
-      "He gives power to the faint, and to him who has no might He increases strength. \u2014 Isaiah 40:29",
-      "You formed my inward parts; you knitted me together. \u2014 Psalm 139:13",
-      "The Lord your God is in your midst; He will quiet you by His love. \u2014 Zephaniah 3:17",
-      "In returning and rest you shall be saved; in quietness and trust shall be your strength. \u2014 Isaiah 30:15"
-    ],
-    mantras: [
-      "Your body is talking. Listen to it.",
-      "Restless isn\u2019t broken. It\u2019s energy looking for a channel.",
-      "Move first. Think second.",
-      "You\u2019re not lazy \u2014 you\u2019re wired for motion.",
-      "The buzz passes. It always passes."
-    ],
-    resources: [
-      { title: "How to ADHD: Exercise and the ADHD Brain", url: "https://www.youtube.com/watch?v=hFL6qRIJZ_Y" },
-      { title: "Dr. John Ratey: Spark", url: "https://www.youtube.com/watch?v=DsVzKCk066g" },
-      { title: "Huberman: Movement to Reset Focus", url: "https://www.youtube.com/watch?v=SwQhKFMxmDY" },
-      { title: "ADHD and Hyperactivity in Adults", url: "https://www.youtube.com/watch?v=ouZrZa5pLXk" },
-      { title: "C.S. Lewis: Mere Christianity", url: "https://www.cslewis.com/mere-christianity/" }
-    ]
-  },
-  "feeling-nothing": {
-    display: "nothing",
-    strategies: [
-      "Lower the bar to exist with dignity. Brush teeth. Drink water. Sit in sunlight. That\u2019s enough.",
-      "Put on a comfort show or album \u2014 something familiar that doesn\u2019t ask anything of you.",
-      "Text one person. Just hey. Connection is medicine even when you don\u2019t feel like taking it.",
-      "Write one sentence about how you feel. Just one. Naming the flat makes it less permanent.",
-      "Go outside and look up. Sky, trees, clouds. Give your senses something gentle and real."
-    ],
-    verses: [
-      "He leads me beside still waters. He restores my soul. \u2014 Psalm 23:2-3",
-      "My grace is sufficient for you, for my power is made perfect in weakness. \u2014 2 Corinthians 12:9",
-      "The Lord is my shepherd; I shall not want. \u2014 Psalm 23:1",
-      "Weeping may tarry for the night, but joy comes with the morning. \u2014 Psalm 30:5",
-      "Take heart; I have overcome the world. \u2014 John 16:33"
-    ],
-    mantras: [
-      "Rest is not failure. It\u2019s faithfulness to your limits.",
-      "Flat is temporary. It\u2019s weather, not climate.",
-      "You don\u2019t have to feel God\u2019s presence to be in it.",
-      "Today, existing is enough.",
-      "Even the strongest trees have seasons with no leaves."
-    ],
-    resources: [
-      { title: "How to ADHD: ADHD and Depression", url: "https://www.youtube.com/watch?v=iRYvuS9OxEg" },
-      { title: "Barkley: ADHD and Emotion", url: "https://www.youtube.com/watch?v=7sPIF1gNy_o" },
-      { title: "Spurgeon\u2019s Depression (Desiring God)", url: "https://www.desiringgod.org/articles/charles-spurgeons-darkest-valley" },
-      { title: "Paul Tripp: Suffering and Hope", url: "https://www.youtube.com/watch?v=ZXCiNhAjm8g" },
-      { title: "Piper: When the Darkness Will Not Lift", url: "https://www.desiringgod.org/books/when-the-darkness-will-not-lift" }
-    ]
-  }
-};
 
-var feelingColors = {
-“cant-start”: “#D4A06A”,
-“cant-focus”: “#6998BF”,
-“cant-decide”: “#A98DC5”,
-“feeling-behind”: “#C47A7A”,
-“overwhelmed”: “#D9A54B”,
-“restless”: “#6DAE8A”,
-“feeling-nothing”: “#94A3AF”
-};
+  <script>
+    var PLAYBOOK = {
+      "cant-start": {
+        display: "stuck",
+        strategies: [
+          "Pick the smallest physical movement. Not the task — the first motion. Open the doc. That's it.",
+          "Set a 2-minute timer. You only have to work for 2 minutes. Most of the time, you won't stop.",
+          "Narrate out loud what you're about to do. I'm going to stand up, walk to the desk, open my laptop.",
+          "Put on one specific song — your launch song. Pair starting with a sensory ritual your brain can latch onto.",
+          "Text a friend: I'm about to start X. Accountability with a witness breaks the freeze."
+        ],
+        verses: [
+          "Whatever your hand finds to do, do it with your might. — Ecclesiastes 9:10",
+          "I can do all things through Him who strengthens me. — Philippians 4:13",
+          "Commit your work to the Lord, and your plans will be established. — Proverbs 16:3",
+          "The soul of the diligent is richly supplied. — Proverbs 13:4",
+          "Whatever you do, work heartily, as for the Lord. — Colossians 3:23"
+        ],
+        mantras: [
+          "Motion before motivation.",
+          "Start ugly. Clean it up later.",
+          "The hardest step is the first one — and it's already behind you.",
+          "You don't need to feel ready. You just need to begin.",
+          "Doing it badly still counts as doing it."
+        ],
+        resources: [
+          { title: "How to ADHD: How to Get Started", url: "https://www.youtube.com/watch?v=Uo08uS904Rg" },
+          { title: "Dr. Russell Barkley: The 30% Rule", url: "https://www.youtube.com/watch?v=_tpB-B8BXk0" },
+          { title: "Atomic Habits: Make It Easy", url: "https://jamesclear.com/habit-guide" },
+          { title: "The 2-Minute Rule Explained", url: "https://www.youtube.com/watch?v=dOImyOGN7dE" },
+          { title: "John Piper: Don't Waste Your Life", url: "https://www.desiringgod.org/messages/boasting-only-in-the-cross" }
+        ]
+      },
 
-function pick(arr, n) {
-var a = arr.slice();
-for (var i = a.length - 1; i > 0; i–) {
-var j = Math.floor(Math.random() * (i + 1));
-var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
-}
-return a.slice(0, n);
-}
+      "cant-focus": {
+        display: "unfocused",
+        strategies: [
+          "Body double. FaceTime a friend, go to a cafe, or put on a study-with-me livestream.",
+          "Take a 15-minute phone-free walk outside. Let your brain reset without input.",
+          "Switch to a physical medium — pen and paper, whiteboard, sticky notes. Change the texture of the work.",
+          "Pomodoro: 25 minutes on, 5 off. Set the timer where you can see it counting down.",
+          "Put on brown noise or one song on repeat. Give your restless brain a track to ride on."
+        ],
+        verses: [
+          "Let us run with endurance the race set before us, looking to Jesus. — Hebrews 12:1-2",
+          "Set your minds on things above, not on things on earth. — Colossians 3:2",
+          "Be still, and know that I am God. — Psalm 46:10",
+          "Look carefully how you walk, making the best use of the time. — Ephesians 5:15-16",
+          "A double-minded man is unstable in all his ways. — James 1:8"
+        ],
+        mantras: [
+          "Protect the window. Guard the hour.",
+          "Not every thought deserves your attention right now.",
+          "Your brain wants novelty. Give it depth instead.",
+          "Focus isn't found. It's built, one minute at a time.",
+          "Come back. That's all. Just come back."
+        ],
+        resources: [
+          { title: "How to ADHD: Why Can't I Focus?", url: "https://www.youtube.com/watch?v=XLr2RKoD-oY" },
+          { title: "Dr. Huberman: Focus Toolkit", url: "https://www.youtube.com/watch?v=yb5zpo5WDG4" },
+          { title: "Brown Noise for Focus (10 hrs)", url: "https://www.youtube.com/watch?v=GSaJXDsb3N8" },
+          { title: "MacArthur: Discipline of the Mind", url: "https://www.gty.org/library/sermons-library/80-317/the-believers-armor-part-6" },
+          { title: "Body Doubling Explained", url: "https://www.youtube.com/watch?v=4lTMROSdSMc" }
+        ]
+      },
 
-function getPlay(key) {
-var b = PLAYBOOK[key];
-return {
-strategy: pick(b.strategies, 1)[0],
-verse: pick(b.verses, 1)[0],
-mantras: pick(b.mantras, 2),
-resources: pick(b.resources, 2)
-};
-}
+      "cant-decide": {
+        display: "paralyzed",
+        strategies: [
+          "Flip a coin. Not to let the coin decide — but to notice how you feel when it lands. That's your answer.",
+          "Set a 5-minute timer. Pick one option and commit until it ends. Any direction beats standing still.",
+          "Write only two options. Cross out the one that makes you relieved. Do the other one.",
+          "Ask: What would I tell a friend to do? Then take your own advice.",
+          "Lower the stakes: I'm going to try this for today. Not forever. Just today."
+        ],
+        verses: [
+          "Trust in the Lord with all your heart, and do not lean on your own understanding. — Proverbs 3:5",
+          "If any of you lacks wisdom, let him ask God, who gives generously. — James 1:5",
+          "Your word is a lamp to my feet and a light to my path. — Psalm 119:105",
+          "The heart of man plans his way, but the Lord establishes his steps. — Proverbs 16:9",
+          "God gave us a spirit not of fear but of power and love and self-control. — 2 Timothy 1:7"
+        ],
+        mantras: [
+          "A wrong decision is better than no decision.",
+          "You're not choosing forever. You're choosing right now.",
+          "Clarity comes from action, not thought.",
+          "Done is a direction. Perfect is a trap.",
+          "Trust yourself enough to course-correct later."
+        ],
+        resources: [
+          { title: "How to ADHD: Analysis Paralysis", url: "https://www.youtube.com/watch?v=VBk8bOGKMV0" },
+          { title: "Barry Schwartz: Paradox of Choice", url: "https://www.youtube.com/watch?v=VO6XEQIsCoM" },
+          { title: "Tim Keller: Making Decisions with God", url: "https://www.youtube.com/watch?v=RM4qMBSRSMY" },
+          { title: "Dr. Hallowell: Decision Fatigue", url: "https://www.youtube.com/watch?v=iXbdSMgaKMo" },
+          { title: "Piper: How Do I Make Hard Decisions?", url: "https://www.desiringgod.org/interviews/how-do-i-make-hard-decisions" }
+        ]
+      },
 
-var homeView = document.getElementById(“homeView”);
-var resultView = document.getElementById(“resultView”);
-var feelingsEl = document.getElementById(“feelings”);
-var resultFeeling = document.getElementById(“resultFeeling”);
-var resultCards = document.getElementById(“resultCards”);
-var backBtn = document.getElementById(“backBtn”);
-var shuffleBtn = document.getElementById(“shuffleBtn”);
+      "feeling-behind": {
+        display: "behind",
+        strategies: [
+          "Done list. Write everything you did today — even just getting out of bed. Evidence beats shame.",
+          "Name three things you accomplished this week. Say them out loud. Your brain won't track wins on its own.",
+          "Unfollow or mute one account that makes you feel behind. Curate your inputs.",
+          "Set one benchmark that's yours — not borrowed from someone else's timeline. Run your race.",
+          "Write a 3-sentence letter to yourself from one year ago. You'd be proud of more than you think."
+        ],
+        verses: [
+          "There is now no condemnation for those who are in Christ Jesus. — Romans 8:1",
+          "Let us not grow weary of doing good, for in due season we will reap. — Galatians 6:9",
+          "I know the plans I have for you, declares the Lord, plans for welfare and not for evil. — Jeremiah 29:11",
+          "He who began a good work in you will bring it to completion. — Philippians 1:6",
+          "Not that I have already obtained this or am already perfect, but I press on. — Philippians 3:12"
+        ],
+        mantras: [
+          "Behind is a story, not a verdict.",
+          "Comparison is a thief. Don't let it in.",
+          "You're not late. You're on a different map.",
+          "Progress you can't see is still progress.",
+          "Grace means you don't have to earn your place."
+        ],
+        resources: [
+          { title: "How to ADHD: Rejection Sensitivity", url: "https://www.youtube.com/watch?v=jM3azhiOy5E" },
+          { title: "Brene Brown: Shame vs. Guilt", url: "https://www.youtube.com/watch?v=psN1DORYYV0" },
+          { title: "Barkley: ADHD and Self-Esteem", url: "https://www.youtube.com/watch?v=BzhbAK1pdPM" },
+          { title: "Paul Tripp: Suffering and Shame", url: "https://www.youtube.com/watch?v=PTc_FoELt8s" },
+          { title: "Piper: Grace for the Discouraged", url: "https://www.desiringgod.org/messages/sustained-by-sovereign-grace-the-future-of-the-fruit-of-the-spirit" }
+        ]
+      },
 
-var chevronSVG = ‘<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>’;
-var linkIconSVG = ‘<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>’;
-var arrowSVG = ‘<svg class="resource-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>’;
+      overwhelmed: {
+        display: "overwhelmed",
+        strategies: [
+          "Brain dump. Everything in your head onto paper. Every task, worry, thought. Then circle just one.",
+          "Cancel or postpone one thing today. Give yourself permission to have less on the plate.",
+          "Zoom in. Pick one room, one task, one email. Shrink the world down to arm's reach.",
+          "Say out loud: I don't have to do all of this today. Hear yourself say it. Let it land.",
+          "Set a shutdown time tonight. Everything after that hour is off-limits. Give your brain an end point."
+        ],
+        verses: [
+          "Cast all your anxiety on Him, because He cares for you. — 1 Peter 5:7",
+          "Come to me, all who labor and are heavy laden, and I will give you rest. — Matthew 11:28",
+          "The Lord is near to the brokenhearted and saves the crushed in spirit. — Psalm 34:18",
+          "Do not be anxious about anything, but in everything by prayer let your requests be known to God. — Philippians 4:6",
+          "When the cares of my heart are many, your consolations cheer my soul. — Psalm 94:19"
+        ],
+        mantras: [
+          "You don't have to solve the whole thing. Just the next piece.",
+          "Overwhelm is a signal to simplify, not a measure of how much you have to do.",
+          "Breathe first. Decide second.",
+          "Less on the list is more in the tank.",
+          "God didn't give you today to finish everything. He gave you today to be faithful in it."
+        ],
+        resources: [
+          { title: "How to ADHD: When Everything Is Too Much", url: "https://www.youtube.com/watch?v=H4YIucAE0b4" },
+          { title: "Dr. Hallowell: Driven to Distraction", url: "https://www.youtube.com/watch?v=tn03VBpSNZ4" },
+          { title: "Cal Newport: Time-Block Planning", url: "https://www.youtube.com/watch?v=eff9h1WYxSo" },
+          { title: "Spurgeon: Rest in God", url: "https://www.spurgeon.org/resource-library/sermons/rest-rest/" },
+          { title: "MacArthur: Anxious for Nothing", url: "https://www.gty.org/library/sermons-library/50-18/anxious-for-nothing-part-1" }
+        ]
+      },
 
-var keys = Object.keys(PLAYBOOK);
-for (var i = 0; i < keys.length; i++) {
-(function(key) {
-var btn = document.createElement(“button”);
-btn.className = “feeling-btn”;
-btn.setAttribute(“data-key”, key);
-btn.innerHTML = ‘<div class="label-group"><div class="prefix">I\u2019m feeling</div><div class="label">’ + PLAYBOOK[key].display + ‘</div></div>’ + chevronSVG;
-btn.addEventListener(“click”, function() { showResult(key); });
-feelingsEl.appendChild(btn);
-})(keys[i]);
-}
+      restless: {
+        display: "restless",
+        strategies: [
+          "Move your body for 5 minutes. Walk, push-ups, jumping jacks. Get the buzz out, then sit down.",
+          "Cold water on your wrists and face. 30 seconds. Resets your nervous system fast.",
+          "Stand up and work. Pace while you think. You don't have to be still to be productive.",
+          "Do a quick completable task: make the bed, empty the dishwasher, organize a drawer. Give your body a win.",
+          "Step outside barefoot for 2 minutes. Grass, concrete, whatever. Grounding is sensory input."
+        ],
+        verses: [
+          "Your body is a temple of the Holy Spirit. — 1 Corinthians 6:19",
+          "He gives power to the faint, and to him who has no might He increases strength. — Isaiah 40:29",
+          "You formed my inward parts; you knitted me together. — Psalm 139:13",
+          "The Lord your God is in your midst; He will quiet you by His love. — Zephaniah 3:17",
+          "In returning and rest you shall be saved; in quietness and trust shall be your strength. — Isaiah 30:15"
+        ],
+        mantras: [
+          "Your body is talking. Listen to it.",
+          "Restless isn't broken. It's energy looking for a channel.",
+          "Move first. Think second.",
+          "You're not lazy — you're wired for motion.",
+          "The buzz passes. It always passes."
+        ],
+        resources: [
+          { title: "How to ADHD: Exercise and the ADHD Brain", url: "https://www.youtube.com/watch?v=hFL6qRIJZ_Y" },
+          { title: "Dr. John Ratey: Spark", url: "https://www.youtube.com/watch?v=DsVzKCk066g" },
+          { title: "Huberman: Movement to Reset Focus", url: "https://www.youtube.com/watch?v=SwQhKFMxmDY" },
+          { title: "ADHD and Hyperactivity in Adults", url: "https://www.youtube.com/watch?v=ouZrZa5pLXk" },
+          { title: "C.S. Lewis: Mere Christianity", url: "https://www.cslewis.com/mere-christianity/" }
+        ]
+      },
 
-var currentKey = null;
+      "feeling-nothing": {
+        display: "nothing",
+        strategies: [
+          "Lower the bar to exist with dignity. Brush teeth. Drink water. Sit in sunlight. That's enough.",
+          "Put on a comfort show or album — something familiar that doesn't ask anything of you.",
+          "Text one person. Just hey. Connection is medicine even when you don't feel like taking it.",
+          "Write one sentence about how you feel. Just one. Naming the flat makes it less permanent.",
+          "Go outside and look up. Sky, trees, clouds. Give your senses something gentle and real."
+        ],
+        verses: [
+          "He leads me beside still waters. He restores my soul. — Psalm 23:2-3",
+          "My grace is sufficient for you, for my power is made perfect in weakness. — 2 Corinthians 12:9",
+          "The Lord is my shepherd; I shall not want. — Psalm 23:1",
+          "Weeping may tarry for the night, but joy comes with the morning. — Psalm 30:5",
+          "Take heart; I have overcome the world. — John 16:33"
+        ],
+        mantras: [
+          "Rest is not failure. It's faithfulness to your limits.",
+          "Flat is temporary. It's weather, not climate.",
+          "You don't have to feel God's presence to be in it.",
+          "Today, existing is enough.",
+          "Even the strongest trees have seasons with no leaves."
+        ],
+        resources: [
+          { title: "How to ADHD: ADHD and Depression", url: "https://www.youtube.com/watch?v=iRYvuS9OxEg" },
+          { title: "Barkley: ADHD and Emotion", url: "https://www.youtube.com/watch?v=7sPIF1gNy_o" },
+          { title: "Spurgeon's Depression (Desiring God)", url: "https://www.desiringgod.org/articles/charles-spurgeons-darkest-valley" },
+          { title: "Paul Tripp: Suffering and Hope", url: "https://www.youtube.com/watch?v=ZXCiNhAjm8g" },
+          { title: "Piper: When the Darkness Will Not Lift", url: "https://www.desiringgod.org/books/when-the-darkness-will-not-lift" }
+        ]
+      }
+    };
 
-function showResult(key) {
-currentKey = key;
-var play = getPlay(key);
-var displayName = PLAYBOOK[key].display;
+    var feelingColors = {
+      "cant-start": "#D4A06A",
+      "cant-focus": "#6998BF",
+      "cant-decide": "#A98DC5",
+      "feeling-behind": "#C47A7A",
+      overwhelmed: "#D9A54B",
+      restless: "#6DAE8A",
+      "feeling-nothing": "#94A3AF"
+    };
 
-resultView.style.setProperty(”–play-color”, feelingColors[key]);
-resultFeeling.textContent = “I\u2019m feeling “ + displayName;
+    function pick(arr, n) {
+      var a = arr.slice();
+      for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = a[i];
+        a[i] = a[j];
+        a[j] = tmp;
+      }
+      return a.slice(0, n);
+    }
 
-var h = “”;
-h += ‘<div class="card strategy">’;
-h += ‘<div class="card-label">Try this</div>’;
-h += ‘<div class="content">’ + play.strategy + ‘</div>’;
-h += ‘</div>’;
-h += ‘<div class="card verse">’;
-h += ‘<div class="card-label">Scripture</div>’;
-h += ‘<div class="content">’ + play.verse + ‘</div>’;
-h += ‘</div>’;
-h += ‘<div class="card mantras">’;
-h += ‘<div class="card-label">Mantras</div>’;
-h += ‘<div class="content">’;
-for (var i = 0; i < play.mantras.length; i++) {
-h += ‘<div class="mantra-item"><span class="mantra-text">’ + play.mantras[i] + ‘</span></div>’;
-}
-h += ‘</div></div>’;
-h += ‘<div class="card resources">’;
-h += ‘<div class="card-label">Go deeper</div>’;
-for (var j = 0; j < play.resources.length; j++) {
-var r = play.resources[j];
-h += ‘<a class="resource-link" href="' + r.url + '" target="_blank" rel="noopener">’;
-h += ‘<div class="resource-icon">’ + linkIconSVG + ‘</div>’;
-h += ‘<span class="resource-title">’ + r.title + ‘</span>’;
-h += arrowSVG + ‘</a>’;
-}
-h += ‘</div>’;
-resultCards.innerHTML = h;
+    function getPlay(key) {
+      var b = PLAYBOOK[key];
+      return {
+        strategy: pick(b.strategies, 1)[0],
+        verse: pick(b.verses, 1)[0],
+        mantras: pick(b.mantras, 2),
+        resources: pick(b.resources, 2)
+      };
+    }
 
-homeView.classList.add(“hidden”);
-resultView.classList.remove(“active”);
-void resultView.offsetWidth;
-resultView.classList.add(“active”);
-window.scrollTo({ top: 0, behavior: “auto” });
-}
+    var homeView = document.getElementById("homeView");
+    var resultView = document.getElementById("resultView");
+    var feelingsEl = document.getElementById("feelings");
+    var resultFeeling = document.getElementById("resultFeeling");
+    var resultCards = document.getElementById("resultCards");
+    var backBtn = document.getElementById("backBtn");
+    var shuffleBtn = document.getElementById("shuffleBtn");
 
-backBtn.addEventListener(“click”, function() {
-resultView.classList.remove(“active”);
-homeView.classList.remove(“hidden”);
-currentKey = null;
-window.scrollTo({ top: 0, behavior: “auto” });
-});
+    var chevronSVG =
+      '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"></polyline></svg>';
 
-shuffleBtn.addEventListener(“click”, function() {
-if (currentKey) showResult(currentKey);
-});
-</script>
+    var linkIconSVG =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>';
 
+    var arrowSVG =
+      '<svg class="resource-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"></polyline></svg>';
+
+    var keys = Object.keys(PLAYBOOK);
+    for (var i = 0; i < keys.length; i++) {
+      (function (key) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "feeling-btn";
+        btn.setAttribute("data-key", key);
+        btn.innerHTML =
+          '<div class="label-group"><div class="prefix">I\'m feeling</div><div class="label">' +
+          PLAYBOOK[key].display +
+          "</div></div>" +
+          chevronSVG;
+
+        btn.addEventListener("click", function () {
+          showResult(key);
+        });
+
+        feelingsEl.appendChild(btn);
+      })(keys[i]);
+    }
+
+    var currentKey = null;
+
+    function showResult(key) {
+      currentKey = key;
+      var play = getPlay(key);
+      var displayName = PLAYBOOK[key].display;
+
+      resultView.style.setProperty("--play-color", feelingColors[key]);
+      resultFeeling.textContent = "I'm feeling " + displayName;
+
+      var h = "";
+      h += '<div class="card strategy">';
+      h += '<div class="card-label">Try this</div>';
+      h += '<div class="content">' + play.strategy + "</div>";
+      h += "</div>";
+
+      h += '<div class="card verse">';
+      h += '<div class="card-label">Scripture</div>';
+      h += '<div class="content">' + play.verse + "</div>";
+      h += "</div>";
+
+      h += '<div class="card mantras">';
+      h += '<div class="card-label">Mantras</div>';
+      h += '<div class="content">';
+      for (var m = 0; m < play.mantras.length; m++) {
+        h += '<div class="mantra-item"><span class="mantra-text">' + play.mantras[m] + "</span></div>";
+      }
+      h += "</div></div>";
+
+      h += '<div class="card resources">';
+      h += '<div class="card-label">Go deeper</div>';
+      for (var j = 0; j < play.resources.length; j++) {
+        var r = play.resources[j];
+        h += '<a class="resource-link" href="' + r.url + '" target="_blank" rel="noopener">';
+        h += '<div class="resource-icon">' + linkIconSVG + "</div>";
+        h += '<span class="resource-title">' + r.title + "</span>";
+        h += arrowSVG + "</a>";
+      }
+      h += "</div>";
+
+      resultCards.innerHTML = h;
+
+      homeView.classList.add("hidden");
+      resultView.classList.remove("active");
+      void resultView.offsetWidth;
+      resultView.classList.add("active");
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }
+
+    backBtn.addEventListener("click", function () {
+      resultView.classList.remove("active");
+      homeView.classList.remove("hidden");
+      currentKey = null;
+      window.scrollTo({ top: 0, behavior: "auto" });
+    });
+
+    shuffleBtn.addEventListener("click", function () {
+      if (currentKey) {
+        showResult(currentKey);
+      }
+    });
+  </script>
 </body>
 </html>
