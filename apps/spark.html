@@ -1,0 +1,306 @@
+import { useState } from “react”;
+
+const sections = [
+{
+id: “what”,
+label: “What”,
+emoji: “🎯”,
+placeholder: `What are you building? Be specific.\n\ne.g. "A habit tracker app — single page React app. Users add habits, check them off daily, and see a weekly streak grid. Think Apple Health meets pen-and-paper simplicity."`,
+},
+{
+id: “who”,
+label: “Who”,
+emoji: “👤”,
+placeholder: `Who is this for? What do they care about?\n\ne.g. "Me — I want something I'll actually open every morning. No sign-up, no gamification, no social features. Just the habits and the streaks."`,
+},
+{
+id: “vibe”,
+label: “Vibe”,
+emoji: “✦”,
+placeholder: `Aesthetic direction. Be opinionated.\n\ne.g. "Warm, minimal, soft radius corners. Think SF Pro meets a Muji notebook. Light mode only. Muted earth tones — no neon, no gradients. Generous whitespace."`,
+},
+{
+id: “flow”,
+label: “Flow”,
+emoji: “↳”,
+placeholder: `Core user flow — what happens step by step?\n\ne.g. "Open app → see today's habits as a checklist → tap to toggle done → swipe right to see weekly grid → long press a habit to edit or delete → tap + to add new habit"`,
+},
+{
+id: “musts”,
+label: “Non-negotiables”,
+emoji: “⚑”,
+placeholder: `Hard constraints. Things that must be true.\n\ne.g. "Must work on mobile Safari. No external dependencies beyond React + Tailwind. Data persists in state (no localStorage needed for v1). Accessible — proper contrast, tap targets ≥44px."`,
+},
+{
+id: “done”,
+label: “Done looks like”,
+emoji: “✓”,
+placeholder: `What does "shipped" look like for this round?\n\ne.g. "A single working React artifact I can interact with. All habits render, toggle works, streak grid updates. Polish > features — I'd rather have 3 perfect interactions than 8 half-baked ones."`,
+},
+];
+
+export default function BriefTemplate() {
+const [values, setValues] = useState({});
+const [copied, setCopied] = useState(false);
+const [activeSection, setActiveSection] = useState(null);
+
+const update = (id, val) => setValues((v) => ({ …v, [id]: val }));
+
+const hasContent = Object.values(values).some((v) => v && v.trim());
+
+const buildPrompt = () => {
+const filled = sections.filter((s) => values[s.id]?.trim());
+if (!filled.length) return “”;
+
+```
+let prompt = "";
+filled.forEach((s) => {
+  prompt += `**${s.label}**\n${values[s.id].trim()}\n\n`;
+});
+return prompt.trim();
+```
+
+};
+
+const copyToClipboard = async () => {
+const text = buildPrompt();
+if (!text) return;
+try {
+await navigator.clipboard.writeText(text);
+setCopied(true);
+setTimeout(() => setCopied(false), 2000);
+} catch {
+// fallback
+const ta = document.createElement(“textarea”);
+ta.value = text;
+document.body.appendChild(ta);
+ta.select();
+document.execCommand(“copy”);
+document.body.removeChild(ta);
+setCopied(true);
+setTimeout(() => setCopied(false), 2000);
+}
+};
+
+const clearAll = () => {
+setValues({});
+setActiveSection(null);
+};
+
+return (
+<div
+style={{
+minHeight: “100vh”,
+background: “#FAFAF8”,
+fontFamily:
+‘-apple-system, BlinkMacSystemFont, “SF Pro Text”, “Helvetica Neue”, sans-serif’,
+color: “#1D1D1F”,
+padding: “0 0 120px 0”,
+}}
+>
+{/* Header */}
+<div
+style={{
+padding: “48px 24px 32px”,
+maxWidth: 640,
+margin: “0 auto”,
+}}
+>
+<div
+style={{
+fontSize: 11,
+fontWeight: 600,
+letterSpacing: “0.08em”,
+textTransform: “uppercase”,
+color: “#86868B”,
+marginBottom: 8,
+}}
+>
+Build Brief
+</div>
+<h1
+style={{
+fontSize: 28,
+fontWeight: 700,
+letterSpacing: “-0.02em”,
+lineHeight: 1.2,
+margin: 0,
+color: “#1D1D1F”,
+}}
+>
+Tell Claude what you’re building.
+</h1>
+<p
+style={{
+fontSize: 15,
+lineHeight: 1.5,
+color: “#6E6E73”,
+marginTop: 8,
+marginBottom: 0,
+}}
+>
+Fill in what you know. Skip what you don’t.
+<br />
+Copy the result and paste it as your first message.
+</p>
+</div>
+
+```
+  {/* Sections */}
+  <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 16px" }}>
+    {sections.map((section) => {
+      const isActive = activeSection === section.id;
+      const hasValue = values[section.id]?.trim();
+
+      return (
+        <div
+          key={section.id}
+          style={{
+            marginBottom: 12,
+            borderRadius: 16,
+            background: "#FFFFFF",
+            border: isActive
+              ? "1.5px solid #0071E3"
+              : "1px solid #E8E8ED",
+            overflow: "hidden",
+            transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+            boxShadow: isActive
+              ? "0 0 0 3px rgba(0, 113, 227, 0.1)"
+              : "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          {/* Section header */}
+          <div
+            style={{
+              padding: "16px 20px 0",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <span style={{ fontSize: 16 }}>{section.emoji}</span>
+            <span
+              style={{
+                fontSize: 15,
+                fontWeight: 600,
+                color: "#1D1D1F",
+              }}
+            >
+              {section.label}
+            </span>
+            {hasValue && !isActive && (
+              <span
+                style={{
+                  marginLeft: "auto",
+                  fontSize: 11,
+                  color: "#34C759",
+                  fontWeight: 500,
+                }}
+              >
+                filled
+              </span>
+            )}
+          </div>
+
+          {/* Textarea */}
+          <div style={{ padding: "8px 20px 16px" }}>
+            <textarea
+              value={values[section.id] || ""}
+              onChange={(e) => update(section.id, e.target.value)}
+              onFocus={() => setActiveSection(section.id)}
+              onBlur={() => setActiveSection(null)}
+              placeholder={section.placeholder}
+              rows={isActive || hasValue ? 5 : 2}
+              style={{
+                width: "100%",
+                border: "none",
+                outline: "none",
+                resize: "vertical",
+                fontSize: 15,
+                lineHeight: 1.55,
+                color: "#1D1D1F",
+                background: "transparent",
+                fontFamily: "inherit",
+                padding: 0,
+                transition: "height 0.2s ease",
+                "::placeholder": { color: "#C7C7CC" },
+              }}
+            />
+          </div>
+        </div>
+      );
+    })}
+  </div>
+
+  {/* Sticky bottom bar */}
+  {hasContent && (
+    <div
+      style={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: "rgba(250, 250, 248, 0.92)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderTop: "1px solid #E8E8ED",
+        padding: "16px 24px",
+        paddingBottom: "max(16px, env(safe-area-inset-bottom))",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 640,
+          margin: "0 auto",
+          display: "flex",
+          gap: 12,
+        }}
+      >
+        <button
+          onClick={clearAll}
+          style={{
+            padding: "14px 20px",
+            borderRadius: 12,
+            border: "1px solid #D2D2D7",
+            background: "#FFFFFF",
+            color: "#6E6E73",
+            fontSize: 15,
+            fontWeight: 500,
+            cursor: "pointer",
+            fontFamily: "inherit",
+            transition: "background 0.15s ease",
+          }}
+          onMouseDown={(e) =>
+            (e.currentTarget.style.background = "#F5F5F7")
+          }
+          onMouseUp={(e) => (e.currentTarget.style.background = "#FFFFFF")}
+        >
+          Clear
+        </button>
+        <button
+          onClick={copyToClipboard}
+          style={{
+            flex: 1,
+            padding: "14px 20px",
+            borderRadius: 12,
+            border: "none",
+            background: copied ? "#34C759" : "#0071E3",
+            color: "#FFFFFF",
+            fontSize: 15,
+            fontWeight: 600,
+            cursor: "pointer",
+            fontFamily: "inherit",
+            transition: "background 0.2s ease",
+            letterSpacing: "-0.01em",
+          }}
+        >
+          {copied ? "Copied — go paste it ✓" : "Copy Brief"}
+        </button>
+      </div>
+    </div>
+  )}
+</div>
+```
+
+);
+}
