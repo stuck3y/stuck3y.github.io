@@ -68,6 +68,10 @@ button{background:none;border:none;cursor:pointer;font-family:inherit;color:inhe
 .anim{animation:fadeIn .25s ease-out}
 @keyframes pulseGlow{0%,100%{box-shadow:0 0 20px rgba(180,120,40,.15)}50%{box-shadow:0 0 35px rgba(180,120,40,.25)}}
 .glow{animation:pulseGlow 4s ease-in-out infinite}
+.ver-toggle{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.ver-btn{font-size:12px;font-weight:600;padding:4px 10px;border-radius:8px;border:1px solid rgba(68,64,60,.4);color:#a8a29e;transition:all .2s;font-family:‘JetBrains Mono’,monospace}
+.ver-btn:hover{border-color:rgba(180,83,9,.4);color:#fde68a}
+.ver-btn.active{background:rgba(180,83,9,.3);border-color:rgba(180,83,9,.5);color:#fcd34d}
 </style>
 
 </head>
@@ -130,6 +134,11 @@ var WV={
 };
 
 var SK="isi-acts-v1",S=new Date(2026,3,1);
+var VERS=["ESV","NASB","NKJV","NIV","LSB"];
+var VK="isi-version";
+function gver(){try{var v=localStorage.getItem(VK);return VERS.indexOf(v)>=0?v:"ESV"}catch(e){return"ESV"}}
+function sver(v){try{localStorage.setItem(VK,v)}catch(e){}}
+var bv=gver();
 
 function gd(){var n=new Date(),s=new Date(S);s.setHours(0,0,0,0);return Math.max(1,Math.min(30,Math.floor((n-s)/864e5)+1))}
 function ia(){var n=new Date(),s=new Date(S),e=new Date(2026,3,30);s.setHours(0,0,0,0);e.setHours(23,59,59,999);return n>=s&&n<=e}
@@ -152,7 +161,10 @@ function render(){
     h+='<h2 style="font-size:20px;font-weight:700;color:#fffbeb;margin-top:4px">'+td.reading+'</h2>';
     h+='<p style="font-size:14px;color:#a8a29e;margin-top:2px">'+td.topic+'</p></div>';
     h+='<div style="width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(120,53,15,.3);border:2px solid rgba(180,83,9,.5)"><span style="font-size:24px;font-weight:700;color:#fcd34d">'+cd+'</span></div></div>';
-    h+='<a href="https://www.biblegateway.com/passage/?search='+encodeURIComponent(td.reading)+'&version=ESV" target="_blank" rel="noopener noreferrer" class="read-btn" style="margin-top:16px">\uD83D\uDCD6 Open Today\u2019s Reading</a></div>';
+    h+='<a href="https://www.biblegateway.com/passage/?search='+encodeURIComponent(td.reading)+'&version='+bv+'" target="_blank" rel="noopener noreferrer" class="read-btn" style="margin-top:16px">\uD83D\uDCD6 Open Today\u2019s Reading</a>';
+    h+='<div class="ver-toggle">';
+    for(var vi=0;vi<VERS.length;vi++)h+='<button class="ver-btn'+(VERS[vi]===bv?' active':'')+'" onclick="sv(\''+VERS[vi]+'\')">'+VERS[vi]+'</button>';
+    h+='</div></div>';
   }
 
   if(v){h+='<div style="border-radius:16px;background:rgba(28,25,23,.8);border:1px solid rgba(68,64,60,.4);padding:20px">';
@@ -203,7 +215,7 @@ function rd(d){
   if(io){
     h+='<div class="expand anim"><div style="border-top:1px solid rgba(68,64,60,.5);padding-top:16px"></div>';
     h+='<p style="font-size:14px;line-height:1.625;color:#d6d3d1">'+d.summary+'</p>';
-    h+='<a href="https://www.biblegateway.com/passage/?search='+encodeURIComponent(d.reading)+'&version=ESV" target="_blank" rel="noopener noreferrer" class="read-btn">\uD83D\uDCDC Read '+d.reading+' (ESV)</a>';
+    h+='<a href="https://www.biblegateway.com/passage/?search='+encodeURIComponent(d.reading)+'&version='+bv+'" target="_blank" rel="noopener noreferrer" class="read-btn">\uD83D\uDCDC Read '+d.reading+' ('+bv+')</a>';
     h+='<div class="cl-box">';
     h+='<p class="mono" style="font-size:12px;font-weight:600;color:#78716c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Daily Checklist</p>';
     h+=rc(dk,"read","Read the passage",ch);
@@ -226,6 +238,7 @@ function rc(dk,f,lb,ch){
 function td2(n){ed=ed===n?null:n;render()}
 function tsa(){sa=!sa;render()}
 function tc(dk,f){if(!cl[dk])cl[dk]={};cl[dk][f]=!cl[dk][f];sc(cl);render()}
+function sv(v){bv=v;sver(v);render()}
 render();
 </script>
 
