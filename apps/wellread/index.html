@@ -64,9 +64,18 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
 
 .passage-input-card { background:var(--bg-card); border-radius:var(--radius-lg); padding:24px; box-shadow:var(--shadow-md); margin-bottom:20px; }
 .passage-input-card label { font-size:13px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.8px; display:block; margin-bottom:10px; }
-.passage-ref-input { width:100%; font-family:var(--serif); font-size:20px; border:none; background:none; color:var(--text-primary); outline:none; padding:8px 0; border-bottom:2px solid var(--border); transition:border-color 0.2s; }
-.passage-ref-input:focus { border-color:var(--accent); }
-.passage-ref-input::placeholder { color:var(--text-tertiary); }
+
+.ref-row { display:flex; gap:8px; align-items:center; margin-bottom:12px; }
+.ref-row select, .ref-row input { flex:1; font-family:var(--serif); font-size:16px; border:none; background:none; color:var(--text-primary); outline:none; padding:8px 0; border-bottom:2px solid var(--border); transition:border-color 0.2s; min-width:0; }
+.ref-row select:focus, .ref-row input:focus { border-color:var(--accent); }
+.ref-row input::placeholder { color:var(--text-tertiary); font-size: 14px; }
+.ref-row span { color:var(--text-tertiary); font-family:var(--serif); }
+.ref-row select#book-sel { flex: 2.5; }
+
+.version-row { margin-bottom:16px; display:flex; align-items:flex-end; gap:10px; }
+.version-sel { flex:1; font-family:var(--sans); font-size:14px; padding:8px 4px; border:none; border-bottom:2px solid var(--border); outline:none; background:var(--bg); color:var(--text-secondary); border-radius:4px; }
+.version-sel:focus { border-color:var(--accent); }
+
 .passage-text-input { width:100%; font-family:var(--serif); font-size:16px; line-height:1.6; border:none; background:var(--bg); color:var(--text-primary); outline:none; padding:14px 16px; border-radius:var(--radius-md); resize:none; min-height:100px; margin-top:14px; }
 .passage-text-input:focus { box-shadow:inset 0 0 0 2px var(--accent-light); }
 .passage-text-input::placeholder { color:var(--text-tertiary); }
@@ -74,9 +83,7 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
 .begin-btn:active { transform:scale(0.98); opacity:0.9; }
 .begin-btn:disabled { opacity:0.4; }
 
-.ref-row { display:flex; gap:10px; align-items:flex-end; }
-.ref-row .passage-ref-input { flex:1; }
-.lookup-btn { padding:8px 16px; background:var(--accent-bg); color:var(--accent); border:none; border-radius:var(--radius-sm); font-family:var(--sans); font-size:14px; font-weight:600; white-space:nowrap; margin-bottom:2px; transition:all 0.2s; }
+.lookup-btn { padding:10px 16px; background:var(--accent-bg); color:var(--accent); border:none; border-radius:var(--radius-sm); font-family:var(--sans); font-size:14px; font-weight:600; white-space:nowrap; transition:all 0.2s; }
 .lookup-btn:active { transform:scale(0.97); }
 .lookup-btn:disabled { opacity:0.5; }
 .lookup-btn.loading { color:var(--text-tertiary); }
@@ -120,6 +127,9 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
 .prompt-response { width:100%; font-family:var(--serif); font-size:15px; line-height:1.6; border:1.5px solid var(--border); background:var(--bg); color:var(--text-primary); outline:none; padding:12px 14px; border-radius:var(--radius-sm); resize:none; min-height:72px; }
 .prompt-response:focus { border-color:var(--accent); }
 .prompt-response::placeholder { color:var(--text-tertiary); font-style:italic; }
+
+.insight-box { background:var(--observation-bg); padding:12px 14px; border-radius:var(--radius-sm); font-size:13px; font-family:var(--sans); margin-bottom:12px; line-height:1.5; border-left:3px solid var(--observation); animation:scaleIn 0.3s ease-out; }
+.insight-box strong { font-weight:600; color:var(--observation); display:block; margin-bottom:4px; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; }
 
 .phase-nav-btns { display:flex; gap:10px; margin-top:8px; margin-bottom:20px; }
 .phase-nav-btn { flex:1; padding:14px; border-radius:var(--radius-md); font-family:var(--sans); font-size:15px; font-weight:600; border:none; }
@@ -172,7 +182,6 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
 .summary-done-btn { width:100%; padding:16px; background:var(--accent); color:white; border:none; border-radius:var(--radius-md); font-family:var(--sans); font-size:16px; font-weight:600; margin-top:12px; margin-bottom:24px; }
 .summary-done-btn:active { transform:scale(0.98); }
 
-/* Context lookup */
 .context-lookup-btns { display:flex; gap:8px; margin-bottom:12px; }
 .context-lookup-btn { flex:1; padding:10px 12px; background:var(--interpretation-bg); color:var(--interpretation); border:none; border-radius:var(--radius-sm); font-family:var(--sans); font-size:13px; font-weight:600; transition:all 0.2s; }
 .context-lookup-btn:active { transform:scale(0.97); }
@@ -191,10 +200,25 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
   <div class="screen-header animate-fade-up"><h1>Well Read</h1><p>Study the Word with method and care.</p></div>
   <div class="passage-input-card animate-fade-up" style="animation-delay:0.05s">
     <label>New Study</label>
+    
     <div class="ref-row">
-      <input type="text" class="passage-ref-input" id="passage-ref" placeholder="e.g. John 3:1-17" autocomplete="off">
-      <button class="lookup-btn" id="lookup-btn" disabled>Look up</button>
+      <select id="book-sel" class="passage-ref-input"></select>
+      <input type="number" id="ch-sel" class="passage-ref-input" placeholder="Ch" min="1">
+      <input type="number" id="v1-sel" class="passage-ref-input" placeholder="V" min="1">
+      <span>-</span>
+      <input type="number" id="v2-sel" class="passage-ref-input" placeholder="V" min="1">
     </div>
+
+    <div class="version-row">
+      <select id="version-sel" class="version-sel">
+        <option value="web">WEB (Free)</option>
+        <option value="kjv">KJV (Free)</option>
+        <option value="bbe">BBE (Free)</option>
+        <option value="clementine">Vulgata (Free)</option>
+      </select>
+      <button class="lookup-btn" id="lookup-btn">Look up</button>
+    </div>
+
     <div id="passage-status"></div>
     <textarea class="passage-text-input" id="passage-text" placeholder="Passage text will appear here after lookup, or paste manually..."></textarea>
     <div class="passage-translation" id="passage-translation"></div>
@@ -272,6 +296,8 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
 (function() {
   "use strict";
 
+  var BOOKS = ["Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel", "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra", "Nehemiah", "Esther", "Job", "Psalms", "Proverbs", "Ecclesiastes", "Song of Solomon", "Isaiah", "Jeremiah", "Lamentations", "Ezekiel", "Daniel", "Hosea", "Joel", "Amos", "Obadiah", "Jonah", "Micah", "Nahum", "Habakkuk", "Zephaniah", "Haggai", "Zechariah", "Malachi", "Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians", "1 Timothy", "2 Timothy", "Titus", "Philemon", "Hebrews", "James", "1 Peter", "2 Peter", "1 John", "2 John", "3 John", "Jude", "Revelation"];
+
   var STUDY_PROMPTS = {
     observation: [
       { id:"obs-read-multiple", title:"Read It Again (and Again)", description:"Read the passage at least 3 times. Each time, jot down something new you notice. The goal is to see what is actually there before jumping to meaning.", bookRef:"Ch. 4\u20136", placeholder:"What did you notice on each reading?" },
@@ -317,7 +343,6 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
     { q:"What role does historical/cultural background play?", a:"It reveals what the original audience understood \u2014 customs, geography, politics \u2014 that modern readers might miss.", ref:"Ch. 17" }
   ];
 
-  // STATE
   var state = { currentStudy:null, currentPhase:"observation", reviewIndex:0, reviewShowAnswer:false, reviewedToday:0, reviewOrder:[], studies:[] };
 
   function loadState() {
@@ -339,7 +364,6 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
   var _dbt={};
   function deb(k,fn,ms) { clearTimeout(_dbt[k]); _dbt[k]=setTimeout(fn,ms); }
 
-  // NAV
   function showScreen(name) {
     var ss=document.querySelectorAll(".screen"), i;
     for(i=0;i<ss.length;i++) ss[i].classList.remove("active");
@@ -357,45 +381,69 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
     if(name==="history") renderHistory();
   }
 
-  // HOME
-  var refIn=document.getElementById("passage-ref"), txtIn=document.getElementById("passage-text"), beginBtn=document.getElementById("begin-study-btn");
+  // BUILD BOOK SELECT
+  var bookSel=document.getElementById("book-sel");
+  var htmlOpts="";
+  for(var i=0; i<BOOKS.length; i++) htmlOpts+="<option value='"+BOOKS[i]+"'>"+BOOKS[i]+"</option>";
+  bookSel.innerHTML=htmlOpts;
+
+  // QUERY STRING PARSING
+  function parseReferenceStr(refStr) {
+    var m = refStr.match(/^(.+?)\s+(\d+)(?::(\d+)(?:\s*-\s*(\d+))?)?$/);
+    if(!m) return null;
+    return { book:m[1].trim(), chapter:parseInt(m[2],10), startVerse:m[3]?parseInt(m[3],10):null, endVerse:m[4]?parseInt(m[4],10):(m[3]?parseInt(m[3],10):null) };
+  }
+
+  function handleQueryStrings() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var qRef = urlParams.get('ref') || urlParams.get('passage');
+    var qVer = urlParams.get('version');
+    if(qVer) document.getElementById('version-sel').value = qVer.toLowerCase();
+    if(qRef) {
+      var parsed = parseReferenceStr(qRef);
+      if(parsed) {
+        bookSel.value = parsed.book;
+        document.getElementById('ch-sel').value = parsed.chapter;
+        if(parsed.startVerse) document.getElementById('v1-sel').value = parsed.startVerse;
+        if(parsed.endVerse) document.getElementById('v2-sel').value = parsed.endVerse;
+        doLookup(); 
+      }
+    }
+  }
+
+  var chSel=document.getElementById("ch-sel"), v1Sel=document.getElementById("v1-sel"), v2Sel=document.getElementById("v2-sel");
+  var txtIn=document.getElementById("passage-text"), beginBtn=document.getElementById("begin-study-btn");
   var lookupBtn=document.getElementById("lookup-btn"), statusEl=document.getElementById("passage-status"), translationEl=document.getElementById("passage-translation");
+  var verSel=document.getElementById("version-sel");
 
-  refIn.addEventListener("input",function(){
-    var v=refIn.value.trim();
-    beginBtn.disabled=!v;
-    lookupBtn.disabled=!v;
-    statusEl.innerHTML="";
-    translationEl.textContent="";
-  });
-
-  // Also enable lookup on Enter key
-  refIn.addEventListener("keydown",function(e){
-    if(e.key==="Enter"&&refIn.value.trim()){e.preventDefault();doLookup();}
-  });
+  function getRefString() {
+    var b=bookSel.value, c=chSel.value, v1=v1Sel.value, v2=v2Sel.value;
+    if(!c) return "";
+    var ref = b + " " + c;
+    if(v1) ref += ":" + v1;
+    if(v1 && v2 && v2 !== v1) ref += "-" + v2;
+    return ref;
+  }
 
   function doLookup() {
-    var ref=refIn.value.trim();
-    if(!ref) return;
-    lookupBtn.disabled=true;
-    lookupBtn.textContent="Looking up\u2026";
-    lookupBtn.classList.add("loading");
-    statusEl.innerHTML="";
-    translationEl.textContent="";
-
-    var url="https://bible-api.com/"+encodeURIComponent(ref)+"?translation=web";
+    var ref=getRefString();
+    if(!ref) {
+      statusEl.className="passage-status error";
+      statusEl.textContent="Please provide at least a chapter.";
+      return;
+    }
+    lookupBtn.disabled=true; lookupBtn.textContent="Looking up..."; lookupBtn.classList.add("loading");
+    statusEl.innerHTML=""; translationEl.textContent="";
+    var ver = verSel.value;
+    
+    var url="https://bible-api.com/"+encodeURIComponent(ref)+"?translation="+ver;
     fetch(url).then(function(r){return r.json();}).then(function(data){
-      lookupBtn.disabled=false;
-      lookupBtn.textContent="Look up";
-      lookupBtn.classList.remove("loading");
+      lookupBtn.disabled=false; lookupBtn.textContent="Look up"; lookupBtn.classList.remove("loading");
       if(data.error){
         statusEl.className="passage-status error";
-        statusEl.textContent="Could not find that reference. Try something like \"John 3:1-17\".";
+        statusEl.textContent="Could not find that reference.";
         return;
       }
-      // Use the canonical reference from the API
-      if(data.reference) refIn.value=data.reference;
-      // Build clean passage text with verse numbers
       var passageText="";
       if(data.verses&&data.verses.length){
         for(var i=0;i<data.verses.length;i++){
@@ -411,23 +459,22 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
       txtIn.style.height=Math.max(100,txtIn.scrollHeight)+"px";
       statusEl.className="passage-status success";
       statusEl.textContent=data.verses?data.verses.length+" verse"+(data.verses.length===1?"":"s")+" loaded":"Passage loaded";
-      translationEl.textContent="World English Bible (WEB)";
+      translationEl.textContent=data.translation_name || ver.toUpperCase();
       beginBtn.disabled=false;
     }).catch(function(err){
-      lookupBtn.disabled=false;
-      lookupBtn.textContent="Look up";
-      lookupBtn.classList.remove("loading");
+      lookupBtn.disabled=false; lookupBtn.textContent="Look up"; lookupBtn.classList.remove("loading");
       statusEl.className="passage-status error";
-      statusEl.textContent="Lookup failed. Check your connection or paste the passage manually.";
+      statusEl.textContent="Lookup failed. Check connection or paste text manually.";
     });
   }
 
   function doBegin() {
-    var ref=refIn.value.trim(), text=txtIn.value.trim();
-    if(!ref) return;
+    var ref=getRefString(), text=txtIn.value.trim();
+    if(!ref) { ref = "Manual Passage"; }
     var study={id:String(Date.now()),ref:ref,text:text,phase:"observation",responses:{},createdAt:new Date().toISOString(),completedAt:null};
     state.studies.unshift(study); saveStudies();
-    refIn.value=""; txtIn.value=""; beginBtn.disabled=true; lookupBtn.disabled=true;
+    txtIn.value=""; chSel.value=""; v1Sel.value=""; v2Sel.value=""; 
+    beginBtn.disabled=true; 
     statusEl.innerHTML=""; translationEl.textContent="";
     openStudy(study.id);
   }
@@ -445,7 +492,35 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
     l.innerHTML=h;
   }
 
-  // STUDY
+  // TEXT ANALYSIS (REPEATED & CONNECTORS)
+  function analyzePassage(text) {
+    if(!text) return {rep:[], con:[]};
+    var t = text.toLowerCase().replace(/[^\w\s]/g, "");
+    var words = t.split(/\s+/);
+    var stops = ["a","an","the","in","on","at","to","for","of","with","by","from","is","are","was","were","be","been","being","it","he","she","they","his","hers","their","i","we","my","our","you","your","that","this","these","those","as","not","have","has","had","do","does","did","will","would","shall","should","can","could","may","might","must","what","which","who","whom","whose","when","where","why","how","all","any","both","each","few","more","most","other","some","such","no","nor","only","own","same","than","too","very","and"];
+    var counts = {}, connectorsFound = {};
+    var connectorList = ["therefore", "but", "because", "so", "if", "then", "thus", "however", "moreover"];
+
+    for(var i=0; i<words.length; i++){
+      var w = words[i];
+      if(!w) continue;
+      if(stops.indexOf(w) === -1 && w.length > 2) { counts[w] = (counts[w]||0) + 1; }
+      if(connectorList.indexOf(w) !== -1) { connectorsFound[w] = (connectorsFound[w]||0) + 1; }
+    }
+    
+    var soThatCount = (text.toLowerCase().match(/\bso that\b/g) || []).length;
+    if(soThatCount > 0) connectorsFound["so that"] = soThatCount;
+
+    var rep = [];
+    for(var k in counts) { if(counts[k] > 2) rep.push({word: k, count: counts[k]}); } // Filter to >2 to avoid noise
+    rep.sort(function(a,b){return b.count - a.count});
+
+    var con = [];
+    for(var c in connectorsFound) con.push({word: c, count: connectorsFound[c]});
+
+    return {rep: rep.slice(0, 10), con: con};
+  }
+
   function openStudy(id) {
     var study=null;
     for(var i=0;i<state.studies.length;i++) if(state.studies[i].id===id){study=state.studies[i];break;}
@@ -461,10 +536,9 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
     renderPhase(); showScreen("study");
   }
 
-  document.getElementById("study-back-btn").addEventListener("click",function(e){e.preventDefault();saveCurrentResponses();showScreen("home");});
-
   function renderPhase() {
     var phase=state.currentPhase, study=state.currentStudy;
+    var analysis = analyzePassage(study.text);
     var tabs=document.querySelectorAll(".phase-tab");
     for(var i=0;i<tabs.length;i++){tabs[i].className="phase-tab";if(tabs[i].getAttribute("data-phase")===phase) tabs[i].classList.add("active-"+phase);}
     var prompts=STUDY_PROMPTS[phase], container=document.getElementById("prompts-container"), h="";
@@ -472,6 +546,19 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
       h+='<div class="prompt-card" style="animation-delay:'+(i*0.04)+'s">'
         +'<div class="prompt-card-header"><h3>'+p.title+'</h3><span class="book-ref">LBTB '+p.bookRef+'</span></div>'
         +'<p>'+p.description+'</p>';
+      
+      // Feature: Insight hints injected here
+      if(p.id === "obs-repetition" && analysis.rep.length > 0) {
+        h += '<div class="insight-box"><strong>Repeated words found:</strong> ' 
+           + analysis.rep.map(function(x){return x.word+' ('+x.count+')'}).join(', ') 
+           + '</div>';
+      }
+      if(p.id === "obs-connectives" && analysis.con.length > 0) {
+        h += '<div class="insight-box"><strong>Connectors found:</strong> ' 
+           + analysis.con.map(function(x){return x.word+' ('+x.count+')'}).join(', ') 
+           + '</div>';
+      }
+
       if(p.hasContextLookup){
         h+='<div class="context-lookup-btns">'
           +'<button class="context-lookup-btn" data-action="context-before">\u2190 Look up before</button>'
@@ -496,38 +583,20 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
     nav.innerHTML=b;
   }
 
-  // CONTEXT LOOKUP
-  function parseReference(ref) {
-    // Parse references like "John 3:1-17", "1 Corinthians 2:4-10", "Genesis 1"
-    // Returns {book, chapter, startVerse, endVerse} or null
-    var m = ref.match(/^(.+?)\s+(\d+)(?::(\d+)(?:\s*-\s*(\d+))?)?$/);
-    if(!m) return null;
-    return { book:m[1], chapter:parseInt(m[2],10), startVerse:m[3]?parseInt(m[3],10):null, endVerse:m[4]?parseInt(m[4],10):(m[3]?parseInt(m[3],10):null) };
-  }
-
   function getContextRef(ref, direction) {
-    var p = parseReference(ref);
+    var p = parseReferenceStr(ref);
     if(!p) return null;
     var CONTEXT_VERSES = 5;
     if(direction === "before") {
       if(p.startVerse && p.startVerse > 1) {
         var from = Math.max(1, p.startVerse - CONTEXT_VERSES);
-        var to = p.startVerse - 1;
-        return p.book + " " + p.chapter + ":" + from + "-" + to;
-      } else if(p.chapter > 1) {
-        // Go to end of previous chapter
-        return p.book + " " + (p.chapter - 1);
-      }
+        return p.book + " " + p.chapter + ":" + from + "-" + (p.startVerse - 1);
+      } else if(p.chapter > 1) { return p.book + " " + (p.chapter - 1); }
       return null;
     } else {
       if(p.endVerse) {
-        var from = p.endVerse + 1;
-        var to = p.endVerse + CONTEXT_VERSES;
-        return p.book + " " + p.chapter + ":" + from + "-" + to;
-      } else {
-        // Whole chapter — get next chapter
-        return p.book + " " + (p.chapter + 1);
-      }
+        return p.book + " " + p.chapter + ":" + (p.endVerse + 1) + "-" + (p.endVerse + CONTEXT_VERSES);
+      } else { return p.book + " " + (p.chapter + 1); }
     }
   }
 
@@ -537,31 +606,22 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
     var blockEl = document.getElementById("context-" + direction + "-block");
     var btns = document.querySelectorAll("[data-action='context-" + direction + "']");
     if(!contextRef) {
-      blockEl.innerHTML = '<div class="context-block"><div class="context-block-text">No ' + direction + ' context available (beginning of book).</div></div>';
+      blockEl.innerHTML = '<div class="context-block"><div class="context-block-text">No ' + direction + ' context available.</div></div>';
       return;
     }
     for(var i=0;i<btns.length;i++){btns[i].disabled=true;btns[i].textContent="Loading\u2026";}
-    var url = "https://bible-api.com/" + encodeURIComponent(contextRef) + "?translation=web";
+    var url = "https://bible-api.com/" + encodeURIComponent(contextRef) + "?translation=" + verSel.value;
     fetch(url).then(function(r){return r.json();}).then(function(data){
-      for(var i=0;i<btns.length;i++){
-        btns[i].disabled=false;
-        btns[i].textContent = direction==="before" ? "\u2190 Look up before" : "Look up after \u2192";
-      }
+      for(var i=0;i<btns.length;i++){ btns[i].disabled=false; btns[i].textContent = direction==="before" ? "\u2190 Look up before" : "Look up after \u2192"; }
       if(data.error) {
-        blockEl.innerHTML = '<div class="context-block"><div class="context-block-text">Could not load ' + direction + ' context. The passage may be at the ' + (direction==="before"?"beginning":"end") + '.</div></div>';
+        blockEl.innerHTML = '<div class="context-block"><div class="context-block-text">Could not load ' + direction + ' context.</div></div>';
         return;
       }
       var label = direction === "before" ? "BEFORE" : "AFTER";
       var verseText = "";
       if(data.verses && data.verses.length) {
-        for(var j=0;j<data.verses.length;j++){
-          var v=data.verses[j];
-          var t=v.text.replace(/^\n+|\n+$/g,"").replace(/\n/g," ");
-          verseText += v.verse + " " + t.trim() + "\n";
-        }
-      } else if(data.text) {
-        verseText = data.text.trim();
-      }
+        for(var j=0;j<data.verses.length;j++) verseText += data.verses[j].verse + " " + data.verses[j].text.replace(/^\n+|\n+$/g,"").replace(/\n/g," ").trim() + "\n";
+      } else if(data.text) { verseText = data.text.trim(); }
       blockEl.innerHTML = '<div class="context-block">'
         + '<div class="context-block-label">' + label + '</div>'
         + '<div class="context-block-ref">' + esc(data.reference || contextRef) + '</div>'
@@ -574,7 +634,6 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
 
   function goPhase(p){saveCurrentResponses();state.currentPhase=p;state.currentStudy.phase=p;saveStudies();renderPhase();window.scrollTo({top:0,behavior:"smooth"});}
   function saveCurrentResponses(){if(!state.currentStudy)return;var t=document.querySelectorAll(".prompt-response");for(var i=0;i<t.length;i++) state.currentStudy.responses[t[i].getAttribute("data-pid")]=t[i].value;saveStudies();}
-
   function completeStudy(){saveCurrentResponses();state.currentStudy.completedAt=new Date().toISOString();state.currentStudy.phase="complete";saveStudies();showSummary(state.currentStudy);}
 
   function showSummary(study) {
@@ -592,7 +651,6 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
     showScreen("summary");
   }
 
-  // REVIEW
   function initReview(){
     document.getElementById("streak-count").textContent=state.reviewedToday;
     state.reviewOrder=[];for(var i=0;i<REVIEW_CARDS.length;i++) state.reviewOrder.push(i);
@@ -623,7 +681,6 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
     state.reviewIndex++;state.reviewShowAnswer=false;renderReviewCard();
   }
 
-  // HISTORY
   function renderHistory(){
     var list=document.getElementById("history-list"),all=state.studies.slice();
     if(!all.length){list.innerHTML='<div class="empty-state"><p>No studies yet. Start one from the Study tab.</p></div>';return;}
@@ -640,7 +697,6 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
   function deleteStudy(id){if(!confirm("Delete this study?"))return;state.studies=state.studies.filter(function(s){return s.id!==id;});saveStudies();if(state.currentStudy&&state.currentStudy.id===id)state.currentStudy=null;renderHistory();}
   function getPrev(s){var ks=Object.keys(s.responses);for(var i=0;i<ks.length;i++){var v=s.responses[ks[i]];if(v&&v.trim())return v.trim().substring(0,120);}return"";}
 
-  // EVENT DELEGATION
   document.addEventListener("click",function(e){
     var t=e.target;
     var tab=t.closest(".tab-btn"); if(tab){showScreen(tab.getAttribute("data-screen"));return;}
@@ -662,6 +718,7 @@ button { cursor:pointer; -webkit-appearance:none; appearance:none; }
   });
 
   loadState();
+  handleQueryStrings(); 
   renderHome();
 })();
 </script>
