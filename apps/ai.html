@@ -1,564 +1,306 @@
-import { useState, useEffect, useRef } from “react”;
+import { useState, useEffect, useRef } from "react";
 
 const TOOLS = {
-claudeCode: {
-name: “Claude Code”,
-icon: “⌨️”,
-color: “#D97706”,
-bestFor: “Executing code changes, refactoring, file operations, running tests”,
-tips: [
-“Clone the repo and let it explore — don’t paste snippets, give it the full codebase.”,
-“Be directive: ‘Refactor this component to use a custom hook’ beats ‘clean this up’.”,
-“Chain commands: ‘Run the tests, fix what fails, then run again.’”,
-“Use it for mechanical work — renaming, restructuring, migrations.”,
-“When it goes off track, interrupt early. Don’t let it dig a deeper hole.”,
-],
-promptTemplates: [
-{
-label: “New Feature”,
-template: `Look at the codebase structure first. I need to add [FEATURE]. It should follow the patterns already established in [SIMILAR_FILE]. Requirements:\n- [REQUIREMENT_1]\n- [REQUIREMENT_2]\nDon't over-engineer. Match existing conventions.`,
-},
-{
-label: “Bug Fix”,
-template: `There's a bug: [DESCRIBE]. Expected behavior: [EXPECTED]. Actual behavior: [ACTUAL]. Start by reading [RELEVANT_FILES]. Reproduce mentally, then fix with minimal changes.`,
-},
-{
-label: “Refactor”,
-template: `Refactor [FILE/COMPONENT] to [GOAL]. Keep the external API/behavior identical. Run existing tests after to confirm nothing broke. If no tests exist, flag that.`,
-},
-],
-},
-chatgpt: {
-name: “ChatGPT 5.4 Pro”,
-icon: “🧠”,
-color: “#10A37F”,
-bestFor: “Problem solving, architecture decisions, debugging logic, thinking through trade-offs”,
-tips: [
-“Use Thinking mode for architecture questions — it reasons through trade-offs well.”,
-“Paste full error traces with context, not just the error message.”,
-“For problem solving: describe the outcome you want, then the constraints, then what you’ve tried.”,
-“It’s better at ‘should I do X or Y?’ than ‘do X for me.’”,
-“Use RepoPrompt Pro to give it full file context when needed.”,
-],
-promptTemplates: [
-{
-label: “Architecture Decision”,
-template: `I'm building [APP]. I need to decide between [OPTION_A] and [OPTION_B] for [COMPONENT]. My constraints: [CONSTRAINTS]. What actually works in production and why? Be direct — don't hedge.`,
-},
-{
-label: “Debug Logic”,
-template: `Here's my code: [CODE]. It should [EXPECTED] but instead [ACTUAL]. I've already tried [ATTEMPTS]. Walk me through what's actually happening step by step.`,
-},
-{
-label: “Design Review”,
-template: `Here's my approach for [FEATURE]: [DESCRIPTION]. Poke holes in it. What will break at scale? What am I not thinking about? Be brutally honest.`,
-},
-],
-},
-gemini: {
-name: “Gemini Pro”,
-icon: “✦”,
-color: “#4285F4”,
-bestFor: “Large data processing, quick general answers, working with big context windows”,
-tips: [
-“Feed it large datasets, long docs, or big codebases — it handles scale well.”,
-“Good for ‘summarize this entire repo’ or ‘find patterns across these 50 files.’”,
-“Quick factual lookups are reliable here.”,
-“For code gen, it’s fast but review carefully — speed ≠ correctness.”,
-“Use it when you need breadth over depth.”,
-],
-promptTemplates: [
-{
-label: “Large Data Analysis”,
-template: `Here's [DATA]. I need to understand [WHAT]. Summarize the key patterns, flag anomalies, and give me the 3 most important takeaways. Be specific with numbers.`,
-},
-{
-label: “Codebase Overview”,
-template: `Here's my project structure and key files. Give me: 1) Architecture summary, 2) Dependencies map, 3) Potential issues you see, 4) What's well-done. Be concise.`,
-},
-],
-},
-perplexity: {
-name: “Perplexity Pro”,
-icon: “🔍”,
-color: “#6366F1”,
-bestFor: “Research, documentation lookup, finding examples, verifying approaches”,
-tips: [
-“Use for ‘is there a library that does X?’ — it finds real, current options.”,
-“Great for checking if an API/approach is deprecated or has known issues.”,
-“Ask it to find example implementations of specific patterns.”,
-“Use for documentation gaps — when official docs are unclear.”,
-“Trust its sources but verify version compatibility yourself.”,
-],
-promptTemplates: [
-{
-label: “Find Library/Tool”,
-template: `I need a [LANGUAGE] library for [USE_CASE]. Requirements: [REQUIREMENTS]. Show me the top 2-3 options with pros/cons and GitHub stars. No abandoned projects.`,
-},
-{
-label: “Verify Approach”,
-template: `Is [APPROACH] still the recommended way to [TASK] in [FRAMEWORK] as of 2026? Are there known issues or better alternatives? Link to sources.`,
-},
-],
-},
+  claudeCode: {
+    name: "Claude Code",
+    icon: "⌨️",
+    color: "#D97706",
+    bestFor: "Executing code changes, refactoring, file operations, running tests",
+    tips: [
+      "Clone the repo and let it explore — don't paste snippets, give it the full codebase.",
+      "Be directive: 'Refactor this component to use a custom hook' beats 'clean this up'.",
+      "Chain commands: 'Run the tests, fix what fails, then run again.'",
+      "Use it for mechanical work — renaming, restructuring, migrations.",
+      "When it goes off track, interrupt early. Don't let it dig a deeper hole.",
+    ],
+    promptTemplates: [
+      {
+        label: "New Feature",
+        template: `Look at the codebase structure first. I need to add [FEATURE]. It should follow the patterns already established in [SIMILAR_FILE]. Requirements:\n- [REQUIREMENT_1]\n- [REQUIREMENT_2]\nDon't over-engineer. Match existing conventions.`,
+      },
+      {
+        label: "Bug Fix",
+        template: `There's a bug: [DESCRIBE]. Expected behavior: [EXPECTED]. Actual behavior: [ACTUAL]. Start by reading [RELEVANT_FILES]. Reproduce mentally, then fix with minimal changes.`,
+      },
+      {
+        label: "Refactor",
+        template: `Refactor [FILE/COMPONENT] to [GOAL]. Keep the external API/behavior identical. Run existing tests after to confirm nothing broke. If no tests exist, flag that.`,
+      },
+    ],
+  },
+  chatgpt: {
+    name: "ChatGPT 5.4 Pro",
+    icon: "🧠",
+    color: "#10A37F",
+    bestFor: "Problem solving, architecture decisions, debugging logic, thinking through trade-offs",
+    tips: [
+      "Use Thinking mode for architecture questions — it reasons through trade-offs well.",
+      "Paste full error traces with context, not just the error message.",
+      "For problem solving: describe the outcome you want, then the constraints, then what you've tried.",
+      "It's better at 'should I do X or Y?' than 'do X for me.'",
+      "Use RepoPrompt Pro to give it full file context when needed.",
+    ],
+    promptTemplates: [
+      {
+        label: "Architecture Decision",
+        template: `I'm building [APP]. I need to decide between [OPTION_A] and [OPTION_B] for [COMPONENT]. My constraints: [CONSTRAINTS]. What actually works in production and why? Be direct — don't hedge.`,
+      },
+      {
+        label: "Debug Logic",
+        template: `Here's my code: [CODE]. It should [EXPECTED] but instead [ACTUAL]. I've already tried [ATTEMPTS]. Walk me through what's actually happening step by step.`,
+      },
+      {
+        label: "Design Review",
+        template: `Here's my approach for [FEATURE]: [DESCRIPTION]. Poke holes in it. What will break at scale? What am I not thinking about? Be brutally honest.`,
+      },
+    ],
+  },
+  gemini: {
+    name: "Gemini Pro",
+    icon: "✦",
+    color: "#4285F4",
+    bestFor: "Large data processing, quick general answers, working with big context windows",
+    tips: [
+      "Feed it large datasets, long docs, or big codebases — it handles scale well.",
+      "Good for 'summarize this entire repo' or 'find patterns across these 50 files.'",
+      "Quick factual lookups are reliable here.",
+      "For code gen, it's fast but review carefully — speed ≠ correctness.",
+      "Use it when you need breadth over depth.",
+    ],
+    promptTemplates: [
+      {
+        label: "Large Data Analysis",
+        template: `Here's [DATA]. I need to understand [WHAT]. Summarize the key patterns, flag anomalies, and give me the 3 most important takeaways. Be specific with numbers.`,
+      },
+      {
+        label: "Codebase Overview",
+        template: `Here's my project structure and key files. Give me: 1) Architecture summary, 2) Dependencies map, 3) Potential issues you see, 4) What's well-done. Be concise.`,
+      },
+    ],
+  },
+  perplexity: {
+    name: "Perplexity Pro",
+    icon: "🔍",
+    color: "#6366F1",
+    bestFor: "Research, documentation lookup, finding examples, verifying approaches",
+    tips: [
+      "Use for 'is there a library that does X?' — it finds real, current options.",
+      "Great for checking if an API/approach is deprecated or has known issues.",
+      "Ask it to find example implementations of specific patterns.",
+      "Use for documentation gaps — when official docs are unclear.",
+      "Trust its sources but verify version compatibility yourself.",
+    ],
+    promptTemplates: [
+      {
+        label: "Find Library/Tool",
+        template: `I need a [LANGUAGE] library for [USE_CASE]. Requirements: [REQUIREMENTS]. Show me the top 2-3 options with pros/cons and GitHub stars. No abandoned projects.`,
+      },
+      {
+        label: "Verify Approach",
+        template: `Is [APPROACH] still the recommended way to [TASK] in [FRAMEWORK] as of 2026? Are there known issues or better alternatives? Link to sources.`,
+      },
+    ],
+  },
 };
 
 const OUTLINE_SECTIONS = [
-{
-id: “what”,
-title: “What”,
-placeholder: “What are you building? One sentence.”,
-hint: “Keep it tight. If you can’t say it in one sentence, you don’t know yet.”,
-},
-{
-id: “who”,
-title: “Who”,
-placeholder: “Who is this for? Be specific.”,
-hint: “A real person or persona. ‘Everyone’ means no one.”,
-},
-{
-id: “why”,
-title: “Why”,
-placeholder: “What problem does this solve? What’s the pain?”,
-hint: “No pain, no product. Be honest about the need.”,
-},
-{
-id: “scope”,
-title: “Scope”,
-placeholder: “What are the 3-5 core features? No more.”,
-hint: “Proverbs 13:11 — gather little by little. Cut ruthlessly.”,
-},
-{
-id: “stack”,
-title: “Stack”,
-placeholder: “What technologies? What’s already decided?”,
-hint: “List frameworks, hosting, DB, auth — whatever’s locked in.”,
-},
-{
-id: “constraints”,
-title: “Constraints”,
-placeholder: “Time, money, skill gaps, hard requirements?”,
-hint: “Constraints are gifts. They force focus.”,
-},
-{
-id: “firstStep”,
-title: “First Step”,
-placeholder: “What’s the very first thing to build?”,
-hint: “The smallest thing that proves the idea works. Ship that first.”,
-},
+  {
+    id: "what",
+    title: "What",
+    placeholder: "What are you building? One sentence.",
+    hint: "Keep it tight. If you can't say it in one sentence, you don't know yet.",
+  },
+  {
+    id: "who",
+    title: "Who",
+    placeholder: "Who is this for? Be specific.",
+    hint: "A real person or persona. 'Everyone' means no one.",
+  },
+  {
+    id: "why",
+    title: "Why",
+    placeholder: "What problem does this solve? What's the pain?",
+    hint: "No pain, no product. Be honest about the need.",
+  },
+  {
+    id: "scope",
+    title: "Scope",
+    placeholder: "What are the 3-5 core features? No more.",
+    hint: "Proverbs 13:11 — gather little by little. Cut ruthlessly.",
+  },
+  {
+    id: "stack",
+    title: "Stack",
+    placeholder: "What technologies? What's already decided?",
+    hint: "List frameworks, hosting, DB, auth — whatever's locked in.",
+  },
+  {
+    id: "constraints",
+    title: "Constraints",
+    placeholder: "Time, money, skill gaps, hard requirements?",
+    hint: "Constraints are gifts. They force focus.",
+  },
+  {
+    id: "firstStep",
+    title: "First Step",
+    placeholder: "What's the very first thing to build?",
+    hint: "The smallest thing that proves the idea works. Ship that first.",
+  },
 ];
 
 const CONFIG_FIELDS = [
-{
-id: “role”,
-label: “Role / Persona”,
-placeholder: “e.g., Senior React developer with strong opinions on clean architecture”,
-},
-{
-id: “tone”,
-label: “Tone”,
-placeholder: “e.g., Direct, no fluff. Challenge bad ideas. Explain trade-offs.”,
-},
-{
-id: “stack”,
-label: “Stack & Conventions”,
-placeholder: “e.g., Next.js 15, TypeScript strict, Tailwind, shadcn/ui, Drizzle ORM”,
-},
-{
-id: “patterns”,
-label: “Patterns to Follow”,
-placeholder: “e.g., Server components by default. Custom hooks for shared logic. Collocate files.”,
-},
-{
-id: “avoid”,
-label: “Never Do This”,
-placeholder: “e.g., No any types. No inline styles. No god components over 200 lines.”,
-},
-{
-id: “output”,
-label: “Output Format”,
-placeholder: “e.g., Code only, no explanations unless I ask. Use comments sparingly but well.”,
-},
+  {
+    id: "role",
+    label: "Role / Persona",
+    placeholder: "e.g., Senior React developer with strong opinions on clean architecture",
+  },
+  {
+    id: "tone",
+    label: "Tone",
+    placeholder: "e.g., Direct, no fluff. Challenge bad ideas. Explain trade-offs.",
+  },
+  {
+    id: "stack",
+    label: "Stack & Conventions",
+    placeholder: "e.g., Next.js 15, TypeScript strict, Tailwind, shadcn/ui, Drizzle ORM",
+  },
+  {
+    id: "patterns",
+    label: "Patterns to Follow",
+    placeholder: "e.g., Server components by default. Custom hooks for shared logic. Collocate files.",
+  },
+  {
+    id: "avoid",
+    label: "Never Do This",
+    placeholder: "e.g., No any types. No inline styles. No god components over 200 lines.",
+  },
+  {
+    id: "output",
+    label: "Output Format",
+    placeholder: "e.g., Code only, no explanations unless I ask. Use comments sparingly but well.",
+  },
 ];
 
 // ─── Utility: Copy to Clipboard ────────────────────────────────
 function useCopyFeedback() {
-const [copied, setCopied] = useState(null);
-const copy = async (text, id) => {
-try {
-await navigator.clipboard.writeText(text);
-setCopied(id);
-setTimeout(() => setCopied(null), 1800);
-} catch {
-/* noop */
-}
-};
-return { copied, copy };
+  const [copied, setCopied] = useState(null);
+  const copy = async (text, id) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(id);
+      setTimeout(() => setCopied(null), 1800);
+    } catch {
+      /* noop */
+    }
+  };
+  return { copied, copy };
 }
 
 // ─── Components ────────────────────────────────────────────────
 
 function NavTab({ label, active, onClick, badge }) {
-return (
-<button
-onClick={onClick}
-style={{
-padding: “10px 20px”,
-fontSize: “14px”,
-fontWeight: active ? 600 : 400,
-color: active ? “#1a1a1a” : “#888”,
-background: active ? “#fff” : “transparent”,
-border: “none”,
-borderRadius: “10px”,
-cursor: “pointer”,
-transition: “all 0.2s ease”,
-position: “relative”,
-letterSpacing: “-0.01em”,
-boxShadow: active ? “0 1px 4px rgba(0,0,0,0.08)” : “none”,
-display: “flex”,
-alignItems: “center”,
-gap: “6px”,
-}}
->
-{label}
-{badge && (
-<span
-style={{
-fontSize: “10px”,
-background: “#E8E0D4”,
-color: “#8B7355”,
-padding: “1px 6px”,
-borderRadius: “6px”,
-fontWeight: 600,
-}}
->
-{badge}
-</span>
-)}
-</button>
-);
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: "10px 20px",
+        fontSize: "14px",
+        fontWeight: active ? 600 : 400,
+        color: active ? "#1a1a1a" : "#888",
+        background: active ? "#fff" : "transparent",
+        border: "none",
+        borderRadius: "10px",
+        cursor: "pointer",
+        transition: "all 0.2s ease",
+        position: "relative",
+        letterSpacing: "-0.01em",
+        boxShadow: active ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+      }}
+    >
+      {label}
+      {badge && (
+        <span
+          style={{
+            fontSize: "10px",
+            background: "#E8E0D4",
+            color: "#8B7355",
+            padding: "1px 6px",
+            borderRadius: "6px",
+            fontWeight: 600,
+          }}
+        >
+          {badge}
+        </span>
+      )}
+    </button>
+  );
 }
 
 function SectionInput({ section, value, onChange }) {
-const ref = useRef(null);
+  const ref = useRef(null);
 
-useEffect(() => {
-if (ref.current) {
-ref.current.style.height = “auto”;
-ref.current.style.height = ref.current.scrollHeight + “px”;
-}
-}, [value]);
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.style.height = "auto";
+      ref.current.style.height = ref.current.scrollHeight + "px";
+    }
+  }, [value]);
 
-return (
-<div style={{ marginBottom: “24px” }}>
-<div
-style={{
-display: “flex”,
-justifyContent: “space-between”,
-alignItems: “baseline”,
-marginBottom: “8px”,
-}}
->
-<label
-style={{
-fontSize: “13px”,
-fontWeight: 600,
-color: “#1a1a1a”,
-letterSpacing: “0.02em”,
-textTransform: “uppercase”,
-}}
->
-{section.title}
-</label>
-<span
-style={{
-fontSize: “12px”,
-color: “#aaa”,
-fontStyle: “italic”,
-maxWidth: “60%”,
-textAlign: “right”,
-}}
->
-{section.hint}
-</span>
-</div>
-<textarea
-ref={ref}
-value={value || “”}
-onChange={(e) => onChange(section.id, e.target.value)}
-placeholder={section.placeholder}
-rows={2}
-style={{
-width: “100%”,
-padding: “12px 14px”,
-fontSize: “15px”,
-lineHeight: 1.6,
-border: “1.5px solid #e5e0da”,
-borderRadius: “10px”,
-background: “#FDFCFB”,
-color: “#1a1a1a”,
-resize: “none”,
-overflow: “hidden”,
-outline: “none”,
-fontFamily: “‘Georgia’, ‘Times New Roman’, serif”,
-transition: “border-color 0.2s ease”,
-boxSizing: “border-box”,
-}}
-onFocus={(e) => (e.target.style.borderColor = “#C4A97D”)}
-onBlur={(e) => (e.target.style.borderColor = “#e5e0da”)}
-/>
-</div>
-);
-}
-
-function PromptTemplate({ template, toolName, copied, onCopy }) {
-const id = `${toolName}-${template.label}`;
-return (
-<div
-style={{
-background: “#FDFCFB”,
-border: “1.5px solid #e5e0da”,
-borderRadius: “10px”,
-padding: “14px 16px”,
-marginBottom: “10px”,
-}}
->
-<div
-style={{
-display: “flex”,
-justifyContent: “space-between”,
-alignItems: “center”,
-marginBottom: “8px”,
-}}
->
-<span
-style={{
-fontSize: “13px”,
-fontWeight: 600,
-color: “#1a1a1a”,
-}}
->
-{template.label}
-</span>
-<button
-onClick={() => onCopy(template.template, id)}
-style={{
-fontSize: “12px”,
-padding: “4px 10px”,
-background: copied === id ? “#C4A97D” : “#F0ECE6”,
-color: copied === id ? “#fff” : “#6B5B3E”,
-border: “none”,
-borderRadius: “6px”,
-cursor: “pointer”,
-fontWeight: 500,
-transition: “all 0.2s ease”,
-}}
->
-{copied === id ? “Copied ✓” : “Copy”}
-</button>
-</div>
-<pre
-style={{
-fontSize: “13px”,
-lineHeight: 1.6,
-color: “#555”,
-whiteSpace: “pre-wrap”,
-wordBreak: “break-word”,
-margin: 0,
-fontFamily: “‘SF Mono’, ‘Fira Code’, ‘Consolas’, monospace”,
-}}
->
-{template.template}
-</pre>
-</div>
-);
-}
-
-// ─── Main Tabs ─────────────────────────────────────────────────
-
-function OutlineTab() {
-const [fields, setFields] = useState({});
-const { copied, copy } = useCopyFeedback();
-
-const handleChange = (id, value) => {
-setFields((prev) => ({ …prev, [id]: value }));
-};
-
-const generatePrompt = () => {
-const parts = OUTLINE_SECTIONS.filter((s) => fields[s.id]?.trim()).map(
-(s) => `**${s.title}:** ${fields[s.id].trim()}`
-);
-if (parts.length === 0) return “”;
-return `I'm starting a new project. Here's the brief:\n\n${parts.join("\n\n")}\n\nHelp me build this. Start with the first step only. Don't scaffold the whole thing — just the foundation I described above. Match my conventions and be opinionated about good patterns.`;
-};
-
-const prompt = generatePrompt();
-const filledCount = OUTLINE_SECTIONS.filter(
-(s) => fields[s.id]?.trim()
-).length;
-
-return (
-<div>
-<p
-style={{
-fontSize: “14px”,
-color: “#888”,
-marginBottom: “28px”,
-lineHeight: 1.6,
-fontFamily: “‘Georgia’, serif”,
-fontStyle: “italic”,
-}}
->
-“For which of you, desiring to build a tower, does not first sit down and
-count the cost?” — Luke 14:28
-</p>
-
-```
-  {OUTLINE_SECTIONS.map((section) => (
-    <SectionInput
-      key={section.id}
-      section={section}
-      value={fields[section.id]}
-      onChange={handleChange}
-    />
-  ))}
-
-  {filledCount >= 3 && (
-    <div
-      style={{
-        marginTop: "32px",
-        padding: "20px",
-        background: "#F8F5F0",
-        borderRadius: "12px",
-        border: "1.5px solid #e5e0da",
-      }}
-    >
+  return (
+    <div style={{ marginBottom: "24px" }}>
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "12px",
+          alignItems: "baseline",
+          marginBottom: "8px",
         }}
       >
-        <span
+        <label
           style={{
             fontSize: "13px",
             fontWeight: 600,
+            color: "#1a1a1a",
+            letterSpacing: "0.02em",
             textTransform: "uppercase",
-            letterSpacing: "0.04em",
-            color: "#8B7355",
           }}
         >
-          Generated Initial Prompt
-        </span>
-        <button
-          onClick={() => copy(prompt, "outline")}
+          {section.title}
+        </label>
+        <span
           style={{
-            fontSize: "13px",
-            padding: "6px 14px",
-            background: copied === "outline" ? "#C4A97D" : "#1a1a1a",
-            color: "#fff",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontWeight: 500,
-            transition: "all 0.2s ease",
+            fontSize: "12px",
+            color: "#aaa",
+            fontStyle: "italic",
+            maxWidth: "60%",
+            textAlign: "right",
           }}
         >
-          {copied === "outline" ? "Copied ✓" : "Copy Prompt"}
-        </button>
+          {section.hint}
+        </span>
       </div>
-      <pre
-        style={{
-          fontSize: "13.5px",
-          lineHeight: 1.65,
-          color: "#444",
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          margin: 0,
-          fontFamily: "'SF Mono', 'Fira Code', monospace",
-        }}
-      >
-        {prompt}
-      </pre>
-    </div>
-  )}
-</div>
-```
-
-);
-}
-
-function ConfigTab() {
-const [fields, setFields] = useState({});
-const { copied, copy } = useCopyFeedback();
-
-const handleChange = (id, value) => {
-setFields((prev) => ({ …prev, [id]: value }));
-};
-
-const generateConfig = () => {
-const parts = CONFIG_FIELDS.filter((f) => fields[f.id]?.trim()).map(
-(f) => `## ${f.label}\n${fields[f.id].trim()}`
-);
-if (parts.length === 0) return “”;
-return parts.join(”\n\n”);
-};
-
-const config = generateConfig();
-const filledCount = CONFIG_FIELDS.filter(
-(f) => fields[f.id]?.trim()
-).length;
-
-return (
-<div>
-<p
-style={{
-fontSize: “14px”,
-color: “#888”,
-marginBottom: “28px”,
-lineHeight: 1.6,
-fontFamily: “‘Georgia’, serif”,
-fontStyle: “italic”,
-}}
->
-Build a reusable system prompt. Fill in what matters, copy it out, and
-paste it wherever you need consistent AI behavior.
-</p>
-
-```
-  {CONFIG_FIELDS.map((field) => (
-    <div key={field.id} style={{ marginBottom: "20px" }}>
-      <label
-        style={{
-          display: "block",
-          fontSize: "13px",
-          fontWeight: 600,
-          color: "#1a1a1a",
-          marginBottom: "6px",
-          letterSpacing: "0.01em",
-        }}
-      >
-        {field.label}
-      </label>
       <textarea
-        value={fields[field.id] || ""}
-        onChange={(e) => handleChange(field.id, e.target.value)}
-        placeholder={field.placeholder}
+        ref={ref}
+        value={value || ""}
+        onChange={(e) => onChange(section.id, e.target.value)}
+        placeholder={section.placeholder}
         rows={2}
         style={{
           width: "100%",
           padding: "12px 14px",
-          fontSize: "14px",
-          lineHeight: 1.5,
+          fontSize: "15px",
+          lineHeight: 1.6,
           border: "1.5px solid #e5e0da",
           borderRadius: "10px",
           background: "#FDFCFB",
           color: "#1a1a1a",
-          resize: "vertical",
+          resize: "none",
+          overflow: "hidden",
           outline: "none",
-          fontFamily: "'SF Mono', 'Fira Code', monospace",
+          fontFamily: "'Georgia', 'Times New Roman', serif",
           transition: "border-color 0.2s ease",
           boxSizing: "border-box",
         }}
@@ -566,16 +308,19 @@ paste it wherever you need consistent AI behavior.
         onBlur={(e) => (e.target.style.borderColor = "#e5e0da")}
       />
     </div>
-  ))}
+  );
+}
 
-  {filledCount >= 2 && (
+function PromptTemplate({ template, toolName, copied, onCopy }) {
+  const id = `${toolName}-${template.label}`;
+  return (
     <div
       style={{
-        marginTop: "28px",
-        padding: "20px",
-        background: "#F8F5F0",
-        borderRadius: "12px",
+        background: "#FDFCFB",
         border: "1.5px solid #e5e0da",
+        borderRadius: "10px",
+        padding: "14px 16px",
+        marginBottom: "10px",
       }}
     >
       <div
@@ -583,324 +328,567 @@ paste it wherever you need consistent AI behavior.
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "12px",
+          marginBottom: "8px",
         }}
       >
         <span
           style={{
             fontSize: "13px",
             fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "0.04em",
-            color: "#8B7355",
+            color: "#1a1a1a",
           }}
         >
-          Your Config
+          {template.label}
         </span>
         <button
-          onClick={() => copy(config, "config")}
+          onClick={() => onCopy(template.template, id)}
           style={{
-            fontSize: "13px",
-            padding: "6px 14px",
-            background: copied === "config" ? "#C4A97D" : "#1a1a1a",
-            color: "#fff",
+            fontSize: "12px",
+            padding: "4px 10px",
+            background: copied === id ? "#C4A97D" : "#F0ECE6",
+            color: copied === id ? "#fff" : "#6B5B3E",
             border: "none",
-            borderRadius: "8px",
+            borderRadius: "6px",
             cursor: "pointer",
             fontWeight: 500,
             transition: "all 0.2s ease",
           }}
         >
-          {copied === "config" ? "Copied ✓" : "Copy Config"}
+          {copied === id ? "Copied ✓" : "Copy"}
         </button>
       </div>
       <pre
         style={{
-          fontSize: "13.5px",
-          lineHeight: 1.65,
-          color: "#444",
+          fontSize: "13px",
+          lineHeight: 1.6,
+          color: "#555",
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
           margin: 0,
-          fontFamily: "'SF Mono', 'Fira Code', monospace",
+          fontFamily: "'SF Mono', 'Fira Code', 'Consolas', monospace",
         }}
       >
-        {config}
+        {template.template}
       </pre>
     </div>
-  )}
-</div>
-```
+  );
+}
 
-);
+// ─── Main Tabs ─────────────────────────────────────────────────
+
+function OutlineTab() {
+  const [fields, setFields] = useState({});
+  const { copied, copy } = useCopyFeedback();
+
+  const handleChange = (id, value) => {
+    setFields((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const generatePrompt = () => {
+    const parts = OUTLINE_SECTIONS.filter((s) => fields[s.id]?.trim()).map(
+      (s) => `**${s.title}:** ${fields[s.id].trim()}`
+    );
+    if (parts.length === 0) return "";
+    return `I'm starting a new project. Here's the brief:\n\n${parts.join("\n\n")}\n\nHelp me build this. Start with the first step only. Don't scaffold the whole thing — just the foundation I described above. Match my conventions and be opinionated about good patterns.`;
+  };
+
+  const prompt = generatePrompt();
+  const filledCount = OUTLINE_SECTIONS.filter(
+    (s) => fields[s.id]?.trim()
+  ).length;
+
+  return (
+    <div>
+      <p
+        style={{
+          fontSize: "14px",
+          color: "#888",
+          marginBottom: "28px",
+          lineHeight: 1.6,
+          fontFamily: "'Georgia', serif",
+          fontStyle: "italic",
+        }}
+      >
+        "For which of you, desiring to build a tower, does not first sit down and
+        count the cost?" — Luke 14:28
+      </p>
+
+      {OUTLINE_SECTIONS.map((section) => (
+        <SectionInput
+          key={section.id}
+          section={section}
+          value={fields[section.id]}
+          onChange={handleChange}
+        />
+      ))}
+
+      {filledCount >= 3 && (
+        <div
+          style={{
+            marginTop: "32px",
+            padding: "20px",
+            background: "#F8F5F0",
+            borderRadius: "12px",
+            border: "1.5px solid #e5e0da",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "12px",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "13px",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                color: "#8B7355",
+              }}
+            >
+              Generated Initial Prompt
+            </span>
+            <button
+              onClick={() => copy(prompt, "outline")}
+              style={{
+                fontSize: "13px",
+                padding: "6px 14px",
+                background: copied === "outline" ? "#C4A97D" : "#1a1a1a",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 500,
+                transition: "all 0.2s ease",
+              }}
+            >
+              {copied === "outline" ? "Copied ✓" : "Copy Prompt"}
+            </button>
+          </div>
+          <pre
+            style={{
+              fontSize: "13.5px",
+              lineHeight: 1.65,
+              color: "#444",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              margin: 0,
+              fontFamily: "'SF Mono', 'Fira Code', monospace",
+            }}
+          >
+            {prompt}
+          </pre>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ConfigTab() {
+  const [fields, setFields] = useState({});
+  const { copied, copy } = useCopyFeedback();
+
+  const handleChange = (id, value) => {
+    setFields((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const generateConfig = () => {
+    const parts = CONFIG_FIELDS.filter((f) => fields[f.id]?.trim()).map(
+      (f) => `## ${f.label}\n${fields[f.id].trim()}`
+    );
+    if (parts.length === 0) return "";
+    return parts.join("\n\n");
+  };
+
+  const config = generateConfig();
+  const filledCount = CONFIG_FIELDS.filter(
+    (f) => fields[f.id]?.trim()
+  ).length;
+
+  return (
+    <div>
+      <p
+        style={{
+          fontSize: "14px",
+          color: "#888",
+          marginBottom: "28px",
+          lineHeight: 1.6,
+          fontFamily: "'Georgia', serif",
+          fontStyle: "italic",
+        }}
+      >
+        Build a reusable system prompt. Fill in what matters, copy it out, and
+        paste it wherever you need consistent AI behavior.
+      </p>
+
+      {CONFIG_FIELDS.map((field) => (
+        <div key={field.id} style={{ marginBottom: "20px" }}>
+          <label
+            style={{
+              display: "block",
+              fontSize: "13px",
+              fontWeight: 600,
+              color: "#1a1a1a",
+              marginBottom: "6px",
+              letterSpacing: "0.01em",
+            }}
+          >
+            {field.label}
+          </label>
+          <textarea
+            value={fields[field.id] || ""}
+            onChange={(e) => handleChange(field.id, e.target.value)}
+            placeholder={field.placeholder}
+            rows={2}
+            style={{
+              width: "100%",
+              padding: "12px 14px",
+              fontSize: "14px",
+              lineHeight: 1.5,
+              border: "1.5px solid #e5e0da",
+              borderRadius: "10px",
+              background: "#FDFCFB",
+              color: "#1a1a1a",
+              resize: "vertical",
+              outline: "none",
+              fontFamily: "'SF Mono', 'Fira Code', monospace",
+              transition: "border-color 0.2s ease",
+              boxSizing: "border-box",
+            }}
+            onFocus={(e) => (e.target.style.borderColor = "#C4A97D")}
+            onBlur={(e) => (e.target.style.borderColor = "#e5e0da")}
+          />
+        </div>
+      ))}
+
+      {filledCount >= 2 && (
+        <div
+          style={{
+            marginTop: "28px",
+            padding: "20px",
+            background: "#F8F5F0",
+            borderRadius: "12px",
+            border: "1.5px solid #e5e0da",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "12px",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "13px",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                color: "#8B7355",
+              }}
+            >
+              Your Config
+            </span>
+            <button
+              onClick={() => copy(config, "config")}
+              style={{
+                fontSize: "13px",
+                padding: "6px 14px",
+                background: copied === "config" ? "#C4A97D" : "#1a1a1a",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 500,
+                transition: "all 0.2s ease",
+              }}
+            >
+              {copied === "config" ? "Copied ✓" : "Copy Config"}
+            </button>
+          </div>
+          <pre
+            style={{
+              fontSize: "13.5px",
+              lineHeight: 1.65,
+              color: "#444",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              margin: 0,
+              fontFamily: "'SF Mono', 'Fira Code', monospace",
+            }}
+          >
+            {config}
+          </pre>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function PlaybookTab() {
-const [activeTool, setActiveTool] = useState(“claudeCode”);
-const { copied, copy } = useCopyFeedback();
-const tool = TOOLS[activeTool];
+  const [activeTool, setActiveTool] = useState("claudeCode");
+  const { copied, copy } = useCopyFeedback();
+  const tool = TOOLS[activeTool];
 
-return (
-<div>
-{/* Tool Selector */}
-<div
-style={{
-display: “flex”,
-gap: “8px”,
-marginBottom: “28px”,
-flexWrap: “wrap”,
-}}
->
-{Object.entries(TOOLS).map(([key, t]) => (
-<button
-key={key}
-onClick={() => setActiveTool(key)}
-style={{
-display: “flex”,
-alignItems: “center”,
-gap: “6px”,
-padding: “8px 14px”,
-fontSize: “13px”,
-fontWeight: activeTool === key ? 600 : 400,
-color: activeTool === key ? “#fff” : “#555”,
-background: activeTool === key ? t.color : “#F0ECE6”,
-border: “none”,
-borderRadius: “8px”,
-cursor: “pointer”,
-transition: “all 0.25s ease”,
-}}
->
-<span>{t.icon}</span>
-{t.name}
-</button>
-))}
-</div>
-
-```
-  {/* Best For */}
-  <div
-    style={{
-      padding: "16px 18px",
-      background: `${tool.color}10`,
-      borderLeft: `3px solid ${tool.color}`,
-      borderRadius: "0 10px 10px 0",
-      marginBottom: "24px",
-    }}
-  >
-    <span
-      style={{
-        fontSize: "11px",
-        fontWeight: 700,
-        textTransform: "uppercase",
-        letterSpacing: "0.06em",
-        color: tool.color,
-      }}
-    >
-      Best For
-    </span>
-    <p
-      style={{
-        fontSize: "15px",
-        color: "#1a1a1a",
-        margin: "6px 0 0",
-        lineHeight: 1.5,
-      }}
-    >
-      {tool.bestFor}
-    </p>
-  </div>
-
-  {/* Tips */}
-  <div style={{ marginBottom: "28px" }}>
-    <h3
-      style={{
-        fontSize: "13px",
-        fontWeight: 600,
-        textTransform: "uppercase",
-        letterSpacing: "0.04em",
-        color: "#8B7355",
-        marginBottom: "12px",
-      }}
-    >
-      How to Get the Most Out of It
-    </h3>
-    {tool.tips.map((tip, i) => (
+  return (
+    <div>
+      {/* Tool Selector */}
       <div
-        key={i}
         style={{
           display: "flex",
-          gap: "10px",
-          marginBottom: "10px",
-          fontSize: "14px",
-          lineHeight: 1.55,
-          color: "#444",
+          gap: "8px",
+          marginBottom: "28px",
+          flexWrap: "wrap",
+        }}
+      >
+        {Object.entries(TOOLS).map(([key, t]) => (
+          <button
+            key={key}
+            onClick={() => setActiveTool(key)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "8px 14px",
+              fontSize: "13px",
+              fontWeight: activeTool === key ? 600 : 400,
+              color: activeTool === key ? "#fff" : "#555",
+              background: activeTool === key ? t.color : "#F0ECE6",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              transition: "all 0.25s ease",
+            }}
+          >
+            <span>{t.icon}</span>
+            {t.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Best For */}
+      <div
+        style={{
+          padding: "16px 18px",
+          background: `${tool.color}10`,
+          borderLeft: `3px solid ${tool.color}`,
+          borderRadius: "0 10px 10px 0",
+          marginBottom: "24px",
         }}
       >
         <span
           style={{
-            color: tool.color,
+            fontSize: "11px",
             fontWeight: 700,
-            fontSize: "12px",
-            marginTop: "2px",
-            flexShrink: 0,
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            color: tool.color,
           }}
         >
-          {String(i + 1).padStart(2, "0")}
+          Best For
         </span>
-        <span>{tip}</span>
+        <p
+          style={{
+            fontSize: "15px",
+            color: "#1a1a1a",
+            margin: "6px 0 0",
+            lineHeight: 1.5,
+          }}
+        >
+          {tool.bestFor}
+        </p>
       </div>
-    ))}
-  </div>
 
-  {/* Prompt Templates */}
-  <div>
-    <h3
-      style={{
-        fontSize: "13px",
-        fontWeight: 600,
-        textTransform: "uppercase",
-        letterSpacing: "0.04em",
-        color: "#8B7355",
-        marginBottom: "12px",
-      }}
-    >
-      Prompt Templates
-    </h3>
-    {tool.promptTemplates.map((t, i) => (
-      <PromptTemplate
-        key={i}
-        template={t}
-        toolName={activeTool}
-        copied={copied}
-        onCopy={copy}
-      />
-    ))}
-  </div>
-</div>
-```
+      {/* Tips */}
+      <div style={{ marginBottom: "28px" }}>
+        <h3
+          style={{
+            fontSize: "13px",
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+            color: "#8B7355",
+            marginBottom: "12px",
+          }}
+        >
+          How to Get the Most Out of It
+        </h3>
+        {tool.tips.map((tip, i) => (
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              gap: "10px",
+              marginBottom: "10px",
+              fontSize: "14px",
+              lineHeight: 1.55,
+              color: "#444",
+            }}
+          >
+            <span
+              style={{
+                color: tool.color,
+                fontWeight: 700,
+                fontSize: "12px",
+                marginTop: "2px",
+                flexShrink: 0,
+              }}
+            >
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span>{tip}</span>
+          </div>
+        ))}
+      </div>
 
-);
+      {/* Prompt Templates */}
+      <div>
+        <h3
+          style={{
+            fontSize: "13px",
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+            color: "#8B7355",
+            marginBottom: "12px",
+          }}
+        >
+          Prompt Templates
+        </h3>
+        {tool.promptTemplates.map((t, i) => (
+          <PromptTemplate
+            key={i}
+            template={t}
+            toolName={activeTool}
+            copied={copied}
+            onCopy={copy}
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // ─── App Shell ─────────────────────────────────────────────────
 
 export default function App() {
-const [tab, setTab] = useState(“outline”);
+  const [tab, setTab] = useState("outline");
 
-return (
-<div
-style={{
-minHeight: “100vh”,
-background: “#F5F1EB”,
-fontFamily:
-“-apple-system, BlinkMacSystemFont, ‘Segoe UI’, Helvetica, sans-serif”,
-color: “#1a1a1a”,
-}}
->
-{/* Header */}
-<div
-style={{
-padding: “32px 24px 0”,
-maxWidth: “680px”,
-margin: “0 auto”,
-}}
->
-<div style={{ marginBottom: “4px” }}>
-<span
-style={{
-fontSize: “11px”,
-fontWeight: 600,
-letterSpacing: “0.12em”,
-textTransform: “uppercase”,
-color: “#C4A97D”,
-}}
->
-AI Dev
-</span>
-</div>
-<h1
-style={{
-fontSize: “28px”,
-fontWeight: 700,
-letterSpacing: “-0.03em”,
-color: “#1a1a1a”,
-margin: “0 0 6px”,
-}}
->
-Command Center
-</h1>
-<p
-style={{
-fontSize: “14px”,
-color: “#999”,
-margin: 0,
-lineHeight: 1.5,
-}}
->
-Prompt well. Context well. Build well.
-</p>
-</div>
-
-```
-  {/* Nav */}
-  <div
-    style={{
-      maxWidth: "680px",
-      margin: "20px auto 0",
-      padding: "0 24px",
-    }}
-  >
+  return (
     <div
       style={{
-        display: "flex",
-        gap: "4px",
-        background: "#EDE8E0",
-        borderRadius: "12px",
-        padding: "4px",
+        minHeight: "100vh",
+        background: "#F5F1EB",
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif",
+        color: "#1a1a1a",
       }}
     >
-      <NavTab
-        label="Outline"
-        active={tab === "outline"}
-        onClick={() => setTab("outline")}
-      />
-      <NavTab
-        label="Config"
-        active={tab === "config"}
-        onClick={() => setTab("config")}
-      />
-      <NavTab
-        label="Playbook"
-        active={tab === "playbook"}
-        onClick={() => setTab("playbook")}
-        badge="4 tools"
-      />
-    </div>
-  </div>
+      {/* Header */}
+      <div
+        style={{
+          padding: "32px 24px 0",
+          maxWidth: "680px",
+          margin: "0 auto",
+        }}
+      >
+        <div style={{ marginBottom: "4px" }}>
+          <span
+            style={{
+              fontSize: "11px",
+              fontWeight: 600,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "#C4A97D",
+            }}
+          >
+            AI Dev
+          </span>
+        </div>
+        <h1
+          style={{
+            fontSize: "28px",
+            fontWeight: 700,
+            letterSpacing: "-0.03em",
+            color: "#1a1a1a",
+            margin: "0 0 6px",
+          }}
+        >
+          Command Center
+        </h1>
+        <p
+          style={{
+            fontSize: "14px",
+            color: "#999",
+            margin: 0,
+            lineHeight: 1.5,
+          }}
+        >
+          Prompt well. Context well. Build well.
+        </p>
+      </div>
 
-  {/* Content */}
-  <div
-    style={{
-      maxWidth: "680px",
-      margin: "24px auto 0",
-      padding: "0 24px 60px",
-    }}
-  >
-    <div
-      style={{
-        background: "#fff",
-        borderRadius: "16px",
-        padding: "28px 24px",
-        boxShadow: "0 1px 8px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.03)",
-      }}
-    >
-      {tab === "outline" && <OutlineTab />}
-      {tab === "config" && <ConfigTab />}
-      {tab === "playbook" && <PlaybookTab />}
-    </div>
-  </div>
-</div>
-```
+      {/* Nav */}
+      <div
+        style={{
+          maxWidth: "680px",
+          margin: "20px auto 0",
+          padding: "0 24px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            gap: "4px",
+            background: "#EDE8E0",
+            borderRadius: "12px",
+            padding: "4px",
+          }}
+        >
+          <NavTab
+            label="Outline"
+            active={tab === "outline"}
+            onClick={() => setTab("outline")}
+          />
+          <NavTab
+            label="Config"
+            active={tab === "config"}
+            onClick={() => setTab("config")}
+          />
+          <NavTab
+            label="Playbook"
+            active={tab === "playbook"}
+            onClick={() => setTab("playbook")}
+            badge="4 tools"
+          />
+        </div>
+      </div>
 
-);
+      {/* Content */}
+      <div
+        style={{
+          maxWidth: "680px",
+          margin: "24px auto 0",
+          padding: "0 24px 60px",
+        }}
+      >
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: "16px",
+            padding: "28px 24px",
+            boxShadow: "0 1px 8px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.03)",
+          }}
+        >
+          {tab === "outline" && <OutlineTab />}
+          {tab === "config" && <ConfigTab />}
+          {tab === "playbook" && <PlaybookTab />}
+        </div>
+      </div>
+    </div>
+  );
 }
