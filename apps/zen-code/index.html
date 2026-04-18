@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Zen Code Reader</title>
+<style>
+  :root {
+    --bg: #f5efe6;
+    --fg: #2a2520;
+    --muted: #8a8275;
+    --accent: #4a4338;
+    --code-bg: #ede4d4;
+    --code-border: #dcd1bc;
+    --tok-comment: #8a8275;
+    --tok-keyword: #8a3a2f;
+    --tok-string: #5a6b3a;
+    --tok-number: #9a5b1a;
+    --tok-function: #2a4a6b;
+    --tok-punct: #6a6358;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1715;
+      --fg: #d8cfc2;
+      --muted: #6b6357;
+      --accent: #b8ad9c;
+      --code-bg: #22201d;
+      --code-border: #34302b;
+      --tok-comment: #6b6357;
+      --tok-keyword: #d68a6b;
+      --tok-string: #a8b87a;
+      --tok-number: #d8a55a;
+      --tok-function: #8ab0d8;
+      --tok-punct: #9a9186;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Iowan Old Style", "Palatino", "Charter", Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  main {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  /* paste screen */
+  .paste {
+    width: 100%;
+    max-width: 42rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  .paste textarea {
+    width: 100%;
+    min-height: 40vh;
+    padding: 1.25rem;
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--muted);
+    border-radius: 4px;
+    font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+  }
+  .paste textarea:focus { border-color: var(--accent); }
+  .paste textarea::placeholder { color: var(--muted); font-style: italic; }
+
+  .row {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 0.6rem 1.5rem;
+    font-family: inherit;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    text-transform: lowercase;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .btn:hover { background: var(--accent); color: var(--bg); }
+
+  .file-btn input { display: none; }
+
+  details.howto {
+    border-top: 1px solid var(--code-border);
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+  }
+  details.howto summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-style: italic;
+    list-style: none;
+    outline: none;
+  }
+  details.howto summary::-webkit-details-marker { display: none; }
+  details.howto summary::before { content: "› "; }
+  details.howto[open] summary::before { content: "⌄ "; }
+  details.howto p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0.75rem 0 0.5rem;
+  }
+  details.howto pre {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 4px;
+    padding: 1rem;
+    font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 24rem;
+    overflow: auto;
+    margin: 0.5rem 0;
+  }
+  details.howto .copy-row {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .linkish {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: lowercase;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    transition: color 0.2s ease;
+  }
+  .linkish:hover { color: var(--fg); }
+
+  /* reader screen */
+  .reader-wrap {
+    max-width: 48rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 3rem 1rem;
+  }
+  .title {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 1.1rem;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+  .code-wrap {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    cursor: pointer;
+    overflow: auto;
+    max-height: 70vh;
+  }
+  .code-wrap pre {
+    margin: 0;
+    font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    white-space: pre;
+    tab-size: 2;
+  }
+  .code-wrap code { font-family: inherit; }
+  @media (max-width: 480px) {
+    .code-wrap pre { font-size: 0.8rem; }
+    .title { font-size: 1rem; }
+  }
+
+  /* prism-compatible token colors */
+  .token.comment, .token.prolog, .token.doctype, .token.cdata { color: var(--tok-comment); font-style: italic; }
+  .token.punctuation { color: var(--tok-punct); }
+  .token.property, .token.tag, .token.boolean, .token.number, .token.constant, .token.symbol { color: var(--tok-number); }
+  .token.selector, .token.attr-name, .token.string, .token.char, .token.builtin, .token.inserted { color: var(--tok-string); }
+  .token.operator, .token.entity, .token.url, .language-css .token.string, .style .token.string { color: var(--tok-punct); }
+  .token.atrule, .token.attr-value, .token.keyword { color: var(--tok-keyword); }
+  .token.function, .token.class-name { color: var(--tok-function); }
+  .token.regex, .token.important, .token.variable { color: var(--tok-keyword); }
+
+  .nav {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 2rem;
+    cursor: pointer;
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
+    padding: 1rem;
+    line-height: 1;
+    z-index: 2;
+  }
+  .nav:hover { opacity: 1; }
+  .nav:disabled { opacity: 0.1; cursor: default; }
+  .nav.prev { left: 0.5rem; }
+  .nav.next { right: 0.5rem; }
+
+  .counter {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    font-variant-numeric: tabular-nums;
+    user-select: none;
+  }
+
+  .eta {
+    position: fixed;
+    top: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+    padding: 0.25rem 0.5rem;
+    user-select: none;
+  }
+  .eta:hover { opacity: 1; }
+  .eta:empty { display: none; }
+
+  .reset {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 1.2rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.2s ease;
+    padding: 0.5rem 0.75rem;
+    line-height: 1;
+  }
+  .reset:hover { opacity: 1; }
+
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: var(--bg);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .toast.show { opacity: 1; }
+
+  .error {
+    color: #a84a3a;
+    font-size: 0.85rem;
+    text-align: center;
+    min-height: 1.2em;
+  }
+</style>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+</head>
+<body>
+<main id="app"></main>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.js" data-manual></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"
+        data-autoloader-path="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/"></script>
+<script>
+  const KEY = "zen-code-reader";
+  const DEFAULT_WPM = 120;
+  const MIN_SAMPLE_MS = 500;
+  const MAX_SAMPLE_MS = 10 * 60 * 1000;
+  const app = document.getElementById("app");
+  const toast = document.getElementById("toast");
+
+  const PROMPT = `You're generating a reading plan for a "zen code reader" that walks me through a codebase one chunk at a time, in the order I should read to understand it.
+
+Return ONLY a JSON array — no prose, no markdown fence. Each item:
+
+{
+  "title": "short label — where this fits in the story",
+  "language": "js" | "ts" | "py" | "go" | "rs" | "..." (Prism language id),
+  "code": "the exact source for this chunk, unmodified"
+}
+
+Rules:
+- Order depth-first from the entry point: start with the top-level call site, then each function it calls, then their callees, etc.
+- One chunk = one logical unit (a function, a class, a config block, an import group). Don't merge unrelated units; don't split a single function across chunks.
+- Title should orient the reader — "entry point", "called by handleRequest to validate input", "helper used by render()". Not just the function name.
+- Preserve code verbatim (whitespace, comments). No summarization, no "...". If a file is too large, pick the units that matter for understanding and say so in the title of the first chunk.
+- If there are multiple entry points, cover one fully before starting the next.
+
+Write the result to apps/zen-code/plans/<short-name>.json in this repo so I can upload it into the reader.`;
+
+  let state = load() || { chunks: [], i: 0, totalWords: 0, totalMs: 0 };
+  if (typeof state.totalWords !== "number") state.totalWords = 0;
+  if (typeof state.totalMs !== "number") state.totalMs = 0;
+
+  let chunkStart = 0;
+  let showFinishTime = false;
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+  }
+
+  function wordCount(s) {
+    return String(s || "").trim().split(/\s+/).filter(Boolean).length;
+  }
+
+  function normalizeChunks(input) {
+    const arr = Array.isArray(input) ? input : (input && Array.isArray(input.chunks) ? input.chunks : null);
+    if (!arr) throw new Error("expected a JSON array of chunks");
+    const out = [];
+    for (const item of arr) {
+      if (!item || typeof item.code !== "string" || !item.code.trim()) continue;
+      out.push({
+        title: typeof item.title === "string" ? item.title : "",
+        language: typeof item.language === "string" ? item.language.toLowerCase() : "",
+        code: item.code
+      });
+    }
+    if (!out.length) throw new Error("no chunks with code found");
+    return out;
+  }
+
+  function parsePlan(text) {
+    const trimmed = text.trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "");
+    const data = JSON.parse(trimmed);
+    return normalizeChunks(data);
+  }
+
+  function sampleCurrentChunk() {
+    if (!chunkStart) return;
+    const elapsed = Date.now() - chunkStart;
+    chunkStart = 0;
+    if (elapsed < MIN_SAMPLE_MS || elapsed > MAX_SAMPLE_MS) return;
+    const w = wordCount(state.chunks[state.i] && state.chunks[state.i].code);
+    if (!w) return;
+    state.totalMs += elapsed;
+    state.totalWords += w;
+  }
+
+  function currentWpm() {
+    if (state.totalMs > 0 && state.totalWords > 0) {
+      return state.totalWords / (state.totalMs / 60000);
+    }
+    return DEFAULT_WPM;
+  }
+
+  function remainingWords() {
+    let sum = 0;
+    for (let k = state.i; k < state.chunks.length; k++) {
+      sum += wordCount(state.chunks[k].code);
+    }
+    return sum;
+  }
+
+  function minutesLeft() {
+    const wpm = currentWpm();
+    if (!wpm) return null;
+    return remainingWords() / wpm;
+  }
+
+  function formatMins(m) {
+    if (m < 1) return "< 1 min left";
+    if (m < 60) return `~${Math.round(m)} min left`;
+    const h = Math.floor(m / 60);
+    const rem = Math.round(m % 60);
+    return rem ? `~${h}h ${rem}m left` : `~${h}h left`;
+  }
+
+  function formatFinish(m) {
+    const d = new Date(Date.now() + m * 60000);
+    let h = d.getHours();
+    const min = String(d.getMinutes()).padStart(2, "0");
+    const ampm = h >= 12 ? "pm" : "am";
+    h = h % 12 || 12;
+    return `done ~${h}:${min}${ampm}`;
+  }
+
+  function etaText() {
+    const m = minutesLeft();
+    if (m == null || m <= 0) return "";
+    return showFinishTime ? formatFinish(m) : formatMins(m);
+  }
+
+  function go(delta) {
+    const n = state.chunks.length;
+    if (!n) return;
+    const newI = Math.max(0, Math.min(n - 1, state.i + delta));
+    if (newI === state.i) return;
+    if (delta > 0) sampleCurrentChunk();
+    state.i = newI;
+    showFinishTime = false;
+    save();
+    render();
+  }
+
+  function reset() {
+    state = { chunks: [], i: 0, totalWords: state.totalWords, totalMs: state.totalMs };
+    chunkStart = 0;
+    showFinishTime = false;
+    save();
+    render();
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove("show"), 1600);
+  }
+
+  async function copyPrompt() {
+    try {
+      await navigator.clipboard.writeText(PROMPT);
+      showToast("prompt copied");
+    } catch {
+      showToast("copy failed — select & copy manually");
+    }
+  }
+
+  function loadPlanFromText(text, onError) {
+    try {
+      const chunks = parsePlan(text);
+      state = { chunks, i: 0, totalWords: state.totalWords, totalMs: state.totalMs };
+      save();
+      render();
+    } catch (e) {
+      onError(e.message || "could not parse plan");
+    }
+  }
+
+  function renderPaste() {
+    app.innerHTML = `
+      <div class="paste">
+        <textarea id="ta" placeholder='paste reading plan JSON — [{ "title": "...", "language": "js", "code": "..." }, ...]' spellcheck="false"></textarea>
+        <div class="error" id="err"></div>
+        <div class="row">
+          <button class="btn" id="begin">begin</button>
+          <label class="btn file-btn">
+            upload .json
+            <input type="file" id="file" accept=".json,application/json">
+          </label>
+        </div>
+        <details class="howto">
+          <summary>how to make a reading plan</summary>
+          <p>Paste this prompt into Claude Code (or any AI with access to your repo). It writes the plan to <code>apps/zen-code/plans/</code> so you can upload it here.</p>
+          <pre id="prompt-text"></pre>
+          <div class="copy-row">
+            <button class="linkish" id="copy">copy prompt</button>
+          </div>
+        </details>
+      </div>
+    `;
+
+    document.getElementById("prompt-text").textContent = PROMPT;
+
+    const ta = document.getElementById("ta");
+    const err = document.getElementById("err");
+    const setErr = (m) => { err.textContent = m || ""; };
+
+    document.getElementById("begin").onclick = () => {
+      setErr("");
+      if (!ta.value.trim()) { setErr("paste a plan first"); return; }
+      loadPlanFromText(ta.value, setErr);
+    };
+
+    document.getElementById("file").onchange = (e) => {
+      setErr("");
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => loadPlanFromText(String(reader.result || ""), setErr);
+      reader.onerror = () => setErr("could not read file");
+      reader.readAsText(f);
+    };
+
+    document.getElementById("copy").onclick = copyPrompt;
+  }
+
+  function renderReader() {
+    const { chunks, i } = state;
+    const c = chunks[i];
+    const atStart = i === 0;
+    const atEnd = i === chunks.length - 1;
+    const lang = c.language || "none";
+    const langClass = c.language ? `language-${escapeHtml(c.language)}` : "";
+
+    app.innerHTML = `
+      <button class="reset" id="reset" title="new plan">&times;</button>
+      <button class="eta" id="eta" title="tap for finish time">${escapeHtml(etaText())}</button>
+      <button class="nav prev" id="prev" ${atStart ? "disabled" : ""} aria-label="previous">&lsaquo;</button>
+      <div class="reader-wrap">
+        ${c.title ? `<div class="title">${escapeHtml(c.title)}</div>` : ""}
+        <div class="code-wrap" id="code-wrap">
+          <pre><code class="${langClass}" id="code">${escapeHtml(c.code)}</code></pre>
+        </div>
+      </div>
+      <button class="nav next" id="next" ${atEnd ? "disabled" : ""} aria-label="next">&rsaquo;</button>
+      <div class="counter">${i + 1} / ${chunks.length}</div>
+    `;
+
+    chunkStart = Date.now();
+
+    if (window.Prism && c.language) {
+      try { Prism.highlightElement(document.getElementById("code")); } catch {}
+    }
+
+    document.getElementById("prev").onclick = () => go(-1);
+    document.getElementById("next").onclick = () => go(1);
+    document.getElementById("code-wrap").onclick = (e) => {
+      if (window.getSelection && String(window.getSelection()).length > 0) return;
+      go(1);
+    };
+    document.getElementById("reset").onclick = (e) => {
+      e.stopPropagation();
+      if (confirm("discard current plan?")) reset();
+    };
+    const eta = document.getElementById("eta");
+    eta.onclick = (e) => {
+      e.stopPropagation();
+      showFinishTime = !showFinishTime;
+      eta.textContent = etaText();
+    };
+  }
+
+  function render() {
+    if (state.chunks.length) renderReader();
+    else renderPaste();
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (!state.chunks.length) return;
+    const tag = (document.activeElement && document.activeElement.tagName) || "";
+    if (tag === "TEXTAREA" || tag === "INPUT") return;
+    if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); go(1); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); go(-1); }
+  });
+
+  render();
+</script>
+</body>
+</html>
