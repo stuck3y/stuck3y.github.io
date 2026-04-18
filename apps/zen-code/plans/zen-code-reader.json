@@ -1,0 +1,92 @@
+[
+  {
+    "title": "the mount — one <main> tag, a toast, and Prism from a CDN",
+    "language": "html",
+    "code": "<body>\n<main id=\"app\"></main>\n<div class=\"toast\" id=\"toast\"></div>\n<script src=\"https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.js\" data-manual></script>\n<script src=\"https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js\"\n        data-autoloader-path=\"https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/\"></script>"
+  },
+  {
+    "title": "the palette — the whole aesthetic lives in these CSS variables",
+    "language": "css",
+    "code": "<style>\n  :root {\n    --bg: #f5efe6;\n    --fg: #2a2520;\n    --muted: #8a8275;\n    --accent: #4a4338;\n    --code-bg: #ede4d4;\n    --code-border: #dcd1bc;\n    --tok-comment: #8a8275;\n    --tok-keyword: #8a3a2f;\n    --tok-string: #5a6b3a;\n    --tok-number: #9a5b1a;\n    --tok-function: #2a4a6b;\n    --tok-punct: #6a6358;\n  }\n  @media (prefers-color-scheme: dark) {\n    :root {\n      --bg: #1a1715;\n      --fg: #d8cfc2;\n      --muted: #6b6357;\n      --accent: #b8ad9c;\n      --code-bg: #22201d;\n      --code-border: #34302b;\n      --tok-comment: #6b6357;\n      --tok-keyword: #d68a6b;\n      --tok-string: #a8b87a;\n      --tok-number: #d8a55a;\n      --tok-function: #8ab0d8;\n      --tok-punct: #9a9186;\n    }\n  }\n"
+  },
+  {
+    "title": "four constants + two DOM handles — the first JS that runs",
+    "language": "js",
+    "code": "  const KEY = \"zen-code-reader\";\n  const DEFAULT_WPM = 120;\n  const MIN_SAMPLE_MS = 500;\n  const MAX_SAMPLE_MS = 10 * 60 * 1000;\n  const app = document.getElementById(\"app\");\n  const toast = document.getElementById(\"toast\");"
+  },
+  {
+    "title": "the prompt — meta moment: this is the prompt that generated the plan you're reading",
+    "language": "js",
+    "code": "  const PROMPT = `You're generating a reading plan for a \"zen code reader\" that walks me through a codebase one chunk at a time, in the order I should read to understand it.\n\nReturn ONLY a JSON array — no prose, no markdown fence. Each item:\n\n{\n  \"title\": \"short label — where this fits in the story\",\n  \"language\": \"js\" | \"ts\" | \"py\" | \"go\" | \"rs\" | \"...\" (Prism language id),\n  \"code\": \"the exact source for this chunk, unmodified\"\n}\n\nRules:\n- Order depth-first from the entry point: start with the top-level call site, then each function it calls, then their callees, etc.\n- One chunk = one logical unit (a function, a class, a config block, an import group). Don't merge unrelated units; don't split a single function across chunks.\n- Title should orient the reader — \"entry point\", \"called by handleRequest to validate input\", \"helper used by render()\". Not just the function name.\n- Preserve code verbatim (whitespace, comments). No summarization, no \"...\". If a file is too large, pick the units that matter for understanding and say so in the title of the first chunk.\n- If there are multiple entry points, cover one fully before starting the next.\n\nWrite the result to apps/zen-code/plans/<short-name>.json in this repo so I can upload it into the reader.`;"
+  },
+  {
+    "title": "state boot — load from localStorage, fill in any missing fields",
+    "language": "js",
+    "code": "  let state = load() || { chunks: [], i: 0, totalWords: 0, totalMs: 0 };\n  if (typeof state.totalWords !== \"number\") state.totalWords = 0;\n  if (typeof state.totalMs !== \"number\") state.totalMs = 0;\n\n  let chunkStart = 0;\n  let showFinishTime = false;"
+  },
+  {
+    "title": "render() — the 2-line dispatcher that picks which screen to show",
+    "language": "js",
+    "code": "  function render() {\n    if (state.chunks.length) renderReader();\n    else renderPaste();\n  }"
+  },
+  {
+    "title": "renderPaste() — textarea + upload button + the how-this-works reveal",
+    "language": "js",
+    "code": "  function renderPaste() {\n    app.innerHTML = `\n      <div class=\"paste\">\n        <textarea id=\"ta\" placeholder='paste reading plan JSON — [{ \"title\": \"...\", \"language\": \"js\", \"code\": \"...\" }, ...]' spellcheck=\"false\"></textarea>\n        <div class=\"error\" id=\"err\"></div>\n        <div class=\"row\">\n          <button class=\"btn\" id=\"begin\">begin</button>\n          <label class=\"btn file-btn\">\n            upload .json\n            <input type=\"file\" id=\"file\" accept=\".json,application/json\">\n          </label>\n        </div>\n        <details class=\"howto\">\n          <summary>how to make a reading plan</summary>\n          <p>Paste this prompt into Claude Code (or any AI with access to your repo). It writes the plan to <code>apps/zen-code/plans/</code> so you can upload it here.</p>\n          <pre id=\"prompt-text\"></pre>\n          <div class=\"copy-row\">\n            <button class=\"linkish\" id=\"copy\">copy prompt</button>\n          </div>\n        </details>\n      </div>\n    `;\n\n    document.getElementById(\"prompt-text\").textContent = PROMPT;\n\n    const ta = document.getElementById(\"ta\");\n    const err = document.getElementById(\"err\");\n    const setErr = (m) => { err.textContent = m || \"\"; };\n\n    document.getElementById(\"begin\").onclick = () => {\n      setErr(\"\");\n      if (!ta.value.trim()) { setErr(\"paste a plan first\"); return; }\n      loadPlanFromText(ta.value, setErr);\n    };\n\n    document.getElementById(\"file\").onchange = (e) => {\n      setErr(\"\");\n      const f = e.target.files && e.target.files[0];\n      if (!f) return;\n      const reader = new FileReader();\n      reader.onload = () => loadPlanFromText(String(reader.result || \"\"), setErr);\n      reader.onerror = () => setErr(\"could not read file\");\n      reader.readAsText(f);\n    };\n\n    document.getElementById(\"copy\").onclick = copyPrompt;\n  }"
+  },
+  {
+    "title": "loadPlanFromText() — one handler feeds both paste and file upload",
+    "language": "js",
+    "code": "  function loadPlanFromText(text, onError) {\n    try {\n      const chunks = parsePlan(text);\n      state = { chunks, i: 0, totalWords: state.totalWords, totalMs: state.totalMs };\n      save();\n      render();\n    } catch (e) {\n      onError(e.message || \"could not parse plan\");\n    }\n  }"
+  },
+  {
+    "title": "parsePlan() — strips markdown fences first because AIs love wrapping JSON in ```",
+    "language": "js",
+    "code": "  function parsePlan(text) {\n    const trimmed = text.trim().replace(/^```(?:json)?\\s*/i, \"\").replace(/```\\s*$/i, \"\");\n    const data = JSON.parse(trimmed);\n    return normalizeChunks(data);\n  }"
+  },
+  {
+    "title": "normalizeChunks() — accepts an array or {chunks:[...]}, drops items without code",
+    "language": "js",
+    "code": "  function normalizeChunks(input) {\n    const arr = Array.isArray(input) ? input : (input && Array.isArray(input.chunks) ? input.chunks : null);\n    if (!arr) throw new Error(\"expected a JSON array of chunks\");\n    const out = [];\n    for (const item of arr) {\n      if (!item || typeof item.code !== \"string\" || !item.code.trim()) continue;\n      out.push({\n        title: typeof item.title === \"string\" ? item.title : \"\",\n        language: typeof item.language === \"string\" ? item.language.toLowerCase() : \"\",\n        code: item.code\n      });\n    }\n    if (!out.length) throw new Error(\"no chunks with code found\");\n    return out;\n  }"
+  },
+  {
+    "title": "copyPrompt() + showToast() — clipboard with a graceful fallback toast",
+    "language": "js",
+    "code": "  function showToast(msg) {\n    toast.textContent = msg;\n    toast.classList.add(\"show\");\n    clearTimeout(showToast._t);\n    showToast._t = setTimeout(() => toast.classList.remove(\"show\"), 1600);\n  }\n\n  async function copyPrompt() {\n    try {\n      await navigator.clipboard.writeText(PROMPT);\n      showToast(\"prompt copied\");\n    } catch {\n      showToast(\"copy failed — select & copy manually\");\n    }\n  }"
+  },
+  {
+    "title": "renderReader() — the surface you're literally looking at right now",
+    "language": "js",
+    "code": "  function renderReader() {\n    const { chunks, i } = state;\n    const c = chunks[i];\n    const atStart = i === 0;\n    const atEnd = i === chunks.length - 1;\n    const lang = c.language || \"none\";\n    const langClass = c.language ? `language-${escapeHtml(c.language)}` : \"\";\n\n    app.innerHTML = `\n      <button class=\"reset\" id=\"reset\" title=\"new plan\">&times;</button>\n      <button class=\"eta\" id=\"eta\" title=\"tap for finish time\">${escapeHtml(etaText())}</button>\n      <button class=\"nav prev\" id=\"prev\" ${atStart ? \"disabled\" : \"\"} aria-label=\"previous\">&lsaquo;</button>\n      <div class=\"reader-wrap\">\n        ${c.title ? `<div class=\"title\">${escapeHtml(c.title)}</div>` : \"\"}\n        <div class=\"code-wrap\" id=\"code-wrap\">\n          <pre><code class=\"${langClass}\" id=\"code\">${escapeHtml(c.code)}</code></pre>\n        </div>\n      </div>\n      <button class=\"nav next\" id=\"next\" ${atEnd ? \"disabled\" : \"\"} aria-label=\"next\">&rsaquo;</button>\n      <div class=\"counter\">${i + 1} / ${chunks.length}</div>\n    `;\n\n    chunkStart = Date.now();\n\n    if (window.Prism && c.language) {\n      try { Prism.highlightElement(document.getElementById(\"code\")); } catch {}\n    }\n\n    document.getElementById(\"prev\").onclick = () => go(-1);\n    document.getElementById(\"next\").onclick = () => go(1);\n    document.getElementById(\"code-wrap\").onclick = (e) => {\n      if (window.getSelection && String(window.getSelection()).length > 0) return;\n      go(1);\n    };\n    document.getElementById(\"reset\").onclick = (e) => {\n      e.stopPropagation();\n      if (confirm(\"discard current plan?\")) reset();\n    };\n    const eta = document.getElementById(\"eta\");\n    eta.onclick = (e) => {\n      e.stopPropagation();\n      showFinishTime = !showFinishTime;\n      eta.textContent = etaText();\n    };\n  }"
+  },
+  {
+    "title": "go() — navigation math; samples reading time on forward moves only",
+    "language": "js",
+    "code": "  function go(delta) {\n    const n = state.chunks.length;\n    if (!n) return;\n    const newI = Math.max(0, Math.min(n - 1, state.i + delta));\n    if (newI === state.i) return;\n    if (delta > 0) sampleCurrentChunk();\n    state.i = newI;\n    showFinishTime = false;\n    save();\n    render();\n  }"
+  },
+  {
+    "title": "sampleCurrentChunk() — the outlier clamp (500ms–10min) that keeps your WPM honest",
+    "language": "js",
+    "code": "  function sampleCurrentChunk() {\n    if (!chunkStart) return;\n    const elapsed = Date.now() - chunkStart;\n    chunkStart = 0;\n    if (elapsed < MIN_SAMPLE_MS || elapsed > MAX_SAMPLE_MS) return;\n    const w = wordCount(state.chunks[state.i] && state.chunks[state.i].code);\n    if (!w) return;\n    state.totalMs += elapsed;\n    state.totalWords += w;\n  }"
+  },
+  {
+    "title": "the ETA math — wpm, remaining words, minutes left",
+    "language": "js",
+    "code": "  function currentWpm() {\n    if (state.totalMs > 0 && state.totalWords > 0) {\n      return state.totalWords / (state.totalMs / 60000);\n    }\n    return DEFAULT_WPM;\n  }\n\n  function remainingWords() {\n    let sum = 0;\n    for (let k = state.i; k < state.chunks.length; k++) {\n      sum += wordCount(state.chunks[k].code);\n    }\n    return sum;\n  }\n\n  function minutesLeft() {\n    const wpm = currentWpm();\n    if (!wpm) return null;\n    return remainingWords() / wpm;\n  }"
+  },
+  {
+    "title": "format helpers + the etaText toggle you tap to flip minutes-left vs finish-time",
+    "language": "js",
+    "code": "  function formatMins(m) {\n    if (m < 1) return \"< 1 min left\";\n    if (m < 60) return `~${Math.round(m)} min left`;\n    const h = Math.floor(m / 60);\n    const rem = Math.round(m % 60);\n    return rem ? `~${h}h ${rem}m left` : `~${h}h left`;\n  }\n\n  function formatFinish(m) {\n    const d = new Date(Date.now() + m * 60000);\n    let h = d.getHours();\n    const min = String(d.getMinutes()).padStart(2, \"0\");\n    const ampm = h >= 12 ? \"pm\" : \"am\";\n    h = h % 12 || 12;\n    return `done ~${h}:${min}${ampm}`;\n  }\n\n  function etaText() {\n    const m = minutesLeft();\n    if (m == null || m <= 0) return \"\";\n    return showFinishTime ? formatFinish(m) : formatMins(m);\n  }"
+  },
+  {
+    "title": "reset() — wipes the current plan but preserves your running WPM",
+    "language": "js",
+    "code": "  function reset() {\n    state = { chunks: [], i: 0, totalWords: state.totalWords, totalMs: state.totalMs };\n    chunkStart = 0;\n    showFinishTime = false;\n    save();\n    render();\n  }"
+  },
+  {
+    "title": "keyboard — arrows + space, skipped when a text input has focus",
+    "language": "js",
+    "code": "  document.addEventListener(\"keydown\", (e) => {\n    if (!state.chunks.length) return;\n    const tag = (document.activeElement && document.activeElement.tagName) || \"\";\n    if (tag === \"TEXTAREA\" || tag === \"INPUT\") return;\n    if (e.key === \"ArrowRight\" || e.key === \" \") { e.preventDefault(); go(1); }\n    else if (e.key === \"ArrowLeft\") { e.preventDefault(); go(-1); }\n  });"
+  }
+]
