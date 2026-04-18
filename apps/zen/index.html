@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Zen Reader</title>
+<style>
+  :root {
+    --bg: #f5efe6;
+    --fg: #2a2520;
+    --muted: #8a8275;
+    --accent: #4a4338;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1715;
+      --fg: #d8cfc2;
+      --muted: #6b6357;
+      --accent: #b8ad9c;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Iowan Old Style", "Palatino", "Charter", Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    overflow: hidden;
+  }
+
+  main {
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  /* paste screen */
+  .paste {
+    width: 100%;
+    max-width: 36rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  .paste textarea {
+    width: 100%;
+    min-height: 50vh;
+    padding: 1.25rem;
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--muted);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+  }
+  .paste textarea:focus {
+    border-color: var(--accent);
+  }
+  .paste textarea::placeholder {
+    color: var(--muted);
+    font-style: italic;
+  }
+  .paste button {
+    align-self: center;
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 0.6rem 2rem;
+    font-family: inherit;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    text-transform: lowercase;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .paste button:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+  .paste .hint {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+
+  /* reader screen */
+  .reader {
+    max-width: 36rem;
+    width: 100%;
+    font-size: 1.5rem;
+    line-height: 1.7;
+    cursor: pointer;
+    user-select: text;
+    padding: 0 1rem;
+  }
+  .reader p {
+    margin: 0;
+  }
+
+  @media (max-width: 480px) {
+    .reader { font-size: 1.25rem; }
+  }
+
+  .nav {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 2rem;
+    cursor: pointer;
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
+    padding: 1rem;
+    line-height: 1;
+  }
+  .nav:hover { opacity: 1; }
+  .nav:disabled { opacity: 0.1; cursor: default; }
+  .nav.prev { left: 0.5rem; }
+  .nav.next { right: 0.5rem; }
+
+  .counter {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    font-variant-numeric: tabular-nums;
+    user-select: none;
+  }
+
+  .reset {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 1.2rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.2s ease;
+    padding: 0.5rem 0.75rem;
+    line-height: 1;
+  }
+  .reset:hover { opacity: 1; }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+  const KEY = "zen-reader";
+  const app = document.getElementById("app");
+
+  let state = load() || { paragraphs: [], i: 0 };
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+  }
+
+  function splitParagraphs(text) {
+    return text.split(/\n\s*\n+/).map(s => s.trim()).filter(Boolean);
+  }
+
+  function go(delta) {
+    const n = state.paragraphs.length;
+    if (!n) return;
+    state.i = Math.max(0, Math.min(n - 1, state.i + delta));
+    save();
+    render();
+  }
+
+  function reset() {
+    state = { paragraphs: [], i: 0 };
+    try { localStorage.removeItem(KEY); } catch {}
+    render();
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+  }
+
+  function renderPaste() {
+    app.innerHTML = `
+      <div class="paste">
+        <textarea id="ta" placeholder="paste text here\u2026" autofocus></textarea>
+        <button id="begin">begin</button>
+        <div class="hint">paragraphs separated by blank lines</div>
+      </div>
+    `;
+    const ta = document.getElementById("ta");
+    document.getElementById("begin").onclick = () => {
+      const paras = splitParagraphs(ta.value);
+      if (!paras.length) return;
+      state = { paragraphs: paras, i: 0 };
+      save();
+      render();
+    };
+  }
+
+  function renderReader() {
+    const { paragraphs: p, i } = state;
+    const atStart = i === 0;
+    const atEnd = i === p.length - 1;
+
+    app.innerHTML = `
+      <button class="reset" id="reset" title="new text">&times;</button>
+      <button class="nav prev" id="prev" ${atStart ? "disabled" : ""} aria-label="previous">&lsaquo;</button>
+      <div class="reader" id="reader"><p>${escapeHtml(p[i])}</p></div>
+      <button class="nav next" id="next" ${atEnd ? "disabled" : ""} aria-label="next">&rsaquo;</button>
+      <div class="counter">${i + 1} / ${p.length}</div>
+    `;
+
+    document.getElementById("prev").onclick = () => go(-1);
+    document.getElementById("next").onclick = () => go(1);
+    document.getElementById("reader").onclick = () => go(1);
+    document.getElementById("reset").onclick = (e) => {
+      e.stopPropagation();
+      reset();
+    };
+  }
+
+  function render() {
+    if (state.paragraphs.length) renderReader();
+    else renderPaste();
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (!state.paragraphs.length) return;
+    if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); go(1); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); go(-1); }
+  });
+
+  render();
+</script>
+</body>
+</html>
