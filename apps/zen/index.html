@@ -151,6 +151,27 @@
     user-select: none;
   }
 
+  .eta {
+    position: fixed;
+    top: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+    padding: 0.25rem 0.5rem;
+    user-select: none;
+  }
+  .eta:hover { opacity: 1; }
+  .eta:empty { display: none; }
+
   .reset {
     position: fixed;
     top: 1rem;
@@ -175,9 +196,17 @@
 <script>
   const KEY = "zen-reader";
   const MAX_WORDS = 80;
+  const DEFAULT_WPM = 220;
+  const MIN_SAMPLE_MS = 500;
+  const MAX_SAMPLE_MS = 5 * 60 * 1000;
   const app = document.getElementById("app");
 
-  let state = load() || { paragraphs: [], i: 0 };
+  let state = load() || { paragraphs: [], i: 0, totalWords: 0, totalMs: 0 };
+  if (typeof state.totalWords !== "number") state.totalWords = 0;
+  if (typeof state.totalMs !== "number") state.totalMs = 0;
+
+  let chunkStart = 0;
+  let showFinishTime = false;
 
   function load() {
     try {
@@ -232,17 +261,71 @@
       .flatMap(chunkParagraph);
   }
 
+  function sampleCurrentChunk() {
+    if (!chunkStart) return;
+    const elapsed = Date.now() - chunkStart;
+    chunkStart = 0;
+    if (elapsed < MIN_SAMPLE_MS || elapsed > MAX_SAMPLE_MS) return;
+    const words = wordCount(state.paragraphs[state.i] || "");
+    if (!words) return;
+    state.totalMs += elapsed;
+    state.totalWords += words;
+  }
+
+  function currentWpm() {
+    if (state.totalMs > 0 && state.totalWords > 0) {
+      return state.totalWords / (state.totalMs / 60000);
+    }
+    return DEFAULT_WPM;
+  }
+
+  function remainingWords() {
+    const { paragraphs: p, i } = state;
+    let sum = 0;
+    for (let k = i; k < p.length; k++) sum += wordCount(p[k]);
+    return sum;
+  }
+
+  function minutesLeft() {
+    const wpm = currentWpm();
+    if (!wpm) return null;
+    return remainingWords() / wpm;
+  }
+
+  function formatMins(m) {
+    if (m < 1) return "< 1 min left";
+    if (m < 60) return `~${Math.round(m)} min left`;
+    const h = Math.floor(m / 60);
+    const rem = Math.round(m % 60);
+    return rem ? `~${h}h ${rem}m left` : `~${h}h left`;
+  }
+
+  function formatFinish(m) {
+    const d = new Date(Date.now() + m * 60000);
+    let h = d.getHours();
+    const min = String(d.getMinutes()).padStart(2, "0");
+    const ampm = h >= 12 ? "pm" : "am";
+    h = h % 12 || 12;
+    return `done ~${h}:${min}${ampm}`;
+  }
+
   function go(delta) {
     const n = state.paragraphs.length;
     if (!n) return;
-    state.i = Math.max(0, Math.min(n - 1, state.i + delta));
+    const newI = Math.max(0, Math.min(n - 1, state.i + delta));
+    if (newI === state.i) return;
+    if (delta > 0) sampleCurrentChunk();
+    state.i = newI;
+    showFinishTime = false;
     save();
     render();
   }
 
   function reset() {
-    state = { paragraphs: [], i: 0 };
-    try { localStorage.removeItem(KEY); } catch {}
+    state = { paragraphs: [], i: 0, totalWords: state.totalWords, totalMs: state.totalMs };
+    chunkStart = 0;
+    showFinishTime = false;
+    save();
     render();
   }
 
@@ -264,10 +347,16 @@
     document.getElementById("begin").onclick = () => {
       const paras = splitParagraphs(ta.value);
       if (!paras.length) return;
-      state = { paragraphs: paras, i: 0 };
+      state = { paragraphs: paras, i: 0, totalWords: state.totalWords, totalMs: state.totalMs };
       save();
       render();
     };
+  }
+
+  function etaText() {
+    const m = minutesLeft();
+    if (m == null || m <= 0) return "";
+    return showFinishTime ? formatFinish(m) : formatMins(m);
   }
 
   function renderReader() {
@@ -277,11 +366,14 @@
 
     app.innerHTML = `
       <button class="reset" id="reset" title="new text">&times;</button>
+      <button class="eta" id="eta" title="tap for finish time">${escapeHtml(etaText())}</button>
       <button class="nav prev" id="prev" ${atStart ? "disabled" : ""} aria-label="previous">&lsaquo;</button>
       <div class="reader" id="reader"><p>${escapeHtml(p[i])}</p></div>
       <button class="nav next" id="next" ${atEnd ? "disabled" : ""} aria-label="next">&rsaquo;</button>
       <div class="counter">${i + 1} / ${p.length}</div>
     `;
+
+    chunkStart = Date.now();
 
     document.getElementById("prev").onclick = () => go(-1);
     document.getElementById("next").onclick = () => go(1);
@@ -289,6 +381,12 @@
     document.getElementById("reset").onclick = (e) => {
       e.stopPropagation();
       reset();
+    };
+    const eta = document.getElementById("eta");
+    eta.onclick = (e) => {
+      e.stopPropagation();
+      showFinishTime = !showFinishTime;
+      eta.textContent = etaText();
     };
   }
 
