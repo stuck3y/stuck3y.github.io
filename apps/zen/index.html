@@ -174,6 +174,7 @@
 <main id="app"></main>
 <script>
   const KEY = "zen-reader";
+  const MAX_WORDS = 80;
   const app = document.getElementById("app");
 
   let state = load() || { paragraphs: [], i: 0 };
@@ -189,8 +190,46 @@
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
   }
 
+  function wordCount(s) {
+    return s.trim().split(/\s+/).filter(Boolean).length;
+  }
+
+  function chunkParagraph(para) {
+    if (wordCount(para) <= MAX_WORDS) return [para];
+
+    const sentences = para.match(/[^.!?…]+[.!?…]+["')\]]*\s*|[^.!?…]+$/g) || [para];
+    const chunks = [];
+    let buf = "";
+
+    for (const raw of sentences) {
+      const sent = raw.trim();
+      if (!sent) continue;
+      const candidate = buf ? buf + " " + sent : sent;
+      if (wordCount(candidate) > MAX_WORDS && buf) {
+        chunks.push(buf);
+        buf = sent;
+      } else {
+        buf = candidate;
+      }
+    }
+    if (buf) chunks.push(buf);
+
+    const final = [];
+    for (const chunk of chunks) {
+      if (wordCount(chunk) <= MAX_WORDS) { final.push(chunk); continue; }
+      const words = chunk.split(/\s+/);
+      for (let i = 0; i < words.length; i += MAX_WORDS) {
+        final.push(words.slice(i, i + MAX_WORDS).join(" "));
+      }
+    }
+    return final;
+  }
+
   function splitParagraphs(text) {
-    return text.split(/\n\s*\n+/).map(s => s.trim()).filter(Boolean);
+    return text.split(/\n\s*\n+/)
+      .map(s => s.trim())
+      .filter(Boolean)
+      .flatMap(chunkParagraph);
   }
 
   function go(delta) {
