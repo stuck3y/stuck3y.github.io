@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HN Feed Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --bg-elev: #161616;
+    --bg-deep: #0a0a0a;
+    --ink: #ededed;
+    --ink-dim: #888;
+    --ink-faint: #4a4a4a;
+    --accent: #d4ff3a;
+    --accent-dim: #8a9d28;
+    --rule: #262626;
+    --rule-soft: #1d1d1d;
+    --warn: #ff6b35;
+    --read: #2a2a2a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body {
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(212, 255, 58, 0.04), transparent 50%),
+      radial-gradient(circle at 80% 100%, rgba(255, 107, 53, 0.03), transparent 50%);
+  }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 48px 32px 96px;
+  }
+
+  header {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: 44px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  h1 .accent { color: var(--accent); font-style: italic; }
+
+  .tagline {
+    color: var(--ink-dim);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    text-align: right;
+  }
+
+  .tagline strong { color: var(--ink); font-weight: 500; }
+
+  .panel {
+    background: var(--bg-elev);
+    border: 1px solid var(--rule);
+    padding: 22px 24px;
+    margin-bottom: 20px;
+  }
+
+  .panel-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-dim);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
+  }
+
+  .panel-title .label-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .panel-title .label-group::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+
+  .panel-title .meta {
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+  }
+
+  .row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .row:last-child { margin-bottom: 0; }
+
+  label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-dim);
+    min-width: 80px;
+  }
+
+  .segmented {
+    display: flex;
+    border: 1px solid var(--rule);
+    background: var(--bg);
+    flex-wrap: wrap;
+  }
+
+  .segmented button {
+    background: transparent;
+    border: none;
+    color: var(--ink-dim);
+    font-family: inherit;
+    font-size: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-right: 1px solid var(--rule);
+    transition: all 0.15s ease;
+  }
+
+  .segmented button:last-child { border-right: none; }
+  .segmented button:hover { color: var(--ink); background: rgba(212, 255, 58, 0.04); }
+  .segmented button.active {
+    color: var(--bg);
+    background: var(--accent);
+    font-weight: 700;
+  }
+
+  input[type="text"], input[type="number"] {
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 12px;
+    flex: 1;
+    min-width: 0;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input[type="text"]:focus, input[type="number"]:focus { border-color: var(--accent); }
+  input[type="number"] { width: 90px; flex: 0 0 90px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .chip {
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--ink-dim);
+    font-family: inherit;
+    font-size: 12px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .chip:hover { border-color: var(--accent-dim); color: var(--ink); }
+  .chip.on {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(212, 255, 58, 0.06);
+  }
+
+  .url-display {
+    background: var(--bg-deep);
+    border: 1px dashed var(--accent-dim);
+    padding: 14px 16px 14px 32px;
+    font-size: 13px;
+    word-break: break-all;
+    color: var(--accent);
+    margin-bottom: 14px;
+    line-height: 1.6;
+    position: relative;
+  }
+
+  .url-display::before {
+    content: '$';
+    position: absolute;
+    left: 12px;
+    top: 14px;
+    color: var(--ink-faint);
+  }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .btn {
+    background: var(--accent);
+    color: var(--bg);
+    border: 1px solid var(--accent);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 11px 18px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s;
+  }
+
+  .btn:hover { background: transparent; color: var(--accent); }
+  .btn.secondary { background: transparent; color: var(--ink); border-color: var(--rule); }
+  .btn.secondary:hover { border-color: var(--ink); color: var(--ink); }
+  .btn.copied { background: var(--warn); border-color: var(--warn); color: var(--bg); }
+
+  .presets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+  }
+
+  .preset-card {
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    font-family: inherit;
+    color: var(--ink);
+  }
+
+  .preset-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .preset-card .name { font-size: 12px; font-weight: 500; margin-bottom: 4px; }
+  .preset-card .desc { font-size: 11px; color: var(--ink-dim); line-height: 1.4; }
+
+  .results {
+    background: var(--bg-elev);
+    border: 1px solid var(--rule);
+  }
+
+  .results-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .results-status {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-dim);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .results-status .dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+
+  .results-status.loading .dot {
+    background: var(--warn);
+    animation: pulse 1s infinite;
+  }
+
+  .results-status.error .dot { background: var(--warn); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .results-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .icon-btn {
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--ink-dim);
+    font-family: inherit;
+    font-size: 11px;
+    padding: 6px 12px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: all 0.15s;
+  }
+
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .stories { padding: 4px 0; }
+
+  .story {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--rule-soft);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    transition: background 0.12s;
+  }
+
+  .story:last-child { border-bottom: none; }
+  .story:hover { background: rgba(212, 255, 58, 0.025); }
+
+  .story.read .title-link { color: var(--read); }
+  .story.read .meta { opacity: 0.5; }
+
+  .story-num {
+    font-size: 11px;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+    padding-top: 2px;
+    min-width: 24px;
+  }
+
+  .story-content { min-width: 0; }
+
+  .title-link {
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.35;
+    display: block;
+    margin-bottom: 6px;
+    word-break: break-word;
+  }
+
+  .title-link:hover { color: var(--accent); }
+
+  .domain {
+    color: var(--ink-faint);
+    font-size: 11px;
+    margin-left: 8px;
+  }
+
+  .meta {
+    font-size: 11px;
+    color: var(--ink-dim);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .meta a {
+    color: var(--ink-dim);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--ink-faint);
+  }
+
+  .meta a:hover { color: var(--accent); border-color: var(--accent); }
+
+  .meta .points { color: var(--accent-dim); font-weight: 500; }
+  .meta .points.hot { color: var(--accent); }
+
+  .empty, .error-msg {
+    padding: 60px 24px;
+    text-align: center;
+    color: var(--ink-dim);
+    font-size: 13px;
+  }
+
+  .error-msg { color: var(--warn); }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--rule);
+    color: var(--ink-faint);
+    font-size: 11px;
+    line-height: 1.7;
+  }
+
+  footer a {
+    color: var(--ink-dim);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--ink-faint);
+  }
+
+  footer a:hover { color: var(--accent); border-color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .wrap { padding: 28px 16px 64px; }
+    h1 { font-size: 30px; }
+    .row { flex-direction: column; align-items: stretch; }
+    label { min-width: 0; }
+    input[type="number"] { width: 100%; flex: 1; }
+    .story { padding: 14px 16px; }
+    .results-header { padding: 14px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>HN Feed <span class="accent">Builder</span></h1>
+    <div class="tagline">
+      Live results &middot; click any story<br>
+      <strong>Algolia API</strong> &middot; no backend
+    </div>
+  </header>
+
+  <div class="panel">
+    <div class="panel-title"><span class="label-group">Feed Source</span></div>
+    <div class="segmented" id="feedType">
+      <button data-feed="newest" class="active">Newest</button>
+      <button data-feed="frontpage">Front Page</button>
+      <button data-feed="ask">Ask HN</button>
+      <button data-feed="show">Show HN</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title"><span class="label-group">Filters</span></div>
+
+    <div class="row">
+      <label>Points &ge;</label>
+      <input type="number" id="points" placeholder="any" min="0">
+      <div class="chips" id="pointsChips">
+        <button class="chip" data-points="3">3</button>
+        <button class="chip" data-points="5">5</button>
+        <button class="chip" data-points="10">10</button>
+        <button class="chip" data-points="50">50</button>
+        <button class="chip" data-points="100">100</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <label>Comments &ge;</label>
+      <input type="number" id="comments" placeholder="any" min="0">
+      <div class="chips" id="commentsChips">
+        <button class="chip" data-comments="5">5</button>
+        <button class="chip" data-comments="25">25</button>
+        <button class="chip" data-comments="100">100</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <label>Keyword</label>
+      <input type="text" id="keyword" placeholder="rust, postgres, ai (use OR for multiple)">
+    </div>
+
+    <div class="row">
+      <label>Window</label>
+      <div class="segmented" id="window">
+        <button data-window="0" class="active">All time</button>
+        <button data-window="3600">1h</button>
+        <button data-window="86400">24h</button>
+        <button data-window="604800">7d</button>
+        <button data-window="2592000">30d</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">
+      <span class="label-group">Equivalent RSS URL</span>
+      <span class="meta">for NetNewsWire / Reeder</span>
+    </div>
+    <div class="url-display" id="urlOut">https://hnrss.org/newest</div>
+    <div class="actions">
+      <a id="openLink" href="#" target="_blank" class="btn">&#8599; Open RSS</a>
+      <button id="copyBtn" class="btn secondary">&#9099; Copy URL</button>
+      <button id="resetBtn" class="btn secondary">&#8634; Reset</button>
+    </div>
+  </div>
+
+  <div class="results" id="resultsPanel">
+    <div class="results-header">
+      <div class="results-status" id="status">
+        <span class="dot"></span>
+        <span id="statusText">Ready</span>
+      </div>
+      <div class="results-controls">
+        <button class="icon-btn" id="refreshBtn">&#8635; Refresh</button>
+        <button class="icon-btn" id="markAllRead">Mark all read</button>
+        <button class="icon-btn" id="clearRead">Clear history</button>
+      </div>
+    </div>
+    <div id="stories" class="stories">
+      <div class="empty">Adjust filters above. Stories load automatically.</div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top: 20px;">
+    <div class="panel-title"><span class="label-group">Quick Presets</span></div>
+    <div class="presets-grid" id="presets"></div>
+  </div>
+
+  <footer>
+    Live data via the <a href="https://hn.algolia.com/api" target="_blank">HN Algolia API</a>
+    (no key, no auth, generous rate limits).
+    The "Open RSS" button gives you the equivalent <a href="https://hnrss.org" target="_blank">hnrss.org</a> URL
+    for piping into a proper reader. Read state is stored locally in your browser.
+  </footer>
+
+</div>
+
+<script>
+  const state = {
+    feed: 'newest',
+    points: '',
+    comments: '',
+    keyword: '',
+    window: '0',
+  };
+
+  const READ_KEY = 'hn-feed-builder:read';
+  const readSet = new Set(JSON.parse(localStorage.getItem(READ_KEY) || '[]'));
+
+  const $ = (id) => document.getElementById(id);
+  const persistRead = () => localStorage.setItem(READ_KEY, JSON.stringify([...readSet]));
+
+  function buildRssUrl() {
+    const path = state.feed;
+    const params = new URLSearchParams();
+    if (state.points) params.set('points', state.points);
+    if (state.comments) params.set('comments', state.comments);
+    if (state.keyword.trim()) params.set('q', state.keyword.trim());
+    const qs = params.toString();
+    return `https://hnrss.org/${path}${qs ? '?' + qs : ''}`;
+  }
+
+  function buildAlgoliaUrl() {
+    const tagMap = {
+      newest: 'story',
+      frontpage: 'front_page',
+      ask: 'ask_hn',
+      show: 'show_hn',
+    };
+    const tag = tagMap[state.feed] || 'story';
+    const endpoint = state.feed === 'frontpage' ? 'search' : 'search_by_date';
+
+    const params = new URLSearchParams();
+    params.set('tags', tag);
+    params.set('hitsPerPage', '40');
+
+    if (state.keyword.trim()) params.set('query', state.keyword.trim());
+
+    const numeric = [];
+    if (state.points) numeric.push(`points>=${state.points}`);
+    if (state.comments) numeric.push(`num_comments>=${state.comments}`);
+    if (state.window && state.window !== '0') {
+      const cutoff = Math.floor(Date.now() / 1000) - parseInt(state.window, 10);
+      numeric.push(`created_at_i>${cutoff}`);
+    }
+    if (numeric.length) params.set('numericFilters', numeric.join(','));
+
+    return `https://hn.algolia.com/api/v1/${endpoint}?${params.toString()}`;
+  }
+
+  function render() {
+    const rssUrl = buildRssUrl();
+    $('urlOut').textContent = rssUrl;
+    $('openLink').href = rssUrl;
+
+    document.querySelectorAll('#pointsChips .chip').forEach(c => {
+      c.classList.toggle('on', c.dataset.points === state.points);
+    });
+    document.querySelectorAll('#commentsChips .chip').forEach(c => {
+      c.classList.toggle('on', c.dataset.comments === state.comments);
+    });
+    document.querySelectorAll('#feedType button').forEach(b => {
+      b.classList.toggle('active', b.dataset.feed === state.feed);
+    });
+    document.querySelectorAll('#window button').forEach(b => {
+      b.classList.toggle('active', b.dataset.window === state.window);
+    });
+
+    fetchStories();
+  }
+
+  let fetchToken = 0;
+
+  function setStatus(text, kind = 'idle') {
+    $('statusText').textContent = text;
+    $('status').className = 'results-status' + (kind === 'idle' ? '' : ' ' + kind);
+  }
+
+  async function fetchStories() {
+    const token = ++fetchToken;
+    const url = buildAlgoliaUrl();
+    setStatus('Fetching...', 'loading');
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (token !== fetchToken) return;
+
+      const hits = data.hits || [];
+      setStatus(`${hits.length} of ${data.nbHits ?? 0} stories`, 'idle');
+      renderStories(hits);
+    } catch (err) {
+      if (token !== fetchToken) return;
+      setStatus('Failed', 'error');
+      $('stories').innerHTML = `<div class="error-msg">Couldn't reach Algolia: ${escape(err.message)}</div>`;
+    }
+  }
+
+  function timeAgo(unix) {
+    const s = Math.floor(Date.now() / 1000) - unix;
+    if (s < 60) return `${s}s ago`;
+    if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+    if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+    if (s < 2592000) return `${Math.floor(s / 86400)}d ago`;
+    return new Date(unix * 1000).toLocaleDateString();
+  }
+
+  function getDomain(url) {
+    if (!url) return '';
+    try { return new URL(url).hostname.replace(/^www\./, ''); }
+    catch { return ''; }
+  }
+
+  function escape(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  }
+
+  function renderStories(hits) {
+    const container = $('stories');
+    if (!hits.length) {
+      container.innerHTML = `<div class="empty">No matches. Loosen the filters.</div>`;
+      return;
+    }
+
+    container.innerHTML = hits.map((h, i) => {
+      const id = h.objectID;
+      const title = escape(h.title || h.story_title || '(no title)');
+      const externalUrl = h.url || `https://news.ycombinator.com/item?id=${id}`;
+      const hnUrl = `https://news.ycombinator.com/item?id=${id}`;
+      const domain = getDomain(h.url);
+      const points = h.points ?? 0;
+      const numComments = h.num_comments ?? 0;
+      const author = escape(h.author || '');
+      const isRead = readSet.has(id);
+      const isHot = points >= 100;
+
+      return `
+        <div class="story ${isRead ? 'read' : ''}" data-id="${id}">
+          <div class="story-num">${String(i + 1).padStart(2, '0')}</div>
+          <div class="story-content">
+            <a href="${escape(externalUrl)}" target="_blank" rel="noopener" class="title-link" data-link="story">
+              ${title}${domain ? `<span class="domain">(${escape(domain)})</span>` : ''}
+            </a>
+            <div class="meta">
+              <span class="points ${isHot ? 'hot' : ''}">&#9650; ${points}</span>
+              <span>by ${author}</span>
+              <span>${timeAgo(h.created_at_i)}</span>
+              <a href="${hnUrl}" target="_blank" rel="noopener" data-link="comments">&#128172; ${numComments} comments</a>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    container.querySelectorAll('.story a[data-link]').forEach(a => {
+      a.addEventListener('click', () => {
+        const story = a.closest('.story');
+        const id = story.dataset.id;
+        readSet.add(id);
+        persistRead();
+        story.classList.add('read');
+      });
+    });
+  }
+
+  document.querySelectorAll('#feedType button').forEach(btn => {
+    btn.addEventListener('click', () => { state.feed = btn.dataset.feed; render(); });
+  });
+
+  document.querySelectorAll('#window button').forEach(btn => {
+    btn.addEventListener('click', () => { state.window = btn.dataset.window; render(); });
+  });
+
+  let debounceTimer;
+  const debounceRender = () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(render, 300);
+  };
+
+  $('points').addEventListener('input', (e) => { state.points = e.target.value; debounceRender(); });
+  $('comments').addEventListener('input', (e) => { state.comments = e.target.value; debounceRender(); });
+  $('keyword').addEventListener('input', (e) => { state.keyword = e.target.value; debounceRender(); });
+
+  document.querySelectorAll('#pointsChips .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const val = chip.dataset.points;
+      state.points = state.points === val ? '' : val;
+      $('points').value = state.points;
+      render();
+    });
+  });
+
+  document.querySelectorAll('#commentsChips .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const val = chip.dataset.comments;
+      state.comments = state.comments === val ? '' : val;
+      $('comments').value = state.comments;
+      render();
+    });
+  });
+
+  $('copyBtn').addEventListener('click', async () => {
+    const btn = $('copyBtn');
+    try {
+      await navigator.clipboard.writeText(buildRssUrl());
+      const original = btn.textContent;
+      btn.textContent = '✓ Copied';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1400);
+    } catch { btn.textContent = 'failed'; }
+  });
+
+  $('resetBtn').addEventListener('click', () => {
+    state.feed = 'newest';
+    state.points = '';
+    state.comments = '';
+    state.keyword = '';
+    state.window = '0';
+    $('points').value = '';
+    $('comments').value = '';
+    $('keyword').value = '';
+    render();
+  });
+
+  $('refreshBtn').addEventListener('click', fetchStories);
+
+  $('markAllRead').addEventListener('click', () => {
+    document.querySelectorAll('.story').forEach(s => {
+      readSet.add(s.dataset.id);
+      s.classList.add('read');
+    });
+    persistRead();
+  });
+
+  $('clearRead').addEventListener('click', () => {
+    if (!confirm('Clear read history?')) return;
+    readSet.clear();
+    persistRead();
+    document.querySelectorAll('.story').forEach(s => s.classList.remove('read'));
+  });
+
+  const presets = [
+    {
+      name: 'Early Commenter',
+      desc: 'Newest, last hour, 3+ points. Catch front-page candidates.',
+      apply: { feed: 'newest', points: '3', window: '3600' },
+    },
+    {
+      name: 'Rising Stories',
+      desc: 'Newest, last hour, 5+ points. Past the noise floor.',
+      apply: { feed: 'newest', points: '5', window: '3600' },
+    },
+    {
+      name: 'Made the Cut',
+      desc: 'Currently on front page.',
+      apply: { feed: 'frontpage' },
+    },
+    {
+      name: 'Hot Discussions',
+      desc: 'Last 24h, 25+ comments.',
+      apply: { feed: 'newest', comments: '25', window: '86400' },
+    },
+    {
+      name: 'Show HN: Worth a Look',
+      desc: 'Show HN posts that broke 10 points.',
+      apply: { feed: 'show', points: '10' },
+    },
+    {
+      name: 'Ask HN: Engaged',
+      desc: 'Ask HN with 5+ comments.',
+      apply: { feed: 'ask', comments: '5' },
+    },
+    {
+      name: 'AI / LLM Watch',
+      desc: 'AI-tagged posts, 5+ points, 24h.',
+      apply: { feed: 'newest', keyword: 'ai OR llm OR claude OR gpt', points: '5', window: '86400' },
+    },
+    {
+      name: 'Rust Mentions',
+      desc: 'Anything Rust, 3+ points, 7d.',
+      apply: { feed: 'newest', keyword: 'rust', points: '3', window: '604800' },
+    },
+  ];
+
+  const presetsEl = $('presets');
+  presets.forEach(p => {
+    const card = document.createElement('button');
+    card.className = 'preset-card';
+    card.innerHTML = `<div class="name">${p.name}</div><div class="desc">${p.desc}</div>`;
+    card.addEventListener('click', () => {
+      state.feed = p.apply.feed || 'newest';
+      state.points = p.apply.points || '';
+      state.comments = p.apply.comments || '';
+      state.keyword = p.apply.keyword || '';
+      state.window = p.apply.window || '0';
+      $('points').value = state.points;
+      $('comments').value = state.comments;
+      $('keyword').value = state.keyword;
+      render();
+      $('resultsPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    presetsEl.appendChild(card);
+  });
+
+  render();
+</script>
+
+</body>
+</html>
