@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sig</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    background: #fafaf7;
+    color: #1a1a1a;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  .app { width: 100%; max-width: 540px; }
+  .timer {
+    font-size: 64px;
+    font-weight: 200;
+    letter-spacing: -2px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+  }
+  .timer.warn { color: #c0392b; }
+  .timer.untimed {
+    font-size: 28px;
+    font-weight: 300;
+    color: #999;
+    letter-spacing: 0;
+  }
+  .step-label {
+    text-align: center;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #888;
+    margin-bottom: 24px;
+  }
+  .prompt {
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.4;
+    text-align: center;
+    margin-bottom: 16px;
+    min-height: 60px;
+    padding: 0 8px;
+  }
+  .leverage-prompt {
+    text-align: center;
+    font-size: 15px;
+    color: #6b6b6b;
+    font-style: italic;
+    margin-bottom: 16px;
+    min-height: 22px;
+    transition: opacity 0.4s ease;
+  }
+  textarea, input[type="text"] {
+    width: 100%;
+    padding: 16px;
+    font-size: 17px;
+    font-family: inherit;
+    border: 1px solid #e0e0d8;
+    border-radius: 12px;
+    background: #fff;
+    resize: none;
+    outline: none;
+    line-height: 1.5;
+    color: #1a1a1a;
+    -webkit-appearance: none;
+  }
+  textarea:focus, input[type="text"]:focus { border-color: #1a1a1a; }
+  textarea { min-height: 240px; }
+  .list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .item {
+    padding: 14px 16px;
+    background: #fff;
+    border: 1px solid #e0e0d8;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .item:hover { border-color: #bbb; }
+  .item.selected {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #1a1a1a;
+  }
+  .item.winner {
+    background: #fff8d6;
+    border-color: #d4b400;
+    color: #1a1a1a;
+  }
+  .item .badge {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-left: auto;
+  }
+  .item.winner .badge { color: #8a7400; font-weight: 600; }
+  .help {
+    font-size: 14px;
+    color: #888;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  button {
+    flex: 1;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 500;
+    font-family: inherit;
+    border: none;
+    border-radius: 10px;
+    background: #1a1a1a;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+    -webkit-appearance: none;
+  }
+  button.ghost { background: transparent; color: #888; border: 1px solid #e0e0d8; }
+  button:hover { opacity: 0.85; }
+  button:disabled { opacity: 0.3; cursor: not-allowed; }
+  .winners { display: flex; flex-direction: column; gap: 16px; }
+  .winner-card {
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #e0e0d8;
+    border-radius: 12px;
+  }
+  .winner-card .task {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 16px;
+  }
+  .estimate-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    background: #fff;
+    border: 1px solid #e0e0d8;
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .estimate-row .task-text {
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .est-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .est-btn {
+    flex: 1;
+    min-width: 50px;
+    padding: 8px 4px;
+    font-size: 13px;
+    background: transparent;
+    border: 1px solid #e0e0d8;
+    color: #666;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .est-btn.active {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #1a1a1a;
+  }
+  .done { text-align: center; padding: 16px 0; }
+  .done h2 { font-size: 24px; margin-bottom: 16px; font-weight: 500; }
+  .done .actions-list {
+    text-align: left;
+    background: #fff;
+    border: 1px solid #e0e0d8;
+    border-radius: 12px;
+    padding: 4px 20px;
+    margin-bottom: 20px;
+  }
+  .done .actions-list .action {
+    padding: 14px 0;
+    border-bottom: 1px solid #f0f0e8;
+    font-size: 16px;
+  }
+  .done .actions-list .action:last-child { border-bottom: none; }
+  .done .actions-list .action strong { display: block; margin-bottom: 4px; }
+  .done .actions-list .action .entry { color: #555; display: block; margin-top: 4px; font-size: 15px; }
+  .done .actions-list .action .est-tag {
+    display: inline-block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a7400;
+    background: #fff8d6;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .skip { text-align: center; margin-top: 12px; }
+  .skip a {
+    color: #aaa;
+    font-size: 13px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .skip a:hover { color: #555; }
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const PHASES = [
+  { id: 'dump',     label: 'Step 1 of 6 — Brain dump',          seconds: null, prompt: 'Empty your head. No filtering. Tap Done when ready.' },
+  { id: 'impact',   label: 'Step 2 of 6 — Mark biggest payoff', seconds: 25,   prompt: 'Tap the 2 that move the needle most.' },
+  { id: 'cheap',    label: 'Step 3 of 6 — Mark cheapest',       seconds: 25,   prompt: 'Tap the 2 that take least time/energy.' },
+  { id: 'overlap',  label: 'Step 4 of 6 — Your winners',        seconds: 10,   prompt: 'Items marked twice. These are it.' },
+  { id: 'entry',    label: 'Step 5 of 6 — Entry actions',       seconds: 45,   prompt: 'Smallest physical first step. The doorway.' },
+  { id: 'estimate', label: 'Step 6 of 6 — Time estimates',      seconds: 30,   prompt: 'Rough estimate per task. Gut feel.' }
+];
+
+const LEVERAGE_PROMPTS = [
+  "What's bugging you?",
+  "What have you been avoiding?",
+  "What would matter in 6 months?",
+  "What's a project you keep meaning to start?",
+  "What's one thing that, if done, would make 5 other things easier?",
+  "What did you say you'd do but haven't?",
+  "What's the work only you can do?",
+  "What's been on your list for over a week?"
+];
+
+const ESTIMATES = ['5m', '15m', '30m', '1h', '2h', '4h+'];
+
+let state = {
+  phase: -1,
+  tasks: [],
+  timerId: null,
+  remaining: 0,
+  done: false,
+  promptIndex: 0,
+  promptIntervalId: null
+};
+
+const app = document.getElementById('app');
+const toast = document.getElementById('toast');
+
+function render() {
+  if (state.done)         return renderDone();
+  if (state.phase === -1) return renderStart();
+  return renderPhase();
+}
+
+function renderStart() {
+  app.innerHTML = `
+    <div class="timer untimed">~3 min</div>
+    <div class="step-label">Sig</div>
+    <div class="prompt">Find the highest-impact, lowest-effort move.<br>Reflect freely, then decide fast.</div>
+    <div class="actions"><button onclick="start()">Begin</button></div>
+  `;
+}
+
+function renderPhase() {
+  const p = PHASES[state.phase];
+  let timerHtml;
+  if (p.seconds === null) {
+    timerHtml = `<div class="timer untimed">no timer</div>`;
+  } else {
+    const mins = Math.floor(state.remaining / 60);
+    const secs = state.remaining % 60;
+    const timeStr = `${mins}:${String(secs).padStart(2, '0')}`;
+    const warn = state.remaining <= 5 ? 'warn' : '';
+    timerHtml = `<div class="timer ${warn}">${timeStr}</div>`;
+  }
+
+  let body = '';
+  if (p.id === 'dump')          body = renderDump();
+  else if (p.id === 'impact')   body = renderMark('impact');
+  else if (p.id === 'cheap')    body = renderMark('cheap');
+  else if (p.id === 'overlap')  body = renderOverlap();
+  else if (p.id === 'entry')    body = renderEntry();
+  else if (p.id === 'estimate') body = renderEstimate();
+
+  const btnLabel = p.id === 'dump' ? 'Done →' : 'Next →';
+
+  app.innerHTML = `
+    ${timerHtml}
+    <div class="step-label">${p.label}</div>
+    <div class="prompt">${p.prompt}</div>
+    ${p.id === 'dump' ? `<div class="leverage-prompt" id="leverage">${LEVERAGE_PROMPTS[state.promptIndex]}</div>` : ''}
+    ${body}
+    <div class="actions">
+      <button onclick="nextPhase()">${btnLabel}</button>
+    </div>
+    <div class="skip"><a onclick="reset()">Reset</a></div>
+  `;
+
+  if (p.id === 'dump') {
+    const ta = document.getElementById('dump-area');
+    if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+  }
+}
+
+function renderDump() {
+  const val = state.tasks.map(t => t.text).join('\n');
+  return `<textarea id="dump-area" placeholder="One task per line..." oninput="updateDump(this.value)">${val}</textarea>`;
+}
+
+function renderMark(field) {
+  if (state.tasks.length === 0) {
+    return `<div class="help">No tasks yet. Reset and add some.</div>`;
+  }
+  const limit = 2;
+  const count = state.tasks.filter(t => t[field]).length;
+  return `
+    <div class="help">${count}/${limit} selected</div>
+    <div class="list">
+      ${state.tasks.map((t, i) => `
+        <div class="item ${t[field] ? 'selected' : ''}" onclick="toggle(${i}, '${field}')">
+          <span>${escapeHtml(t.text)}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderOverlap() {
+  const winners = state.tasks.filter(t => t.impact && t.cheap);
+  if (winners.length === 0) {
+    return `<div class="help">No overlap. Tap any to force a winner.</div>
+            <div class="list">
+              ${state.tasks.map((t, i) => `
+                <div class="item ${t.impact && t.cheap ? 'winner' : ''}" onclick="forceWin(${i})">
+                  <span>${escapeHtml(t.text)}</span>
+                  ${t.impact ? '<span class="badge">impact</span>' : ''}
+                  ${t.cheap ? '<span class="badge">cheap</span>' : ''}
+                </div>
+              `).join('')}
+            </div>`;
+  }
+  return `
+    <div class="help">Marked twice = your wins.</div>
+    <div class="list">
+      ${state.tasks.map((t, i) => {
+        const isWin = t.impact && t.cheap;
+        return `<div class="item ${isWin ? 'winner' : ''}">
+          <span>${escapeHtml(t.text)}</span>
+          ${isWin ? '<span class="badge">WIN</span>' : ''}
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderEntry() {
+  const winners = state.tasks.map((t, i) => ({...t, idx: i})).filter(t => t.impact && t.cheap);
+  if (winners.length === 0) {
+    return `<div class="help">No winners selected. Reset to try again.</div>`;
+  }
+  return `
+    <div class="winners">
+      ${winners.map(t => `
+        <div class="winner-card">
+          <div class="task">${escapeHtml(t.text)}</div>
+          <input type="text" placeholder="When I ___, then I will ___"
+                 value="${escapeHtml(t.entry || '')}"
+                 oninput="setEntry(${t.idx}, this.value)">
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderEstimate() {
+  const winners = state.tasks.map((t, i) => ({...t, idx: i})).filter(t => t.impact && t.cheap);
+  if (winners.length === 0) {
+    return `<div class="help">Nothing to estimate.</div>`;
+  }
+  return `
+    <div class="help">Rough estimate per win. Gut feel.</div>
+    ${winners.map(t => `
+      <div class="estimate-row">
+        <div class="task-text">${escapeHtml(t.text)}</div>
+        <div class="est-buttons">
+          ${ESTIMATES.map(e => `
+            <button class="est-btn ${t.estimate === e ? 'active' : ''}" onclick="setEstimate(${t.idx}, '${e}')">${e}</button>
+          `).join('')}
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function renderDone() {
+  const winners = state.tasks.filter(t => t.impact && t.cheap);
+  app.innerHTML = `
+    <div class="done">
+      <div class="step-label">Go.</div>
+      <h2>Do these now.</h2>
+      <div class="actions-list">
+        ${winners.map(t => `
+          <div class="action">
+            <strong>${escapeHtml(t.text)} ${t.estimate ? `<span class="est-tag">${t.estimate}</span>` : ''}</strong>
+            <span class="entry">→ ${escapeHtml(t.entry || 'No entry action set')}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="actions">
+        <button onclick="copyMarkdown()">Copy Markdown</button>
+        <button class="ghost" onclick="reset()">Run again</button>
+      </div>
+    </div>
+  `;
+}
+
+// --- actions ---
+function start() {
+  state.phase = 0;
+  startPhase();
+  render();
+}
+
+function startPhase() {
+  const p = PHASES[state.phase];
+  clearInterval(state.timerId);
+  clearInterval(state.promptIntervalId);
+
+  if (p.seconds === null) {
+    state.promptIndex = 0;
+    state.promptIntervalId = setInterval(() => {
+      state.promptIndex = (state.promptIndex + 1) % LEVERAGE_PROMPTS.length;
+      const el = document.getElementById('leverage');
+      if (el) {
+        el.style.opacity = '0';
+        setTimeout(() => {
+          el.textContent = LEVERAGE_PROMPTS[state.promptIndex];
+          el.style.opacity = '1';
+        }, 300);
+      }
+    }, 12000);
+  } else {
+    state.remaining = p.seconds;
+    state.timerId = setInterval(() => {
+      state.remaining--;
+      if (state.remaining <= 0) {
+        clearInterval(state.timerId);
+        try { beep(); } catch(e) {}
+        nextPhase();
+      } else {
+        const t = document.querySelector('.timer');
+        if (t) {
+          const m = Math.floor(state.remaining / 60);
+          const s = state.remaining % 60;
+          t.textContent = `${m}:${String(s).padStart(2,'0')}`;
+          if (state.remaining <= 5) t.classList.add('warn');
+        }
+      }
+    }, 1000);
+  }
+}
+
+function nextPhase() {
+  if (PHASES[state.phase].id === 'dump') {
+    const ta = document.getElementById('dump-area');
+    if (ta) updateDump(ta.value);
+  }
+  clearInterval(state.timerId);
+  clearInterval(state.promptIntervalId);
+  state.phase++;
+  if (state.phase >= PHASES.length) {
+    state.done = true;
+    render();
+    return;
+  }
+  startPhase();
+  render();
+}
+
+function updateDump(value) {
+  const lines = value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const oldMap = {};
+  state.tasks.forEach(t => oldMap[t.text] = t);
+  state.tasks = lines.map(text => oldMap[text] || { text, impact: false, cheap: false, entry: '', estimate: '' });
+}
+
+function toggle(idx, field) {
+  const limit = 2;
+  const t = state.tasks[idx];
+  if (t[field]) {
+    t[field] = false;
+  } else {
+    const count = state.tasks.filter(x => x[field]).length;
+    if (count >= limit) return;
+    t[field] = true;
+  }
+  render();
+}
+
+function forceWin(idx) {
+  state.tasks[idx].impact = true;
+  state.tasks[idx].cheap = true;
+  render();
+}
+
+function setEntry(idx, value) {
+  state.tasks[idx].entry = value;
+}
+
+function setEstimate(idx, value) {
+  state.tasks[idx].estimate = value;
+  render();
+}
+
+function reset() {
+  clearInterval(state.timerId);
+  clearInterval(state.promptIntervalId);
+  state = { phase: -1, tasks: [], timerId: null, remaining: 0, done: false, promptIndex: 0, promptIntervalId: null };
+  render();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function buildMarkdown() {
+  const winners = state.tasks.filter(t => t.impact && t.cheap);
+  const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  let md = `# Sig — ${date}\n\n## Today's wins\n\n`;
+  winners.forEach(t => {
+    const est = t.estimate ? ` _(${t.estimate})_` : '';
+    md += `- [ ] **${t.text}**${est}\n`;
+    if (t.entry) md += `  - Entry: ${t.entry}\n`;
+  });
+  const others = state.tasks.filter(t => !(t.impact && t.cheap));
+  if (others.length) {
+    md += `\n## Brain dump (not chosen)\n\n`;
+    others.forEach(t => { md += `- ${t.text}\n`; });
+  }
+  return md;
+}
+
+async function copyMarkdown() {
+  const md = buildMarkdown();
+  try {
+    await navigator.clipboard.writeText(md);
+    showToast('Copied to clipboard');
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = md;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showToast('Copied to clipboard'); }
+    catch (err) { showToast('Copy failed — long-press to select'); }
+    document.body.removeChild(ta);
+  }
+}
+
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1800);
+}
+
+function beep() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.frequency.value = 660;
+  g.gain.setValueAtTime(0.0001, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
+  o.start(); o.stop(ctx.currentTime + 0.26);
+}
+
+render();
+</script>
+</body>
+</html>
