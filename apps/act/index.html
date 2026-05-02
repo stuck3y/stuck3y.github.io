@@ -1,0 +1,810 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#f6f3ec" />
+<title>act</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f3ec;
+    --ink: #1a1a1c;
+    --soft: #6e6e74;
+    --faint: #d4d1c8;
+    --accent: #c8451d;
+    --serif: 'Fraunces', ui-serif, Georgia, serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #2a2825;
+      --ink: #f2efe8;
+      --soft: #a6a39b;
+      --faint: #44413c;
+      --accent: #f0805a;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: var(--serif);
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    font-size: 19px;
+    line-height: 1.5;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    overflow: hidden;
+  }
+  ::selection { background: var(--accent); color: #fff; }
+
+.stage {
+position: relative;
+width: 100%;
+height: 100dvh;
+overflow: hidden;
+}
+
+.surface {
+position: absolute;
+inset: 0;
+display: flex;
+flex-direction: column;
+transition: opacity .35s ease, transform .35s cubic-bezier(.2,.8,.2,1);
+overflow: hidden;
+}
+
+/* mode states */
+body[data-mode=“capture”] #captureSurface { opacity: 1; transform: translateY(0); pointer-events: auto; }
+body[data-mode=“capture”] #listSurface { opacity: 0; transform: translateY(20px); pointer-events: none; }
+body[data-mode=“list”] #captureSurface { opacity: 0; transform: translateY(-20px); pointer-events: none; }
+body[data-mode=“list”] #listSurface { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+/* ============ CAPTURE SURFACE ============ */
+#captureSurface {
+align-items: center;
+justify-content: flex-start;
+padding: 56px 28px 140px;
+}
+.capture-inner {
+width: 100%;
+max-width: 560px;
+text-align: center;
+}
+
+h1 {
+font-weight: 400;
+font-size: 44px;
+letter-spacing: -0.02em;
+margin: 0 0 28px;
+color: var(–accent);
+font-style: italic;
+transition: opacity .3s ease;
+}
+
+.verbs {
+display: flex;
+flex-wrap: wrap;
+justify-content: center;
+gap: 4px 22px;
+margin-bottom: 24px;
+transition: opacity .25s ease;
+}
+.verbs.hidden { opacity: 0; pointer-events: none; }
+.verbs button {
+background: transparent;
+border: 0;
+padding: 4px 0;
+font-family: var(–serif);
+font-style: italic;
+font-weight: 300;
+font-size: 17px;
+color: var(–soft);
+cursor: pointer;
+transition: color .15s ease;
+}
+.verbs button:hover { color: var(–ink); }
+.verbs button:active { color: var(–accent); }
+
+#input {
+width: 100%;
+border: 0;
+background: transparent;
+color: var(–ink);
+font-family: var(–serif);
+font-size: 22px;
+line-height: 1.4;
+padding: 0 0 12px;
+outline: none;
+border-bottom: 1px solid var(–faint);
+transition: border-color .2s ease;
+text-align: center;
+caret-color: transparent;
+}
+#input::placeholder { color: var(–soft); font-style: italic; }
+#input:focus { border-bottom-color: var(–ink); }
+
+/* recents strip — quiet duplicate-check, tap to open list */
+.recents {
+margin-top: 28px;
+display: flex;
+flex-direction: column;
+gap: 6px;
+align-items: center;
+transition: opacity .25s ease;
+cursor: pointer;
+padding: 12px 24px;
+border-radius: 10px;
+}
+.recents:hover { background: rgba(0,0,0,0.02); }
+@media (prefers-color-scheme: dark) {
+.recents:hover { background: rgba(255,255,255,0.03); }
+}
+.recents.empty { display: none; }
+.recents.hidden { opacity: 0; pointer-events: none; }
+.recents .recent {
+font-family: var(–serif);
+font-size: 15px;
+color: var(–soft);
+font-style: italic;
+opacity: 0.7;
+animation: recentIn .25s ease;
+}
+.recents .recent:nth-child(1) { opacity: 0.85; font-size: 16px; color: var(–ink); font-style: normal; }
+.recents .recent:nth-child(2) { opacity: 0.6; }
+.recents .recent:nth-child(3) { opacity: 0.4; }
+.recents .recent:nth-child(4) { opacity: 0.25; }
+.recents .recent.dup {
+color: var(–accent);
+font-style: normal;
+}
+@keyframes recentIn {
+from { opacity: 0; transform: translateY(-4px); }
+to { /* let the nth-child rules win */ }
+}
+
+/* focus mode */
+body.focused h1,
+body.focused .recents {
+opacity: 0;
+pointer-events: none;
+transition: opacity .3s ease;
+}
+
+/* ============ LIST SURFACE ============ */
+#listSurface {
+padding: 56px 0 120px;
+}
+.list-head {
+text-align: center;
+padding: 0 28px;
+margin-bottom: 32px;
+}
+
+.list-scroll {
+flex: 1;
+overflow-y: auto;
+-webkit-overflow-scrolling: touch;
+padding: 0 28px;
+max-width: 600px;
+width: 100%;
+margin: 0 auto;
+}
+
+ul {
+list-style: none;
+padding: 0;
+margin: 0 0 32px;
+}
+li {
+display: flex;
+align-items: flex-start;
+gap: 12px;
+padding: 10px 0;
+border-bottom: 1px solid var(–faint);
+overflow: hidden;
+transition: opacity .2s ease, max-height .25s ease, padding .25s ease, border-color .25s ease;
+max-height: 200px;
+animation: in .2s ease;
+}
+@keyframes in {
+from { opacity: 0; transform: translateY(-2px); }
+to { opacity: 1; transform: none; }
+}
+li.removing {
+opacity: 0;
+max-height: 0;
+padding-top: 0;
+padding-bottom: 0;
+border-color: transparent;
+}
+.check {
+flex-shrink: 0;
+width: 16px; height: 16px;
+border: 1px solid var(–soft);
+border-radius: 50%;
+margin-top: 7px;
+cursor: pointer;
+background: transparent;
+padding: 0;
+transition: all .15s ease;
+}
+.check:hover { border-color: var(–ink); }
+li.done .check { background: var(–accent); border-color: var(–accent); }
+li.done .text { color: var(–soft); text-decoration: line-through; text-decoration-thickness: 1px; }
+.text {
+flex: 1;
+border: 0;
+background: transparent;
+color: var(–ink);
+font-family: var(–serif);
+font-size: 19px;
+line-height: 1.5;
+outline: none;
+padding: 4px 0;
+resize: none;
+overflow: hidden;
+word-break: break-word;
+caret-color: transparent;
+}
+.x {
+background: none; border: 0; padding: 4px 8px;
+color: var(–soft); cursor: pointer;
+font-size: 18px; line-height: 1;
+opacity: 0.5; transition: opacity .15s ease;
+}
+.x:hover { opacity: 1; color: var(–accent); }
+
+.list-empty {
+text-align: center;
+color: var(–soft);
+font-style: italic;
+font-size: 16px;
+padding: 64px 24px;
+}
+
+/* format strip on list surface */
+.formats {
+position: sticky;
+bottom: 0;
+padding: 16px 0 8px;
+background: linear-gradient(to bottom, transparent, var(–bg) 30%);
+display: flex;
+flex-wrap: wrap;
+justify-content: center;
+gap: 4px 18px;
+}
+.formats button {
+background: transparent;
+border: 0;
+padding: 6px 0;
+font-family: var(–serif);
+font-style: italic;
+font-weight: 300;
+font-size: 15px;
+color: var(–soft);
+cursor: pointer;
+transition: color .15s ease;
+}
+.formats button:hover { color: var(–ink); }
+.formats button:active { color: var(–accent); }
+
+/* editing mode in list */
+body.editing h1,
+body.editing .recents,
+body.editing .list-head,
+body.editing .formats {
+opacity: 0;
+pointer-events: none;
+transition: opacity .3s ease;
+}
+body.editing ul li {
+opacity: 0;
+pointer-events: none;
+transition: opacity .3s ease;
+}
+body.editing ul li.editing-row {
+opacity: 1;
+pointer-events: auto;
+}
+body.editing ul li.editing-row .x {
+opacity: 0;
+pointer-events: none;
+}
+
+/* ============ BACK TITLE (in list mode) ============ */
+/* matches h1 exactly — same word, same place, just tappable */
+.back-title {
+background: transparent;
+border: 0;
+color: var(–accent);
+font-family: var(–serif);
+font-style: italic;
+font-weight: 400;
+font-size: 44px;
+letter-spacing: -0.02em;
+cursor: pointer;
+padding: 0;
+margin: 0;
+transition: opacity .2s ease;
+}
+.back-title:hover { opacity: 0.75; }
+
+/* ============ CHECK FLASH ============ */
+.check-flash {
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%) scale(0.85);
+width: 88px;
+height: 88px;
+border-radius: 50%;
+background: var(–ink);
+color: var(–bg);
+display: flex;
+align-items: center;
+justify-content: center;
+opacity: 0;
+pointer-events: none;
+z-index: 60;
+transition: opacity .15s ease, transform .25s cubic-bezier(.2,.9,.3,1.3);
+box-shadow: 0 12px 40px -8px rgba(0,0,0,0.3);
+}
+.check-flash svg { width: 36px; height: 36px; }
+.check-flash.show {
+opacity: 1;
+transform: translate(-50%, -50%) scale(1);
+}
+
+.toast {
+position: fixed;
+bottom: 92px;
+right: 24px;
+background: var(–ink);
+color: var(–bg);
+padding: 8px 14px;
+border-radius: 999px;
+font-size: 13px;
+font-style: italic;
+opacity: 0;
+transform: translateY(8px);
+transition: all .2s ease;
+z-index: 50;
+pointer-events: none;
+}
+.toast.show { opacity: 1; transform: none; }
+</style>
+
+</head>
+<body data-mode="capture">
+
+<div class="stage">
+
+  <!-- ================= CAPTURE ================= -->
+
+  <section class="surface" id="captureSurface">
+    <div class="capture-inner">
+      <h1 id="title">act</h1>
+      <div class="verbs" id="verbs"></div>
+      <input id="input" type="text" placeholder="…" autocomplete="off" autocorrect="on" spellcheck="true" />
+      <div class="recents" id="recents"></div>
+    </div>
+  </section>
+
+  <!-- ================= LIST ================= -->
+
+  <section class="surface" id="listSurface">
+    <div class="list-head">
+      <button class="back-title" id="backTitle" aria-label="back to act">act</button>
+    </div>
+    <div class="list-scroll">
+      <ul id="list"></ul>
+      <div class="formats" id="formats">
+        <button data-fmt="md">markdown</button>
+        <button data-fmt="txt">plain</button>
+        <button data-fmt="json">json</button>
+        <button data-fmt="csv">csv</button>
+        <button data-fmt="ai">ai</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="check-flash" id="check" aria-hidden="true">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const VERBS = [
+  'call', 'text', 'email', 'ask', 'tell',
+  'buy', 'order', 'return',
+  'read', 'watch', 'listen',
+  'write', 'draft', 'send', 'reply',
+  'decide', 'plan', 'schedule', 'book',
+  'follow up', 'check', 'confirm',
+  'pray for', 'thank', 'apologize',
+  'build', 'make', 'fix', 'clean',
+  'find', 'research', 'learn',
+  'practice', 'review', 'finish'
+];
+const STORAGE_KEY = 'act:list';
+const RECENTS_COUNT = 4;
+
+let items = [];
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 9);
+const input = $('#input');
+
+// ---------- storage ----------
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch {}
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) items = JSON.parse(raw) || [];
+  } catch { items = []; }
+}
+load();
+
+// ---------- verbs ----------
+$('#verbs').innerHTML = VERBS.map(v => `<button data-v="${v}">${v}</button>`).join('');
+$('#verbs').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const v = b.dataset.v;
+  const cur = input.value;
+  const lc = cur.toLowerCase();
+  let replaced = false;
+  for (const known of VERBS) {
+    if (lc.startsWith(known + ' ') || lc === known) {
+      input.value = v + ' ' + cur.slice(known.length).trimStart();
+      replaced = true;
+      break;
+    }
+  }
+  if (!replaced) input.value = v + ' ' + cur.trimStart();
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
+  updateRecents();
+});
+
+// ---------- commit ----------
+function commit() {
+  const text = input.value.trim();
+  if (!text) return false;
+  const it = { id: uid(), text, done: false };
+  items.unshift(it);
+  input.value = '';
+  save();
+  updateRecents();
+  updateRecents();
+  return true;
+}
+
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); commit(); }
+});
+input.addEventListener('focus', () => {
+  $('#verbs').classList.add('hidden');
+  document.body.classList.add('focused');
+});
+input.addEventListener('blur', () => {
+  commit();
+  $('#verbs').classList.remove('hidden');
+  document.body.classList.remove('focused');
+});
+input.addEventListener('input', () => updateRecents());
+
+// ---------- recents (duplicate check + tap target for list view) ----------
+function updateRecents() {
+  const el = $('#recents');
+  el.innerHTML = '';
+  const typed = input.value.trim().toLowerCase();
+  const open = items.filter(i => !i.done);
+
+  if (!open.length) {
+    el.classList.add('empty');
+    return;
+  }
+  el.classList.remove('empty');
+
+  let shown = [];
+  if (typed.length > 1) {
+    const matches = open.filter(i => i.text.toLowerCase().includes(typed));
+    shown = matches.slice(0, RECENTS_COUNT);
+  } else {
+    shown = open.slice(0, RECENTS_COUNT);
+  }
+  for (const it of shown) {
+    const div = document.createElement('div');
+    div.className = 'recent';
+    if (typed.length > 1 && it.text.toLowerCase() === typed) div.classList.add('dup');
+    div.textContent = it.text;
+    el.appendChild(div);
+  }
+}
+
+// ---------- mode toggle ----------
+function setMode(m) {
+  document.body.dataset.mode = m;
+  if (m === 'list') {
+    input.blur();
+    renderList();
+  } else {
+    updateRecents();
+  }
+}
+$('#recents').addEventListener('click', (e) => {
+  // only descend if recents has visible items
+  if ($('#recents').classList.contains('empty')) return;
+  setMode('list');
+});
+$('#backTitle').addEventListener('click', () => setMode('capture'));
+
+// ---------- list rendering ----------
+function renderList() {
+  const list = $('#list');
+  list.innerHTML = '';
+  if (!items.length) {
+    list.innerHTML = '<div class="list-empty">empty</div>';
+    return;
+  }
+  for (const it of items) list.appendChild(buildRow(it));
+}
+
+function buildRow(it) {
+  const li = document.createElement('li');
+  li.dataset.id = it.id;
+  if (it.done) li.classList.add('done');
+
+  const check = document.createElement('button');
+  check.className = 'check';
+  check.setAttribute('aria-label', 'done');
+  check.addEventListener('click', () => {
+    it.done = !it.done;
+    li.classList.toggle('done', it.done);
+    save();
+    updateRecents();
+  });
+
+  const ta = document.createElement('textarea');
+  ta.className = 'text';
+  ta.rows = 1;
+  ta.value = it.text;
+  ta.addEventListener('focus', () => {
+    document.body.classList.add('editing');
+    li.classList.add('editing-row');
+  });
+  ta.addEventListener('input', e => { it.text = e.target.value; autoSize(e.target); save(); });
+  ta.addEventListener('blur', () => {
+    document.body.classList.remove('editing');
+    li.classList.remove('editing-row');
+    if (!it.text.trim()) removeItem(it, li);
+  });
+
+  const x = document.createElement('button');
+  x.className = 'x';
+  x.setAttribute('aria-label', 'remove');
+  x.textContent = '×';
+  x.addEventListener('click', () => removeItem(it, li));
+
+  li.appendChild(check);
+  li.appendChild(ta);
+  li.appendChild(x);
+  requestAnimationFrame(() => autoSize(ta));
+
+  // ---- swipe-to-toggle-done (touch + mouse) ----
+  attachSwipe(li, it, ta);
+
+  return li;
+}
+
+function attachSwipe(li, it, ta) {
+  let startX = 0, startY = 0, dx = 0, dy = 0;
+  let active = false, decided = false, isHorizontal = false;
+  const THRESHOLD = 40;        // px to commit (was 70)
+  const LOCK_AT = 8;           // px before we decide axis
+  const MAX_TRAVEL = 24;       // visual movement cap — finger goes further, row barely moves
+
+  const onStart = (x, y) => {
+    if (document.body.classList.contains('editing')) return;
+    startX = x; startY = y; dx = 0; dy = 0;
+    active = true; decided = false; isHorizontal = false;
+    li.style.transition = 'none';
+  };
+
+  const onMove = (x, y, ev) => {
+    if (!active) return;
+    dx = x - startX;
+    dy = y - startY;
+
+    if (!decided) {
+      if (Math.abs(dx) > LOCK_AT || Math.abs(dy) > LOCK_AT) {
+        isHorizontal = Math.abs(dx) > Math.abs(dy);
+        decided = true;
+        if (!isHorizontal) { active = false; return; }
+      } else return;
+    }
+
+    if (isHorizontal) {
+      if (ev && ev.cancelable) ev.preventDefault();
+      // heavy damping — the row peeks but never travels far
+      const sign = Math.sign(dx);
+      const abs = Math.abs(dx);
+      const eased = sign * Math.min(MAX_TRAVEL, abs * 0.35);
+      li.style.transform = `translateX(${eased}px)`;
+    }
+  };
+
+  const onEnd = () => {
+    if (!active && !decided) { reset(); return; }
+    if (isHorizontal && Math.abs(dx) > THRESHOLD) {
+      li.style.transition = 'transform .2s ease';
+      li.style.transform = '';
+      it.done = !it.done;
+      li.classList.toggle('done', it.done);
+      save();
+      updateRecents();
+    } else {
+      li.style.transition = 'transform .18s ease';
+      li.style.transform = '';
+    }
+    active = false;
+  };
+
+  const reset = () => {
+    li.style.transition = '';
+    li.style.transform = '';
+    active = false; decided = false;
+  };
+
+  li.addEventListener('touchstart', e => {
+    const t = e.changedTouches[0];
+    onStart(t.clientX, t.clientY);
+  }, { passive: true });
+  li.addEventListener('touchmove', e => {
+    const t = e.changedTouches[0];
+    onMove(t.clientX, t.clientY, e);
+  }, { passive: false });
+  li.addEventListener('touchend', onEnd, { passive: true });
+  li.addEventListener('touchcancel', reset, { passive: true });
+
+  li.addEventListener('mousedown', e => {
+    if (e.target !== li) return;
+    onStart(e.clientX, e.clientY);
+    const move = (ev) => onMove(ev.clientX, ev.clientY, ev);
+    const up = () => {
+      onEnd();
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  });
+}
+
+function removeItem(it, li) {
+  items = items.filter(y => y.id !== it.id);
+  save();
+  updateRecents();
+  li.classList.add('removing');
+  li.addEventListener('transitionend', () => li.remove(), { once: true });
+  setTimeout(() => { if (li.isConnected) li.remove(); }, 400);
+  // if list now empty, refresh empty state
+  if (!items.length) setTimeout(renderList, 250);
+}
+
+function autoSize(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
+}
+
+// ---------- formats ----------
+function stamp() {
+  return new Date().toLocaleString(undefined, {
+    weekday: 'short', month: 'short', day: 'numeric',
+    hour: 'numeric', minute: '2-digit'
+  }).toLowerCase();
+}
+
+const formats = {
+  md: () => `_${stamp()}_\n\n` + items.map(i => `- [${i.done?'x':' '}] ${i.text}`).join('\n'),
+  txt: () => `${stamp()}\n\n` + items.map(i => `${i.done?'✓':'·'} ${i.text}`).join('\n'),
+  json: () => JSON.stringify({
+    when: new Date().toISOString(),
+    items: items.map(({text,done}) => ({text,done}))
+  }, null, 2),
+  csv: () => `# ${stamp()}\ntext,done\n` + items.map(i => `"${i.text.replace(/"/g,'""')}",${i.done?1:0}`).join('\n'),
+  ai: () => {
+    const open = items.filter(i => !i.done);
+    if (!open.length) return '';
+    const list = open.map((i, n) => `${n+1}. ${i.text}`).join('\n');
+    return `Run web searches now and return concrete results for each item below. This is not a planning request. Do the lookups and paste the actual findings into your response.
+
+For every item, you must:
+
+1. Run the searches needed and include the real results in your reply:
+   - "call X" → search for and return X's phone number as a tappable tel: link
+   - "buy X" → search and return current price + a direct purchase URL
+   - "read X" → search and return the link to the actual article/book/source
+   - "find X" / "research X" → run the search and return the top findings, not a search plan
+   - any place → return address, hours, and a maps link
+   - any person → return current contact info or recent public context
+2. Give the 0.1% first action as a single concrete thing I can tap or copy right now (a phone number, a link, a one-sentence opener I can send).
+3. If the item is too vague to search, sharpen it first in one line, then search the sharpened version.
+4. If two items share a destination, errand, or person, batch them.
+5. Flag procrastination dressed as a task, in one short line.
+
+Hard rules:
+- Do NOT write "you'd need to look up X" or "check Y" — run the search and return X and Y.
+- Do NOT list "things to research" — research them and put the findings in the reply.
+- If a search returns nothing useful, say so explicitly with what you searched.
+- For items that don't need research (relational, domestic, self-evident — "hang out with wife", "pickup around the house", "do laundry"), give one short action line and skip the lookup section. Don't invent research. Don't sharpen relational items into goals.
+- Cite sources inline.
+- No preamble, no plan, no "here's how I'll approach this." Start with item 1.
+
+Output format per item:
+**[item, sharpened if needed]**
+First action: [one tappable/copyable thing]
+[Researched specifics — phone, link, price, hours, etc., with citations]
+[One-line note only if it actually helps]
+
+Group at the top: "Now" (quick, high-leverage) vs "Later" (needs a real block).
+
+End with a one-line time summary: estimated total minutes for "Now" and estimated total minutes for "Later".
+
+My list:
+${list}`;
+  }
+};
+
+const destinations = {};
+
+$('#formats').addEventListener('click', async e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const fmt = b.dataset.fmt;
+  if (destinations[fmt]) {
+    const ok = destinations[fmt]();
+    if (ok) flashCheck(); else toast('nothing open');
+    return;
+  }
+  const body = formats[fmt]();
+  if (!body) { toast('nothing yet'); return; }
+  try {
+    await navigator.clipboard.writeText(body);
+    flashCheck();
+  } catch {
+    toast('copy failed');
+  }
+});
+
+// ---------- feedback ----------
+function flashCheck() {
+  const el = $('#check');
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 900);
+}
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 1400);
+}
+
+// ---------- init ----------
+updateRecents();
+updateRecents();
+</script>
+
+</body>
+</html>
