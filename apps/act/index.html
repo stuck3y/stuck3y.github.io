@@ -58,10 +58,10 @@ overflow: hidden;
 }
 
 /* mode states */
-body[data-mode=“capture”] #captureSurface { opacity: 1; transform: translateY(0); pointer-events: auto; }
-body[data-mode=“capture”] #listSurface { opacity: 0; transform: translateY(20px); pointer-events: none; }
-body[data-mode=“list”] #captureSurface { opacity: 0; transform: translateY(-20px); pointer-events: none; }
-body[data-mode=“list”] #listSurface { opacity: 1; transform: translateY(0); pointer-events: auto; }
+body[data-mode="capture"] #captureSurface { opacity: 1; transform: translateY(0); pointer-events: auto; }
+body[data-mode="capture"] #listSurface { opacity: 0; transform: translateY(20px); pointer-events: none; }
+body[data-mode="list"] #captureSurface { opacity: 0; transform: translateY(-20px); pointer-events: none; }
+body[data-mode="list"] #listSurface { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
 /* ============ CAPTURE SURFACE ============ */
 #captureSurface {
@@ -80,7 +80,7 @@ font-weight: 400;
 font-size: 44px;
 letter-spacing: -0.02em;
 margin: 0 0 28px;
-color: var(–accent);
+color: var(--accent);
 font-style: italic;
 transition: opacity .3s ease;
 }
@@ -98,34 +98,34 @@ transition: opacity .25s ease;
 background: transparent;
 border: 0;
 padding: 4px 0;
-font-family: var(–serif);
+font-family: var(--serif);
 font-style: italic;
 font-weight: 300;
 font-size: 17px;
-color: var(–soft);
+color: var(--soft);
 cursor: pointer;
 transition: color .15s ease;
 }
-.verbs button:hover { color: var(–ink); }
-.verbs button:active { color: var(–accent); }
+.verbs button:hover { color: var(--ink); }
+.verbs button:active { color: var(--accent); }
 
 #input {
 width: 100%;
 border: 0;
 background: transparent;
-color: var(–ink);
-font-family: var(–serif);
+color: var(--ink);
+font-family: var(--serif);
 font-size: 22px;
 line-height: 1.4;
 padding: 0 0 12px;
 outline: none;
-border-bottom: 1px solid var(–faint);
+border-bottom: 1px solid var(--faint);
 transition: border-color .2s ease;
 text-align: center;
 caret-color: transparent;
 }
-#input::placeholder { color: var(–soft); font-style: italic; }
-#input:focus { border-bottom-color: var(–ink); }
+#input::placeholder { color: var(--soft); font-style: italic; }
+#input:focus { border-bottom-color: var(--ink); }
 
 /* recents strip — quiet duplicate-check, tap to open list */
 .recents {
@@ -146,19 +146,19 @@ border-radius: 10px;
 .recents.empty { display: none; }
 .recents.hidden { opacity: 0; pointer-events: none; }
 .recents .recent {
-font-family: var(–serif);
+font-family: var(--serif);
 font-size: 15px;
-color: var(–soft);
+color: var(--soft);
 font-style: italic;
 opacity: 0.7;
 animation: recentIn .25s ease;
 }
-.recents .recent:nth-child(1) { opacity: 0.85; font-size: 16px; color: var(–ink); font-style: normal; }
+.recents .recent:nth-child(1) { opacity: 0.85; font-size: 16px; color: var(--ink); font-style: normal; }
 .recents .recent:nth-child(2) { opacity: 0.6; }
 .recents .recent:nth-child(3) { opacity: 0.4; }
 .recents .recent:nth-child(4) { opacity: 0.25; }
 .recents .recent.dup {
-color: var(–accent);
+color: var(--accent);
 font-style: normal;
 }
 @keyframes recentIn {
@@ -204,7 +204,7 @@ display: flex;
 align-items: flex-start;
 gap: 12px;
 padding: 10px 0;
-border-bottom: 1px solid var(–faint);
+border-bottom: 1px solid var(--faint);
 overflow: hidden;
 transition: opacity .2s ease, max-height .25s ease, padding .25s ease, border-color .25s ease;
 max-height: 200px;
@@ -224,7 +224,7 @@ border-color: transparent;
 .check {
 flex-shrink: 0;
 width: 16px; height: 16px;
-border: 1px solid var(–soft);
+border: 1px solid var(--soft);
 border-radius: 50%;
 margin-top: 7px;
 cursor: pointer;
@@ -232,15 +232,15 @@ background: transparent;
 padding: 0;
 transition: all .15s ease;
 }
-.check:hover { border-color: var(–ink); }
-li.done .check { background: var(–accent); border-color: var(–accent); }
-li.done .text { color: var(–soft); text-decoration: line-through; text-decoration-thickness: 1px; }
+.check:hover { border-color: var(--ink); }
+li.done .check { background: var(--accent); border-color: var(--accent); }
+li.done .text { color: var(--soft); text-decoration: line-through; text-decoration-thickness: 1px; }
 .text {
 flex: 1;
 border: 0;
 background: transparent;
-color: var(–ink);
-font-family: var(–serif);
+color: var(--ink);
+font-family: var(--serif);
 font-size: 19px;
 line-height: 1.5;
 outline: none;
@@ -252,15 +252,15 @@ caret-color: transparent;
 }
 .x {
 background: none; border: 0; padding: 4px 8px;
-color: var(–soft); cursor: pointer;
+color: var(--soft); cursor: pointer;
 font-size: 18px; line-height: 1;
 opacity: 0.5; transition: opacity .15s ease;
 }
-.x:hover { opacity: 1; color: var(–accent); }
+.x:hover { opacity: 1; color: var(--accent); }
 
 .list-empty {
 text-align: center;
-color: var(–soft);
+color: var(--soft);
 font-style: italic;
 font-size: 16px;
 padding: 64px 24px;
@@ -271,7 +271,7 @@ padding: 64px 24px;
 position: sticky;
 bottom: 0;
 padding: 16px 0 8px;
-background: linear-gradient(to bottom, transparent, var(–bg) 30%);
+background: linear-gradient(to bottom, transparent, var(--bg) 30%);
 display: flex;
 flex-wrap: wrap;
 justify-content: center;
@@ -281,16 +281,16 @@ gap: 4px 18px;
 background: transparent;
 border: 0;
 padding: 6px 0;
-font-family: var(–serif);
+font-family: var(--serif);
 font-style: italic;
 font-weight: 300;
 font-size: 15px;
-color: var(–soft);
+color: var(--soft);
 cursor: pointer;
 transition: color .15s ease;
 }
-.formats button:hover { color: var(–ink); }
-.formats button:active { color: var(–accent); }
+.formats button:hover { color: var(--ink); }
+.formats button:active { color: var(--accent); }
 
 /* editing mode in list */
 body.editing h1,
@@ -320,8 +320,8 @@ pointer-events: none;
 .back-title {
 background: transparent;
 border: 0;
-color: var(–accent);
-font-family: var(–serif);
+color: var(--accent);
+font-family: var(--serif);
 font-style: italic;
 font-weight: 400;
 font-size: 44px;
@@ -342,8 +342,8 @@ transform: translate(-50%, -50%) scale(0.85);
 width: 88px;
 height: 88px;
 border-radius: 50%;
-background: var(–ink);
-color: var(–bg);
+background: var(--ink);
+color: var(--bg);
 display: flex;
 align-items: center;
 justify-content: center;
@@ -363,8 +363,8 @@ transform: translate(-50%, -50%) scale(1);
 position: fixed;
 bottom: 92px;
 right: 24px;
-background: var(–ink);
-color: var(–bg);
+background: var(--ink);
+color: var(--bg);
 padding: 8px 14px;
 border-radius: 999px;
 font-size: 13px;
