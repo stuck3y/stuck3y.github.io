@@ -1,10 +1,13 @@
 <!--
   How to add a new post:
     1. Copy this file to ./<slug>.html  (e.g. cp _template.html my-new-post.html)
-    2. Replace the <title>, the .post-title, and the .post-date.
+    2. Replace the <title>, the .post-title, and the date in .post-meta.
     3. Write the post inside <div class="prose">. Available elements:
        <p>, <h2>, <h3>, <ul>/<ol>/<li>, <blockquote>, <a>, <code>, <pre>, <hr>.
     4. Add a <li> entry to /blog/index.html linking to your new post.
+
+  The "Zen read" link is already wired — zen-link.js picks up the prose
+  on click and hands it to the Zen Reader.
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -24,7 +27,10 @@
         <article class="post">
             <header>
                 <h1 class="post-title">Post title</h1>
-                <div class="post-date">Month DD, YYYY</div>
+                <div class="post-meta">
+                    <span>Month DD, YYYY</span>
+                    <a data-zen-read href="../../apps/zen/">Zen read &rarr;</a>
+                </div>
             </header>
 
             <div class="prose">
@@ -46,5 +52,6 @@
         <a href="../">Blog</a>
         <a href="mailto:contact@jonsdata.com">Contact</a>
     </footer>
+    <script src="../zen-link.js"></script>
 </body>
 </html>

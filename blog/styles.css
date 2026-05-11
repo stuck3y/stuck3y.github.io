@@ -124,6 +124,24 @@ article.post header {
     letter-spacing: -0.015em;
     line-height: 1.15;
 }
+.post-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.post-meta a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+.post-meta a:hover {
+    color: var(--link-hover);
+}
 .post-date {
     font-size: 0.85rem;
     color: var(--muted);
