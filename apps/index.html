@@ -115,6 +115,14 @@
             transform: translateX(4px);
             color: var(--link-hover);
         }
+        .app-empty {
+            margin: 0;
+            padding: 24px 0;
+            color: var(--fg-muted);
+            font-size: 15px;
+            border-top: 1px solid var(--rule);
+            border-bottom: 1px solid var(--rule);
+        }
 
         footer {
             width: 100%;
@@ -143,42 +151,52 @@
 
         <h1>Apps</h1>
 
-        <ul class="app-list">
-            <li>
-                <a href="./slantboard/" class="app-link">
-                    <span class="app-text">
-                        <span class="app-name">Slant Board Timer</span>
-                        <span class="app-desc">Short morning routine for patellar tendon and tarsal tunnel &mdash; 5, 10, or 12 minutes.</span>
-                    </span>
-                    <span class="app-arrow" aria-hidden="true">&rsaquo;</span>
-                </a>
-            </li>
-            <li>
-                <a href="./foundation/" class="app-link">
-                    <span class="app-text">
-                        <span class="app-name">Foundation 12</span>
-                        <span class="app-desc">A step-by-step timer for the original 12-minute Foundation Training sequence.</span>
-                    </span>
-                    <span class="app-arrow" aria-hidden="true">&rsaquo;</span>
-                </a>
-            </li>
-            <li>
-                <a href="./zen/" class="app-link">
-                    <span class="app-text">
-                        <span class="app-name">Zen Reader</span>
-                        <span class="app-desc">Paste a long read, get it back as small, focused chunks. One thought at a time.</span>
-                    </span>
-                    <span class="app-arrow" aria-hidden="true">&rsaquo;</span>
-                </a>
-            </li>
-        </ul>
+        <ul class="app-list" id="app-list"></ul>
+        <p id="app-empty" class="app-empty" hidden>Nothing featured yet.</p>
     </main>
 
     <footer>
         <a href="../">Home</a>
         <a href="../blog/">Blog</a>
+        <a href="./manage/">Manage</a>
         <a href="mailto:contact@jonsdata.com">Contact</a>
         <a href="https://github.com/stuck3y" target="_blank" rel="noopener">GitHub</a>
     </footer>
+
+    <script>
+    (async () => {
+        const list = document.getElementById("app-list");
+        const empty = document.getElementById("app-empty");
+        try {
+            const res = await fetch("./apps.json", { cache: "no-cache" });
+            if (!res.ok) throw new Error("manifest fetch failed");
+            const data = await res.json();
+            const featured = (data.apps || []).filter(a => a.featured);
+            if (!featured.length) { empty.hidden = false; return; }
+            const frag = document.createDocumentFragment();
+            for (const app of featured) {
+                const li = document.createElement("li");
+                const a = document.createElement("a");
+                a.className = "app-link";
+                a.href = app.path;
+                a.innerHTML = `
+                    <span class="app-text">
+                        <span class="app-name"></span>
+                        <span class="app-desc"></span>
+                    </span>
+                    <span class="app-arrow" aria-hidden="true">&rsaquo;</span>
+                `;
+                a.querySelector(".app-name").textContent = app.name;
+                a.querySelector(".app-desc").textContent = app.description || "";
+                li.appendChild(a);
+                frag.appendChild(li);
+            }
+            list.appendChild(frag);
+        } catch (err) {
+            empty.textContent = "Couldn't load the apps list.";
+            empty.hidden = false;
+        }
+    })();
+    </script>
 </body>
 </html>

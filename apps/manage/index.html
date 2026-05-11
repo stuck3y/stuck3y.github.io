@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage apps &middot; Jon's Data Company</title>
+    <meta name="theme-color" content="#fbfbfd">
+    <style>
+        :root {
+            --bg: #fbfbfd;
+            --bg-elev: #f1f1f3;
+            --fg: #1d1d1f;
+            --fg-muted: #6e6e73;
+            --rule: #e5e5e7;
+            --link: #1d1d1f;
+            --link-hover: #2f6f80;
+            --danger: #c54a3d;
+            --good: #2f7a4a;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0a0a0c;
+                --bg-elev: #18181b;
+                --fg: #f5f5f7;
+                --fg-muted: #86868b;
+                --rule: #2a2a2c;
+                --link: #f5f5f7;
+                --link-hover: #6fb6c8;
+                --danger: #e5837a;
+                --good: #7bc296;
+            }
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: var(--fg);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body { min-height: 100dvh; display: flex; flex-direction: column; }
+
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 760px;
+            margin: 0 auto;
+            padding: clamp(40px, 8vh, 80px) 24px 64px;
+        }
+
+        .site-nav {
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+        .site-nav a {
+            color: var(--fg-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .site-nav a:hover { color: var(--link-hover); }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: clamp(28px, 4.5vw, 36px);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        .lede {
+            margin: 0 0 32px;
+            color: var(--fg-muted);
+            font-size: 15px;
+            line-height: 1.5;
+            max-width: 56ch;
+        }
+
+        h2 {
+            margin: 40px 0 16px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--fg-muted);
+        }
+        h2 .count {
+            margin-left: 8px;
+            color: var(--fg-muted);
+            opacity: 0.7;
+            font-weight: 400;
+            letter-spacing: 0;
+        }
+
+        .row-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .row {
+            background: var(--bg-elev);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-areas:
+                "fields  controls"
+                "meta    meta";
+            gap: 10px 12px;
+            align-items: start;
+        }
+        .row.featured {
+            outline: 1px solid var(--rule);
+            outline-offset: -1px;
+        }
+
+        .fields { grid-area: fields; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+        .controls { grid-area: controls; display: flex; align-items: center; gap: 8px; }
+        .meta {
+            grid-area: meta;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 11px;
+            color: var(--fg-muted);
+            font-family: "SF Mono", "Menlo", Consolas, monospace;
+            letter-spacing: 0;
+            text-transform: none;
+            word-break: break-all;
+        }
+
+        .name-input, .desc-input {
+            width: 100%;
+            background: transparent;
+            color: var(--fg);
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 6px 8px;
+            font: inherit;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+        .name-input { font-size: 16px; font-weight: 500; }
+        .desc-input {
+            font-size: 14px;
+            color: var(--fg-muted);
+            resize: vertical;
+            min-height: 1.6em;
+            line-height: 1.4;
+        }
+        .name-input:hover, .desc-input:hover {
+            border-color: var(--rule);
+        }
+        .name-input:focus, .desc-input:focus {
+            outline: none;
+            border-color: var(--link-hover);
+            background: var(--bg);
+        }
+
+        .toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--fg-muted);
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .toggle input { margin: 0; cursor: pointer; }
+        .toggle.is-on { color: var(--good); }
+
+        .iconbtn {
+            appearance: none;
+            background: transparent;
+            color: var(--fg-muted);
+            border: 1px solid var(--rule);
+            border-radius: 6px;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            transition: color 0.15s ease, border-color 0.15s ease;
+            padding: 0;
+        }
+        .iconbtn:hover:not(:disabled) {
+            color: var(--fg);
+            border-color: var(--fg-muted);
+        }
+        .iconbtn:disabled { opacity: 0.35; cursor: default; }
+        .iconbtn.danger:hover:not(:disabled) {
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .visit {
+            color: var(--fg-muted);
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        .visit:hover { color: var(--link-hover); }
+
+        .discover-list .row {
+            grid-template-areas:
+                "fields  controls"
+                "meta    meta";
+            opacity: 0.95;
+        }
+
+        .actions {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid var(--rule);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .btn {
+            appearance: none;
+            background: var(--bg-elev);
+            color: var(--fg);
+            border: 1px solid var(--rule);
+            border-radius: 8px;
+            padding: 10px 16px;
+            font: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            transition: border-color 0.15s ease, color 0.15s ease;
+        }
+        .btn:hover {
+            border-color: var(--fg-muted);
+        }
+        .btn.primary {
+            background: var(--fg);
+            color: var(--bg);
+            border-color: var(--fg);
+        }
+        .btn.primary:hover { background: var(--link-hover); border-color: var(--link-hover); color: var(--bg); }
+        .btn.ghost { background: transparent; }
+
+        #status {
+            margin-left: auto;
+            font-size: 13px;
+            color: var(--fg-muted);
+            transition: opacity 0.3s ease;
+            min-height: 1.4em;
+        }
+        #status.is-good { color: var(--good); }
+        #status.is-bad { color: var(--danger); }
+
+        #json-output {
+            margin-top: 16px;
+            width: 100%;
+            min-height: 200px;
+            background: var(--bg-elev);
+            color: var(--fg);
+            border: 1px solid var(--rule);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: "SF Mono", "Menlo", Consolas, monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: pre;
+            overflow: auto;
+            display: none;
+        }
+        #json-output.is-open { display: block; }
+
+        .empty {
+            color: var(--fg-muted);
+            font-size: 14px;
+            padding: 12px 0;
+        }
+
+        footer {
+            width: 100%;
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 32px 24px;
+            border-top: 1px solid var(--rule);
+            display: flex;
+            gap: 24px;
+            font-size: 13px;
+            color: var(--fg-muted);
+        }
+        footer a {
+            color: var(--fg-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        footer a:hover { color: var(--link-hover); }
+
+        @media (max-width: 560px) {
+            .row { grid-template-columns: 1fr; grid-template-areas: "fields" "controls" "meta"; }
+            .controls { justify-content: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <nav class="site-nav">
+            <a href="../">&larr; Apps</a>
+        </nav>
+
+        <h1>Manage apps</h1>
+        <p class="lede">Edit names and descriptions, toggle which apps appear on <a href="../" style="color:var(--link-hover);text-decoration:none;">/apps/</a>, and reorder them. When you're done, export the JSON and commit it as <code style="font-size:0.9em;">apps/apps.json</code>.</p>
+
+        <h2>In manifest <span class="count" id="manifest-count"></span></h2>
+        <ul class="row-list" id="manifest-list"></ul>
+        <p class="empty" id="manifest-empty" hidden>Manifest is empty.</p>
+
+        <h2>Discovered, not in manifest <span class="count" id="discover-count"></span></h2>
+        <ul class="row-list discover-list" id="discover-list"></ul>
+        <p class="empty" id="discover-empty">Looking on GitHub&hellip;</p>
+
+        <div class="actions">
+            <button class="btn primary" id="copy-btn">Copy apps.json</button>
+            <button class="btn" id="download-btn">Download</button>
+            <button class="btn ghost" id="show-btn">Show JSON</button>
+            <button class="btn ghost" id="reset-btn">Reset</button>
+            <span id="status" aria-live="polite"></span>
+        </div>
+        <pre id="json-output" aria-hidden="true"></pre>
+    </main>
+
+    <footer>
+        <a href="../../">Home</a>
+        <a href="../">Apps</a>
+        <a href="../../blog/">Blog</a>
+        <a href="mailto:contact@jonsdata.com">Contact</a>
+    </footer>
+
+    <script>
+    (() => {
+        const REPO_FALLBACK = "stuck3y/stuck3y.github.io";
+
+        const manifestList = document.getElementById("manifest-list");
+        const discoverList = document.getElementById("discover-list");
+        const manifestEmpty = document.getElementById("manifest-empty");
+        const discoverEmpty = document.getElementById("discover-empty");
+        const manifestCount = document.getElementById("manifest-count");
+        const discoverCount = document.getElementById("discover-count");
+        const statusEl = document.getElementById("status");
+        const jsonOutput = document.getElementById("json-output");
+
+        let original = null;   // unmodified manifest, for Reset
+        let apps = [];          // working copy
+        let discovered = [];    // GitHub-discovered items not in manifest
+
+        // ----- helpers -----
+
+        function setStatus(msg, kind) {
+            statusEl.className = "";
+            if (kind) statusEl.classList.add("is-" + kind);
+            statusEl.textContent = msg;
+            if (msg) {
+                clearTimeout(setStatus._t);
+                setStatus._t = setTimeout(() => { statusEl.textContent = ""; statusEl.className = ""; }, 3500);
+            }
+        }
+
+        function detectRepo() {
+            const host = window.location.hostname;
+            const m = host.match(/^([^.]+)\.github\.io$/);
+            if (m) return `${m[1]}/${m[1]}.github.io`;
+            return REPO_FALLBACK;
+        }
+
+        function slugFromGithubName(name, type) {
+            if (type === "dir") return name;
+            if (type === "file" && name.endsWith(".html")) return name.slice(0, -5);
+            return null;
+        }
+
+        function pathFromGithub(name, type) {
+            if (type === "dir") return `./${name}/`;
+            return `./${name}`;
+        }
+
+        function serialize() {
+            return JSON.stringify({ apps }, null, 2) + "\n";
+        }
+
+        // ----- load -----
+
+        async function loadManifest() {
+            try {
+                const res = await fetch("../apps.json", { cache: "no-cache" });
+                if (!res.ok) throw new Error("manifest");
+                const data = await res.json();
+                original = JSON.parse(JSON.stringify(data));
+                apps = Array.isArray(data.apps) ? data.apps.map(a => ({ ...a })) : [];
+            } catch (e) {
+                original = { apps: [] };
+                apps = [];
+                setStatus("Couldn't load apps.json", "bad");
+            }
+        }
+
+        async function loadDiscovery() {
+            const repo = detectRepo();
+            try {
+                const res = await fetch(`https://api.github.com/repos/${repo}/contents/apps`, {
+                    headers: { "Accept": "application/vnd.github+json" },
+                });
+                if (!res.ok) throw new Error("github");
+                const items = await res.json();
+                const known = new Set(apps.map(a => a.slug));
+                discovered = [];
+                for (const item of items) {
+                    if (item.type !== "dir" && item.type !== "file") continue;
+                    if (item.name === "index.html") continue;
+                    if (item.name === "manage") continue;
+                    if (item.name === "apps.json") continue;
+                    if (item.name.startsWith(".")) continue;
+                    if (item.type === "file" && !item.name.endsWith(".html")) continue;
+                    const slug = slugFromGithubName(item.name, item.type);
+                    if (!slug) continue;
+                    if (known.has(slug)) continue;
+                    discovered.push({
+                        slug,
+                        path: pathFromGithub(item.name, item.type),
+                        type: item.type,
+                        name: slug,
+                    });
+                }
+                discoverEmpty.hidden = discovered.length > 0;
+                if (!discovered.length) discoverEmpty.textContent = "Nothing new in /apps/.";
+            } catch (e) {
+                discoverEmpty.textContent = "Couldn't reach GitHub to look for new apps.";
+                discoverEmpty.hidden = false;
+            }
+        }
+
+        // ----- render -----
+
+        function makeIconBtn(label, html, onclick, danger = false) {
+            const b = document.createElement("button");
+            b.className = "iconbtn" + (danger ? " danger" : "");
+            b.type = "button";
+            b.setAttribute("aria-label", label);
+            b.title = label;
+            b.innerHTML = html;
+            b.addEventListener("click", onclick);
+            return b;
+        }
+
+        function renderManifestRow(app, index) {
+            const li = document.createElement("li");
+            li.className = "row" + (app.featured ? " featured" : "");
+
+            const fields = document.createElement("div");
+            fields.className = "fields";
+
+            const nameInput = document.createElement("input");
+            nameInput.type = "text";
+            nameInput.className = "name-input";
+            nameInput.value = app.name || "";
+            nameInput.placeholder = "Name";
+            nameInput.addEventListener("input", () => { app.name = nameInput.value; });
+
+            const descInput = document.createElement("textarea");
+            descInput.className = "desc-input";
+            descInput.rows = 2;
+            descInput.value = app.description || "";
+            descInput.placeholder = "Short description";
+            descInput.addEventListener("input", () => { app.description = descInput.value; });
+
+            fields.append(nameInput, descInput);
+
+            const controls = document.createElement("div");
+            controls.className = "controls";
+
+            const toggleLabel = document.createElement("label");
+            toggleLabel.className = "toggle" + (app.featured ? " is-on" : "");
+            const toggle = document.createElement("input");
+            toggle.type = "checkbox";
+            toggle.checked = !!app.featured;
+            toggle.addEventListener("change", () => {
+                app.featured = toggle.checked;
+                li.classList.toggle("featured", app.featured);
+                toggleLabel.classList.toggle("is-on", app.featured);
+            });
+            toggleLabel.append(toggle, document.createTextNode("Featured"));
+
+            const up = makeIconBtn("Move up", "&uarr;", () => moveApp(index, -1));
+            up.disabled = index === 0;
+            const down = makeIconBtn("Move down", "&darr;", () => moveApp(index, 1));
+            down.disabled = index === apps.length - 1;
+            const del = makeIconBtn("Remove from manifest", "&times;", () => removeApp(index), true);
+
+            controls.append(toggleLabel, up, down, del);
+
+            const meta = document.createElement("div");
+            meta.className = "meta";
+            const left = document.createElement("span");
+            left.textContent = `${app.slug} · ${app.path}`;
+            const right = document.createElement("a");
+            right.href = app.path;
+            right.className = "visit";
+            right.target = "_blank";
+            right.rel = "noopener";
+            right.textContent = "open ↗";
+            meta.append(left, right);
+
+            li.append(fields, controls, meta);
+            return li;
+        }
+
+        function renderDiscoveryRow(item) {
+            const li = document.createElement("li");
+            li.className = "row";
+
+            const fields = document.createElement("div");
+            fields.className = "fields";
+
+            const nameInput = document.createElement("input");
+            nameInput.type = "text";
+            nameInput.className = "name-input";
+            nameInput.value = item.name;
+            nameInput.placeholder = "Name";
+            nameInput.addEventListener("input", () => { item.name = nameInput.value; });
+
+            const descInput = document.createElement("textarea");
+            descInput.className = "desc-input";
+            descInput.rows = 2;
+            descInput.value = "";
+            descInput.placeholder = "Short description (optional)";
+            descInput.addEventListener("input", () => { item.description = descInput.value; });
+
+            fields.append(nameInput, descInput);
+
+            const controls = document.createElement("div");
+            controls.className = "controls";
+            const addBtn = document.createElement("button");
+            addBtn.type = "button";
+            addBtn.className = "btn";
+            addBtn.textContent = "Add to manifest";
+            addBtn.addEventListener("click", () => addFromDiscovery(item));
+            controls.append(addBtn);
+
+            const meta = document.createElement("div");
+            meta.className = "meta";
+            const left = document.createElement("span");
+            left.textContent = `${item.slug} · ${item.path}`;
+            const right = document.createElement("a");
+            right.href = item.path;
+            right.className = "visit";
+            right.target = "_blank";
+            right.rel = "noopener";
+            right.textContent = "open ↗";
+            meta.append(left, right);
+
+            li.append(fields, controls, meta);
+            return li;
+        }
+
+        function renderAll() {
+            manifestList.innerHTML = "";
+            for (let i = 0; i < apps.length; i++) {
+                manifestList.appendChild(renderManifestRow(apps[i], i));
+            }
+            manifestCount.textContent = apps.length ? `· ${apps.length}` : "";
+            manifestEmpty.hidden = apps.length > 0;
+
+            discoverList.innerHTML = "";
+            for (const item of discovered) {
+                discoverList.appendChild(renderDiscoveryRow(item));
+            }
+            discoverCount.textContent = discovered.length ? `· ${discovered.length}` : "";
+            discoverEmpty.hidden = discovered.length > 0;
+
+            if (jsonOutput.classList.contains("is-open")) {
+                jsonOutput.textContent = serialize();
+            }
+        }
+
+        // ----- mutations -----
+
+        function moveApp(index, delta) {
+            const target = index + delta;
+            if (target < 0 || target >= apps.length) return;
+            const [item] = apps.splice(index, 1);
+            apps.splice(target, 0, item);
+            renderAll();
+        }
+
+        function removeApp(index) {
+            const app = apps[index];
+            if (!confirm(`Remove "${app.name || app.slug}" from the manifest?\n\nThe app's files stay on disk; only the manifest entry is removed.`)) return;
+            apps.splice(index, 1);
+            // The removed app might now be re-discoverable
+            discovered.push({
+                slug: app.slug,
+                path: app.path,
+                type: app.path.endsWith("/") ? "dir" : "file",
+                name: app.name || app.slug,
+                description: app.description || "",
+            });
+            renderAll();
+        }
+
+        function addFromDiscovery(item) {
+            apps.push({
+                slug: item.slug,
+                name: item.name || item.slug,
+                description: item.description || "",
+                path: item.path,
+                featured: false,
+            });
+            discovered = discovered.filter(d => d.slug !== item.slug);
+            renderAll();
+            setStatus(`Added "${item.name || item.slug}".`, "good");
+        }
+
+        // ----- actions -----
+
+        document.getElementById("copy-btn").addEventListener("click", async () => {
+            const text = serialize();
+            try {
+                await navigator.clipboard.writeText(text);
+                setStatus("Copied apps.json to clipboard.", "good");
+            } catch {
+                jsonOutput.textContent = text;
+                jsonOutput.classList.add("is-open");
+                setStatus("Clipboard unavailable — copy from the box below.", "bad");
+            }
+        });
+
+        document.getElementById("download-btn").addEventListener("click", () => {
+            const blob = new Blob([serialize()], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "apps.json";
+            a.click();
+            URL.revokeObjectURL(url);
+            setStatus("Downloaded apps.json.", "good");
+        });
+
+        document.getElementById("show-btn").addEventListener("click", () => {
+            const isOpen = jsonOutput.classList.toggle("is-open");
+            jsonOutput.textContent = serialize();
+            jsonOutput.setAttribute("aria-hidden", String(!isOpen));
+        });
+
+        document.getElementById("reset-btn").addEventListener("click", async () => {
+            if (!original) return;
+            if (!confirm("Discard all changes and reload from apps.json?")) return;
+            apps = (original.apps || []).map(a => ({ ...a }));
+            await loadDiscovery();
+            renderAll();
+            setStatus("Reset to saved manifest.", "good");
+        });
+
+        // ----- boot -----
+
+        (async () => {
+            await loadManifest();
+            renderAll();
+            await loadDiscovery();
+            renderAll();
+        })();
+    })();
+    </script>
+</body>
+</html>

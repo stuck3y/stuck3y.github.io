@@ -45,7 +45,7 @@ Changes are automatically deployed via GitHub Pages when pushed to the main bran
 ## Conventions
 
 - **New apps go in `/apps/<slug>/`** as self-contained static folders (typically `index.html` + `styles.css` + `app.js`). No build step.
-- **Surface helpful apps on the homepage.** When adding a new utility/helper app under `/apps/`, also add an entry to the `Apps` list in the root `index.html` (name + one-line description + link). Keep the list curated — small, useful apps the user reaches for regularly.
+- **Register every app in `apps/apps.json`.** This manifest is the source of truth for `/apps/`. Each entry: `{ slug, name, description, path, featured }`. The `/apps/` index renders the `featured: true` entries; `/apps/manage/` provides a UI to curate the list (toggle featured, edit, reorder, discover new apps via the GitHub API). When you create a new app, append an entry to `apps.json` — set `featured: true` only if it belongs on the curated landing list. The homepage links to `/apps/` but does not list apps directly.
 - **Branch off `main` by default.** When starting new work, branch off the latest `main` rather than stacking on top of an unmerged feature branch. After a branch merges, return to `main`, pull, then cut a fresh branch for the next change.
 
 ## Application-Specific Notes
