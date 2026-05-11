@@ -1,0 +1,50 @@
+<!--
+  How to add a new post:
+    1. Copy this file to ./<slug>.html  (e.g. cp _template.html my-new-post.html)
+    2. Replace the <title>, the .post-title, and the .post-date.
+    3. Write the post inside <div class="prose">. Available elements:
+       <p>, <h2>, <h3>, <ul>/<ol>/<li>, <blockquote>, <a>, <code>, <pre>, <hr>.
+    4. Add a <li> entry to /blog/index.html linking to your new post.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POST TITLE &middot; Jon's Data Company</title>
+    <meta name="theme-color" content="#f5efe6">
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <main>
+        <nav class="site-nav">
+            <a href="../">&larr; Blog</a>
+        </nav>
+
+        <article class="post">
+            <header>
+                <h1 class="post-title">Post title</h1>
+                <div class="post-date">Month DD, YYYY</div>
+            </header>
+
+            <div class="prose">
+                <p>Opening paragraph.</p>
+
+                <h2>A section</h2>
+
+                <p>More writing here.</p>
+            </div>
+        </article>
+
+        <div class="post-footer">
+            <a href="../">&larr; All posts</a>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <a href="../../">Home</a>
+        <a href="../">Blog</a>
+        <a href="mailto:contact@jonsdata.com">Contact</a>
+    </footer>
+</body>
+</html>
