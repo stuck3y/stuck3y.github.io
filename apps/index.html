@@ -64,11 +64,41 @@
         .site-nav a:hover { color: var(--link-hover); }
 
         h1 {
-            margin: 0 0 40px;
+            margin: 0 0 32px;
             font-size: clamp(32px, 5vw, 40px);
             font-weight: 600;
             letter-spacing: -0.025em;
             line-height: 1.1;
+        }
+
+        .philosophy {
+            margin: 0 0 48px;
+            scroll-margin-top: 24px;
+        }
+        .philosophy .prose {
+            font-size: 17px;
+            line-height: 1.6;
+            color: var(--fg);
+            max-width: 56ch;
+        }
+        .philosophy .prose p {
+            margin: 0 0 1em;
+        }
+        .philosophy .prose p:last-child {
+            margin-bottom: 0;
+        }
+        .zen-read-link {
+            display: inline-block;
+            margin-top: 14px;
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--fg-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .zen-read-link:hover {
+            color: var(--link-hover);
         }
 
         .app-list {
@@ -141,6 +171,18 @@
             transition: color 0.2s ease;
         }
         footer a:hover { color: var(--link-hover); }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
     </style>
 </head>
 <body>
@@ -150,6 +192,18 @@
         </nav>
 
         <h1>Apps</h1>
+
+        <section class="philosophy" id="philosophy" aria-labelledby="philosophy-label">
+            <h2 id="philosophy-label" class="visually-hidden">Philosophy</h2>
+            <div class="prose">
+                <p>Here you will find a bank of software that is carefully thought-through.</p>
+                <p>These are intentionally biased toward being dumb, single-focused software applications for maximum usefulness.</p>
+                <p>There is a beauty to behold in an object that does one thing well enough.</p>
+                <p>As its usefulness is proven through continued use, the meaningful incremental improvements to make tend to reveal themselves organically.</p>
+                <p>That may not be the end-all-be-all, but I believe this approach makes for purposeful craft.</p>
+            </div>
+            <a data-zen-read href="./zen/" class="zen-read-link">Zen read &rarr;</a>
+        </section>
 
         <ul class="app-list" id="app-list"></ul>
         <p id="app-empty" class="app-empty" hidden>Nothing featured yet.</p>
@@ -198,5 +252,6 @@
         }
     })();
     </script>
+    <script src="../zen-link.js"></script>
 </body>
 </html>
