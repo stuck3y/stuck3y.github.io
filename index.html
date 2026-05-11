@@ -4,193 +4,219 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jon's Data Company</title>
+    <meta name="theme-color" content="#fbfbfd">
     <style>
-        * {
+        :root {
+            --bg: #fbfbfd;
+            --fg: #1d1d1f;
+            --fg-muted: #6e6e73;
+            --rule: #e5e5e7;
+            --link: #1d1d1f;
+            --link-hover: #0066cc;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #000000;
+                --fg: #f5f5f7;
+                --fg-muted: #86868b;
+                --rule: #2a2a2c;
+                --link: #f5f5f7;
+                --link-hover: #2997ff;
+            }
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            background: var(--bg);
+            color: var(--fg);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #fafafa;
+            min-height: 100dvh;
             min-height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            position: relative;
-            overflow: hidden;
+            flex-direction: column;
         }
 
-        /* Subtle animated background gradient */
-        body::before {
-            content: '';
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background:
-                radial-gradient(circle at 30% 20%, rgba(102, 126, 234, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 70% 80%, rgba(118, 75, 162, 0.05) 0%, transparent 50%);
-            animation: subtle-shift 20s ease-in-out infinite;
-            pointer-events: none;
-        }
-
-        @keyframes subtle-shift {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            50% { transform: translate(-5%, -5%) rotate(5deg); }
-        }
-
-        .container {
-            max-width: 900px;
+        main {
+            flex: 1;
             width: 100%;
-            text-align: center;
-            position: relative;
-            z-index: 1;
+            max-width: 640px;
+            margin: 0 auto;
+            padding: clamp(64px, 12vh, 140px) 24px 64px;
         }
 
-        .logo-container {
-            margin-bottom: 2rem;
-            animation: fade-in-up 0.8s ease-out;
+        header {
+            margin-bottom: 96px;
         }
 
         .logo {
-            max-width: 200px;
+            display: block;
+            width: 96px;
             height: auto;
-            display: inline-block;
-            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
+            margin-bottom: 40px;
         }
 
         h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 1rem;
-            letter-spacing: -0.02em;
-            animation: fade-in-up 0.8s ease-out 0.1s both;
+            margin: 0 0 12px;
+            font-size: clamp(36px, 5vw, 48px);
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            line-height: 1.08;
         }
 
-        .subtitle {
-            font-size: 1.25rem;
-            color: #666;
-            margin-bottom: 4rem;
+        .tagline {
+            margin: 0;
+            color: var(--fg-muted);
+            font-size: 19px;
+            line-height: 1.47;
             font-weight: 400;
-            line-height: 1.6;
-            animation: fade-in-up 0.8s ease-out 0.2s both;
         }
 
-        .links {
+        section {
+            margin-bottom: 64px;
+        }
+
+        .eyebrow {
+            display: block;
+            margin: 0 0 24px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--fg-muted);
+        }
+
+        .app-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .app-list li {
+            border-top: 1px solid var(--rule);
+        }
+        .app-list li:last-child {
+            border-bottom: 1px solid var(--rule);
+        }
+
+        .app-link {
             display: flex;
-            gap: 2rem;
-            justify-content: center;
-            animation: fade-in-up 0.8s ease-out 0.3s both;
-        }
-
-        .link {
-            color: #666;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 24px;
+            padding: 20px 0;
             text-decoration: none;
-            font-size: 0.95rem;
+            color: var(--link);
+            transition: color 0.2s ease, padding 0.2s ease;
+        }
+        .app-link:hover {
+            color: var(--link-hover);
+        }
+
+        .app-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .app-name {
+            display: block;
+            font-size: 19px;
             font-weight: 500;
-            transition: all 0.3s ease;
-            position: relative;
+            letter-spacing: -0.01em;
+            margin-bottom: 4px;
         }
 
-        .link::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.3s ease;
+        .app-desc {
+            display: block;
+            font-size: 15px;
+            color: var(--fg-muted);
+            font-weight: 400;
+            line-height: 1.47;
         }
 
-        .link:hover {
-            color: #667eea;
+        .app-arrow {
+            color: var(--fg-muted);
+            font-size: 18px;
+            transition: transform 0.2s ease, color 0.2s ease;
+            flex-shrink: 0;
+        }
+        .app-link:hover .app-arrow {
+            transform: translateX(4px);
+            color: var(--link-hover);
         }
 
-        .link:hover::after {
+        footer {
             width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 32px 24px;
+            border-top: 1px solid var(--rule);
+            display: flex;
+            gap: 24px;
+            font-size: 13px;
+            color: var(--fg-muted);
         }
 
-        @keyframes fade-in-up {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        footer a {
+            color: var(--fg-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        footer a:hover {
+            color: var(--link-hover);
         }
 
-        /* Responsive */
-        @media (max-width: 640px) {
-            h1 {
-                font-size: 2.25rem;
-            }
-
-            .subtitle {
-                font-size: 1.1rem;
-            }
-
-            .links {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .logo {
-                max-width: 160px;
-            }
+        @media (max-width: 480px) {
+            main { padding-top: 56px; }
+            header { margin-bottom: 64px; }
+            .logo { width: 80px; margin-bottom: 32px; }
+            .app-link { gap: 16px; }
         }
-
-        /* Floating particles effect */
-        .particle {
-            position: fixed;
-            pointer-events: none;
-            opacity: 0.3;
-            animation: float-particle 20s infinite;
-        }
-
-        @keyframes float-particle {
-            0%, 100% {
-                transform: translate(0, 0) rotate(0deg);
-                opacity: 0.2;
-            }
-            50% {
-                transform: translate(100px, -100px) rotate(180deg);
-                opacity: 0.4;
-            }
-        }
-
-        .particle:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
-        .particle:nth-child(2) { top: 60%; left: 80%; animation-delay: 5s; }
-        .particle:nth-child(3) { top: 80%; left: 20%; animation-delay: 10s; }
     </style>
 </head>
 <body>
-    <div class="particle" style="color: #667eea; font-size: 2rem;">●</div>
-    <div class="particle" style="color: #764ba2; font-size: 1.5rem;">●</div>
-    <div class="particle" style="color: #f093fb; font-size: 1rem;">●</div>
+    <main>
+        <header>
+            <img src="jdc_logo.png" alt="" class="logo">
+            <h1>Jon's Data Company</h1>
+            <p class="tagline">Building innovative tools and experiences.</p>
+        </header>
 
-    <div class="container">
-        <div class="logo-container">
-            <img src="jdc_logo.png" alt="Jon's Data Company" class="logo">
-        </div>
+        <section aria-labelledby="apps-label">
+            <span id="apps-label" class="eyebrow">Apps</span>
+            <ul class="app-list">
+                <li>
+                    <a href="./apps/slantboard/" class="app-link">
+                        <span class="app-text">
+                            <span class="app-name">Slant Board Timer</span>
+                            <span class="app-desc">Short morning routine for patellar tendon and tarsal tunnel — 5, 10, or 12 minutes.</span>
+                        </span>
+                        <span class="app-arrow" aria-hidden="true">&rsaquo;</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="./apps/foundation/" class="app-link">
+                        <span class="app-text">
+                            <span class="app-name">Foundation 12</span>
+                            <span class="app-desc">A step-by-step timer for the original 12-minute Foundation Training sequence.</span>
+                        </span>
+                        <span class="app-arrow" aria-hidden="true">&rsaquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </section>
+    </main>
 
-        <h1>Jon's Data Company</h1>
-
-        <p class="subtitle">
-            Building innovative tools and experiences.
-        </p>
-
-        <div class="links">
-            <a href="mailto:contact@jonsdata.com" class="link">Contact</a>
-            <a href="https://github.com/stuck3y" target="_blank" class="link">GitHub</a>
-        </div>
-    </div>
+    <footer>
+        <a href="mailto:contact@jonsdata.com">Contact</a>
+        <a href="https://github.com/stuck3y" target="_blank" rel="noopener">GitHub</a>
+    </footer>
 </body>
 </html>
