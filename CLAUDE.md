@@ -42,6 +42,12 @@ npx http-server
 
 Changes are automatically deployed via GitHub Pages when pushed to the main branch.
 
+## Conventions
+
+- **New apps go in `/apps/<slug>/`** as self-contained static folders (typically `index.html` + `styles.css` + `app.js`). No build step.
+- **Surface helpful apps on the homepage.** When adding a new utility/helper app under `/apps/`, also add an entry to the `Apps` list in the root `index.html` (name + one-line description + link). Keep the list curated — small, useful apps the user reaches for regularly.
+- **Branch off `main` by default.** When starting new work, branch off the latest `main` rather than stacking on top of an unmerged feature branch. After a branch merges, return to `main`, pull, then cut a fresh branch for the next change.
+
 ## Application-Specific Notes
 
 ### Food App (`/apps/food/`)
