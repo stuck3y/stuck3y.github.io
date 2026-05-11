@@ -10,18 +10,26 @@
             --bg: #fbfbfd;
             --fg: #1d1d1f;
             --fg-muted: #6e6e73;
-            --rule: #e5e5e7;
             --link: #1d1d1f;
             --link-hover: #2f6f80;
+            --logo-frame: #ffffff;
+            --logo-shadow: rgba(0, 0, 0, 0.06);
+            --bubble-1: rgba(45, 110, 130, 0.10);
+            --bubble-2: rgba(45, 60, 90, 0.08);
+            --bubble-3: rgba(120, 150, 170, 0.10);
         }
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg: #000000;
+                --bg: #0a0a0c;
                 --fg: #f5f5f7;
                 --fg-muted: #86868b;
-                --rule: #2a2a2c;
                 --link: #f5f5f7;
                 --link-hover: #6fb6c8;
+                --logo-frame: #ffffff;
+                --logo-shadow: rgba(0, 0, 0, 0.5);
+                --bubble-1: rgba(111, 182, 200, 0.10);
+                --bubble-2: rgba(150, 170, 200, 0.06);
+                --bubble-3: rgba(80, 130, 150, 0.10);
             }
         }
 
@@ -41,26 +49,102 @@
             min-height: 100dvh;
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Floating bubbles, slow and quiet */
+        .bubble {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            filter: blur(1px);
+            will-change: transform;
+        }
+        .bubble.b1 {
+            width: 280px; height: 280px;
+            background: var(--bubble-1);
+            top: -60px; left: -80px;
+            animation: drift-1 28s ease-in-out infinite;
+        }
+        .bubble.b2 {
+            width: 200px; height: 200px;
+            background: var(--bubble-2);
+            bottom: -50px; right: -40px;
+            animation: drift-2 34s ease-in-out infinite;
+        }
+        .bubble.b3 {
+            width: 140px; height: 140px;
+            background: var(--bubble-3);
+            top: 55%; left: 70%;
+            animation: drift-3 40s ease-in-out infinite;
+        }
+        @keyframes drift-1 {
+            0%, 100% { transform: translate(0, 0); }
+            50%      { transform: translate(40px, 30px); }
+        }
+        @keyframes drift-2 {
+            0%, 100% { transform: translate(0, 0); }
+            50%      { transform: translate(-30px, -40px); }
+        }
+        @keyframes drift-3 {
+            0%, 100% { transform: translate(0, 0); }
+            50%      { transform: translate(-50px, 20px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .bubble { animation: none; }
         }
 
         main {
-            flex: 1;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 420px;
             width: 100%;
-            max-width: 640px;
-            margin: 0 auto;
-            padding: clamp(64px, 12vh, 140px) 24px 64px;
-        }
-
-        header {
-            margin-bottom: 96px;
         }
 
         .logo {
             display: block;
-            width: clamp(180px, 28vw, 220px);
-            height: auto;
-            margin-bottom: 32px;
+            width: 88px;
+            height: 88px;
+            margin: 0 auto 28px;
+            background: var(--logo-frame);
+            padding: 8px;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px var(--logo-shadow);
+            object-fit: contain;
+        }
+
+        h1 {
+            margin: 0 0 40px;
+            font-size: clamp(20px, 3.6vw, 24px);
+            font-weight: 400;
+            letter-spacing: -0.01em;
+            line-height: 1.4;
+            color: var(--fg);
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: clamp(16px, 4vw, 28px);
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: var(--fg-muted);
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 0;
+            transition: color 0.25s ease;
+        }
+        nav a:hover {
+            color: var(--link-hover);
         }
 
         .visually-hidden {
@@ -75,153 +159,30 @@
             border: 0;
         }
 
-        .tagline {
-            margin: 0;
-            color: var(--fg-muted);
-            font-size: 19px;
-            line-height: 1.47;
-            font-weight: 400;
-        }
-
-        section {
-            margin-bottom: 64px;
-        }
-
-        .eyebrow {
-            display: block;
-            margin: 0 0 24px;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--fg-muted);
-        }
-
-        .app-list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        .app-list li {
-            border-top: 1px solid var(--rule);
-        }
-        .app-list li:last-child {
-            border-bottom: 1px solid var(--rule);
-        }
-
-        .app-link {
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            gap: 24px;
-            padding: 20px 0;
-            text-decoration: none;
-            color: var(--link);
-            transition: color 0.2s ease, padding 0.2s ease;
-        }
-        .app-link:hover {
-            color: var(--link-hover);
-        }
-
-        .app-text {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .app-name {
-            display: block;
-            font-size: 19px;
-            font-weight: 500;
-            letter-spacing: -0.01em;
-            margin-bottom: 4px;
-        }
-
-        .app-desc {
-            display: block;
-            font-size: 15px;
-            color: var(--fg-muted);
-            font-weight: 400;
-            line-height: 1.47;
-        }
-
-        .app-arrow {
-            color: var(--fg-muted);
-            font-size: 18px;
-            transition: transform 0.2s ease, color 0.2s ease;
-            flex-shrink: 0;
-        }
-        .app-link:hover .app-arrow {
-            transform: translateX(4px);
-            color: var(--link-hover);
-        }
-
-        footer {
-            width: 100%;
-            max-width: 640px;
-            margin: 0 auto;
-            padding: 32px 24px;
-            border-top: 1px solid var(--rule);
-            display: flex;
-            gap: 24px;
-            font-size: 13px;
-            color: var(--fg-muted);
-        }
-
-        footer a {
-            color: var(--fg-muted);
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
-        footer a:hover {
-            color: var(--link-hover);
-        }
-
         @media (max-width: 480px) {
-            main { padding-top: 56px; }
-            header { margin-bottom: 64px; }
-            .logo { margin-bottom: 24px; }
-            .app-link { gap: 16px; }
+            .logo { width: 72px; height: 72px; margin-bottom: 24px; }
+            h1 { margin-bottom: 32px; }
+            .bubble.b1 { width: 220px; height: 220px; }
+            .bubble.b2 { width: 160px; height: 160px; }
+            .bubble.b3 { width: 100px; height: 100px; }
         }
     </style>
 </head>
 <body>
+    <div class="bubble b1" aria-hidden="true"></div>
+    <div class="bubble b2" aria-hidden="true"></div>
+    <div class="bubble b3" aria-hidden="true"></div>
+
     <main>
-        <header>
-            <img src="logo.png" alt="Jon's Data Company" class="logo">
-            <h1 class="visually-hidden">Jon's Data Company</h1>
-            <p class="tagline">Building innovative tools and experiences.</p>
-        </header>
-
-        <section aria-labelledby="apps-label">
-            <span id="apps-label" class="eyebrow">Apps</span>
-            <ul class="app-list">
-                <li>
-                    <a href="./apps/slantboard/" class="app-link">
-                        <span class="app-text">
-                            <span class="app-name">Slant Board Timer</span>
-                            <span class="app-desc">Short morning routine for patellar tendon and tarsal tunnel — 5, 10, or 12 minutes.</span>
-                        </span>
-                        <span class="app-arrow" aria-hidden="true">&rsaquo;</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="./apps/foundation/" class="app-link">
-                        <span class="app-text">
-                            <span class="app-name">Foundation 12</span>
-                            <span class="app-desc">A step-by-step timer for the original 12-minute Foundation Training sequence.</span>
-                        </span>
-                        <span class="app-arrow" aria-hidden="true">&rsaquo;</span>
-                    </a>
-                </li>
-            </ul>
-        </section>
+        <img src="logo.png" alt="Jon's Data Company" class="logo">
+        <h1 class="visually-hidden">Jon's Data Company</h1>
+        <h1>Building great things with great people.</h1>
+        <nav aria-label="Primary">
+            <a href="./apps/">Apps</a>
+            <a href="./blog/">Blog</a>
+            <a href="mailto:contact@jonsdata.com">Contact</a>
+            <a href="https://github.com/stuck3y" target="_blank" rel="noopener">GitHub</a>
+        </nav>
     </main>
-
-    <footer>
-        <a href="./blog/">Blog</a>
-        <a href="mailto:contact@jonsdata.com">Contact</a>
-        <a href="https://github.com/stuck3y" target="_blank" rel="noopener">GitHub</a>
-    </footer>
 </body>
 </html>
