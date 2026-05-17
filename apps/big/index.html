@@ -117,11 +117,15 @@
   .numerals.armed { opacity: 0.85; }
   .numerals.paused { opacity: 0.62; }
   .numerals.done { color: var(--accent); opacity: 1; }
-  .numerals.copied { animation: copy-pulse 360ms ease; }
+  .numerals.copied {
+    color: var(--accent);
+    animation: copy-pop 1100ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
 
-  @keyframes copy-pulse {
-    0%, 100% { transform: scale(1); }
-    45%      { transform: scale(0.962); }
+  @keyframes copy-pop {
+    0%   { transform: scale(1); }
+    14%  { transform: scale(1.045); }
+    100% { transform: scale(1); }
   }
 
   .arc {
@@ -134,45 +138,37 @@
   }
   .arc.done { opacity: 0; }
 
-  /* vertical task dial */
-  .dial {
-    width: min(80vmin, 560px);
-    height: 4.5rem;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scroll-snap-type: y mandatory;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+  /* task label — tap to cycle forward */
+  .label {
     display: none;
-    -webkit-mask-image: linear-gradient(180deg, transparent 0%, black 28%, black 72%, transparent 100%);
-            mask-image: linear-gradient(180deg, transparent 0%, black 28%, black 72%, transparent 100%);
-    touch-action: pan-y;
-  }
-  .dial.visible { display: block; }
-  .dial::-webkit-scrollbar { display: none; }
-  .dial::before, .dial::after {
-    content: '';
-    display: block;
-    height: 1.5rem;
-  }
-  .dial-item {
-    scroll-snap-align: center;
-    text-align: center;
+    background: none;
+    border: none;
+    cursor: pointer;
     font-family: "Fraunces", serif;
     font-style: italic;
     font-weight: 400;
-    font-size: clamp(1.1rem, 2.8vmin, 1.45rem);
+    font-size: clamp(1.1rem, 2.8vmin, 1.5rem);
     color: var(--fg);
-    opacity: 0.28;
-    transition: opacity 260ms ease;
-    padding: 0.35rem 1rem;
-    line-height: 1.4;
-    cursor: pointer;
+    opacity: 0.72;
+    padding: 0.6rem 1.4rem;
+    line-height: 1.35;
+    max-width: min(82vmin, 560px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    text-align: center;
   }
-  .dial-item.active { opacity: 0.88; }
+  .label.visible { display: block; }
+  .label:focus-visible { outline: 1px dashed var(--rim); outline-offset: 4px; border-radius: 2px; }
+  .label.flip { animation: task-flip 280ms cubic-bezier(0.16, 1, 0.3, 1); }
+
+  @keyframes task-flip {
+    0%   { opacity: 0.08; transform: translateY(6px); }
+    100% { opacity: 0.72; transform: translateY(0); }
+  }
 
   .fab {
     position: fixed;
@@ -189,7 +185,7 @@
     line-height: 1;
     cursor: pointer;
     opacity: 0.4;
-    transition: opacity 220ms ease, border-color 220ms ease, transform 220ms ease;
+    transition: opacity 220ms ease, border-color 220ms ease;
     user-select: none;
     z-index: 20;
   }
@@ -198,7 +194,7 @@
     border-color: var(--muted);
     outline: none;
   }
-  .fab.open { transform: rotate(45deg); opacity: 1; border-color: var(--muted); }
+  .fab.hidden { opacity: 0; pointer-events: none; }
 
   .sheet {
     position: fixed;
@@ -256,7 +252,7 @@
       <div class="numerals idle" id="numerals">0:00</div>
     </div>
 
-    <div class="dial" id="dial"></div>
+    <button class="label" id="label" aria-label="next task"></button>
   </div>
 
   <div></div>
@@ -276,7 +272,7 @@
   const arcEl      = $('arc');
   const ticksEl    = $('ticks');
   const labelsEl   = $('labels');
-  const dialEl     = $('dial');
+  const labelEl    = $('label');
   const brandEl    = $('brand');
   const fabEl      = $('fab');
   const sheetEl    = $('sheet');
@@ -289,6 +285,7 @@
   const STATE_KEY = 'big-state';
   const TASKS_KEY = 'big-tasks';
   const LONG_PRESS_MS = 600;
+  const COPY_HOLD_MS  = 1100;
 
   // mode: 'idle' | 'armed' | 'running' | 'paused' | 'done'
   let mode      = 'idle';
@@ -297,6 +294,8 @@
   let elapsedMs = 0;
   let startedAt = 0;       // ms-epoch; 0 when not running
   let tickHandle = null;
+  let taskIndex = 0;
+  let copyShown = null;    // { text, until } | null
 
   // ── clock face decorations ───────────────────────────────
 
@@ -377,7 +376,11 @@
   // ── render ───────────────────────────────────────────────
 
   function render () {
-    numeralsEl.textContent = fmt(displayMs());
+    if (copyShown && Date.now() < copyShown.until) {
+      numeralsEl.textContent = copyShown.text;
+    } else {
+      numeralsEl.textContent = fmt(displayMs());
+    }
 
     numeralsEl.classList.remove('idle','armed','paused','done');
     arcEl.classList.toggle('done', mode === 'done');
@@ -506,15 +509,46 @@
   let longPressed = false;
   let pressOrigin = null;
 
+  function writeClipboard (text) {
+    // try modern API first; fall back to the legacy textarea trick,
+    // which still works when the gesture context is lost (timeout-fired).
+    const fallback = () => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch {}
+      document.body.removeChild(ta);
+      return ok;
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(fallback);
+    } else {
+      fallback();
+    }
+  }
+
   function copyTime () {
     let prefix = '';
     if (direction === 'down') prefix = '-';
     else if (direction === 'up') prefix = '+';
     const txt = prefix + fmt(displayMs());
-    try { navigator.clipboard.writeText(txt); } catch {}
+    writeClipboard(txt);
+    copyShown = { text: txt, until: Date.now() + COPY_HOLD_MS };
     numeralsEl.classList.remove('copied');
     void numeralsEl.offsetWidth;
     numeralsEl.classList.add('copied');
+    render();
+    setTimeout(() => {
+      copyShown = null;
+      numeralsEl.classList.remove('copied');
+      render();
+    }, COPY_HOLD_MS);
   }
 
   clockEl.addEventListener('pointerdown', (e) => {
@@ -560,71 +594,46 @@
 
   // ── tasks (live, no save button) ─────────────────────────
 
-  function escapeHtml (s) {
-    return s.replace(/[&<>"']/g, c => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-    }[c]));
-  }
-
   function currentTasks () {
     return taEl.value.split('\n').map(s => s.trim()).filter(Boolean);
   }
 
-  function renderDial (preserveScroll = false) {
+  function renderLabel (animate = false) {
     const tasks = currentTasks();
-    const prevScroll = preserveScroll ? dialEl.scrollTop : 0;
     if (!tasks.length) {
-      dialEl.classList.remove('visible');
-      dialEl.innerHTML = '';
+      labelEl.classList.remove('visible', 'flip');
+      labelEl.textContent = '';
       return;
     }
-    dialEl.innerHTML = tasks.map(t => `<div class="dial-item">${escapeHtml(t)}</div>`).join('');
-    dialEl.classList.add('visible');
-
-    dialEl.querySelectorAll('.dial-item').forEach(item => {
-      item.addEventListener('click', () => {
-        item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-    });
-
-    requestAnimationFrame(() => {
-      if (preserveScroll) {
-        dialEl.scrollTop = prevScroll;
-      } else {
-        const first = dialEl.querySelector('.dial-item');
-        if (first) first.scrollIntoView({ block: 'center' });
-      }
-      updateActiveDialItem();
-    });
+    if (taskIndex >= tasks.length) taskIndex = 0;
+    labelEl.textContent = tasks[taskIndex];
+    labelEl.classList.add('visible');
+    if (animate) {
+      labelEl.classList.remove('flip');
+      void labelEl.offsetWidth;
+      labelEl.classList.add('flip');
+    }
   }
 
-  function updateActiveDialItem () {
-    const items = dialEl.querySelectorAll('.dial-item');
-    if (!items.length) return;
-    const r = dialEl.getBoundingClientRect();
-    const center = r.top + r.height / 2;
-    let best = items[0], bestDist = Infinity;
-    items.forEach(item => {
-      const ir = item.getBoundingClientRect();
-      const ic = ir.top + ir.height / 2;
-      const d = Math.abs(ic - center);
-      if (d < bestDist) { bestDist = d; best = item; }
-    });
-    items.forEach(i => i.classList.toggle('active', i === best));
+  function cycleTask () {
+    const tasks = currentTasks();
+    if (!tasks.length) return;
+    taskIndex = (taskIndex + 1) % tasks.length;
+    renderLabel(true);
   }
 
-  dialEl.addEventListener('scroll', () => updateActiveDialItem(), { passive: true });
+  labelEl.addEventListener('click', cycleTask);
 
   taEl.addEventListener('input', () => {
     try { localStorage.setItem(TASKS_KEY, taEl.value); } catch {}
-    renderDial(true);
+    renderLabel(false);
   });
 
   // ── sheet toggling ───────────────────────────────────────
 
   function openSheet () {
     sheetEl.classList.add('open');
-    fabEl.classList.add('open');
+    fabEl.classList.add('hidden');
     setTimeout(() => {
       taEl.focus();
       const end = taEl.value.length;
@@ -633,7 +642,7 @@
   }
   function closeSheet () {
     sheetEl.classList.remove('open');
-    fabEl.classList.remove('open');
+    fabEl.classList.remove('hidden');
   }
   function toggleSheet () {
     if (sheetEl.classList.contains('open')) closeSheet();
@@ -650,7 +659,7 @@
       if (e.key === 'Escape') { e.preventDefault(); closeSheet(); }
       return;
     }
-    if (e.key === ' ' && document.activeElement !== taEl) {
+    if (e.key === ' ' && document.activeElement !== taEl && document.activeElement !== labelEl) {
       e.preventDefault();
       tapInterior();
     }
@@ -751,7 +760,7 @@
       }
     } catch {}
 
-    renderDial();
+    renderLabel(false);
     if (mode === 'running') startTicking();
     render();
     saveState();
