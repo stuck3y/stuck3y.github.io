@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Celebration — A 31-Day Devotional</title>
+<meta name="description" content="A daily devotional on security in Christ. Everything is a celebration of what is already given." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Newsreader:ital,opsz@0,6..72;1,6..72&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f4ede0;
+    --paper-deep: #ebe1cf;
+    --card: #fbf6ec;
+    --ink: #2b2620;
+    --ink-soft: #5c5346;
+    --ink-faint: #8a7f6d;
+    --ember: #b6552c;
+    --ember-deep: #97431f;
+    --gold: #b08a3e;
+    --line: #ddd0b8;
+    --shadow: rgba(60, 48, 30, 0.13);
+  }
+
+- { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { background: var(–paper); }
+
+body {
+font-family: ‘Newsreader’, Georgia, serif;
+color: var(–ink);
+line-height: 1.68;
+-webkit-font-smoothing: antialiased;
+background-image:
+radial-gradient(ellipse 70% 50% at 50% -10%, rgba(176, 138, 62, 0.10), transparent),
+radial-gradient(ellipse 60% 40% at 100% 100%, rgba(182, 85, 44, 0.06), transparent);
+background-attachment: fixed;
+min-height: 100vh;
+}
+
+/* faint paper grain */
+body::before {
+content: “”;
+position: fixed;
+inset: 0;
+pointer-events: none;
+opacity: 0.4;
+z-index: 0;
+background-image: url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘120’ height=‘120’%3E%3Cfilter id=‘n’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=‘0.85’ numOctaves=‘3’ stitchTiles=‘stitch’/%3E%3CfeColorMatrix type=‘saturate’ values=‘0’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23n)’ opacity=‘0.22’/%3E%3C/svg%3E”);
+}
+
+.wrap {
+position: relative;
+z-index: 1;
+max-width: 660px;
+margin: 0 auto;
+padding: 0 26px 90px;
+}
+
+/* –– Masthead –– */
+header {
+text-align: center;
+padding: 58px 0 30px;
+}
+.mark {
+font-family: ‘Fraunces’, serif;
+font-weight: 600;
+font-size: 13px;
+letter-spacing: 0.42em;
+text-transform: uppercase;
+color: var(–ember);
+margin-bottom: 18px;
+}
+.mark::before, .mark::after {
+content: “✦”;
+font-size: 9px;
+color: var(–gold);
+margin: 0 12px;
+vertical-align: 2px;
+}
+h1.title {
+font-family: ‘Fraunces’, serif;
+font-weight: 400;
+font-size: clamp(46px, 13vw, 76px);
+line-height: 0.98;
+letter-spacing: -0.02em;
+color: var(–ink);
+}
+h1.title em {
+font-style: italic;
+color: var(–ember-deep);
+}
+.subtitle {
+margin-top: 16px;
+font-size: 16px;
+font-style: italic;
+color: var(–ink-soft);
+}
+.rule {
+width: 64px;
+height: 1px;
+background: var(–line);
+margin: 26px auto 0;
+position: relative;
+}
+.rule::after {
+content: “”;
+position: absolute;
+width: 5px; height: 5px;
+background: var(–gold);
+transform: rotate(45deg);
+left: 50%; top: 50%;
+margin: -2.5px 0 0 -2.5px;
+}
+
+/* –– Date bar –– */
+.datebar {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 16px;
+margin: 30px 0 8px;
+flex-wrap: wrap;
+}
+.daynav {
+background: none;
+border: 1px solid var(–line);
+color: var(–ink-soft);
+width: 38px; height: 38px;
+border-radius: 50%;
+font-family: ‘Newsreader’, serif;
+font-size: 17px;
+cursor: pointer;
+transition: all 0.22s ease;
+display: flex; align-items: center; justify-content: center;
+flex-shrink: 0;
+}
+.daynav:hover {
+background: var(–ember);
+color: #fff;
+border-color: var(–ember);
+transform: translateY(-1px);
+}
+.daynav:active { transform: translateY(0); }
+.datelabel {
+text-align: center;
+min-width: 168px;
+}
+.datelabel .big {
+font-family: ‘Fraunces’, serif;
+font-size: 21px;
+color: var(–ink);
+letter-spacing: 0.01em;
+}
+.datelabel .small {
+font-size: 12.5px;
+letter-spacing: 0.22em;
+text-transform: uppercase;
+color: var(–ink-faint);
+margin-top: 2px;
+}
+.today-pill {
+display: inline-block;
+margin: 4px auto 0;
+font-size: 11px;
+letter-spacing: 0.18em;
+text-transform: uppercase;
+color: var(–ember);
+cursor: pointer;
+border-bottom: 1px dotted var(–ember);
+padding-bottom: 1px;
+font-family: ‘Fraunces’, serif;
+}
+.today-pill:hover { color: var(–ember-deep); }
+.today-wrap { text-align: center; min-height: 22px; }
+
+/* –– Card –– */
+.card {
+background: var(–card);
+border: 1px solid var(–line);
+border-radius: 3px;
+margin-top: 22px;
+padding: 44px 40px 40px;
+box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 18px 40px -22px var(–shadow);
+animation: rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes rise {
+from { opacity: 0; transform: translateY(14px); }
+to   { opacity: 1; transform: translateY(0); }
+}
+
+.daytag {
+font-family: ‘Fraunces’, serif;
+font-size: 12px;
+letter-spacing: 0.34em;
+text-transform: uppercase;
+color: var(–gold);
+text-align: center;
+}
+h2.theme {
+font-family: ‘Fraunces’, serif;
+font-weight: 400;
+font-size: clamp(28px, 7vw, 38px);
+line-height: 1.12;
+letter-spacing: -0.015em;
+text-align: center;
+margin: 10px 0 4px;
+color: var(–ink);
+}
+h2.theme em { font-style: italic; color: var(–ember-deep); }
+
+.section { margin-top: 34px; }
+.section:first-of-type { margin-top: 30px; }
+
+.label {
+font-family: ‘Fraunces’, serif;
+font-size: 11px;
+font-weight: 600;
+letter-spacing: 0.26em;
+text-transform: uppercase;
+color: var(–ember);
+display: flex;
+align-items: center;
+gap: 12px;
+margin-bottom: 13px;
+}
+.label::after {
+content: “”;
+flex: 1;
+height: 1px;
+background: var(–line);
+}
+
+/* verse */
+.verse {
+font-family: ‘Fraunces’, serif;
+font-size: 22px;
+line-height: 1.5;
+font-style: italic;
+color: var(–ink);
+padding-left: 20px;
+border-left: 2px solid var(–ember);
+}
+.verse .ref {
+display: block;
+margin-top: 12px;
+font-family: ‘Newsreader’, serif;
+font-style: normal;
+font-size: 14px;
+letter-spacing: 0.08em;
+text-transform: uppercase;
+color: var(–ink-faint);
+}
+
+/* devotional body */
+.devo p {
+font-size: 18.5px;
+color: var(–ink);
+margin-bottom: 15px;
+}
+.devo p:last-child { margin-bottom: 0; }
+.devo strong { font-weight: 600; color: var(–ember-deep); }
+
+/* tip / dare boxes */
+.box {
+background: var(–paper-deep);
+border: 1px solid var(–line);
+border-radius: 3px;
+padding: 20px 22px;
+}
+.box p { font-size: 17px; color: var(–ink-soft); }
+.box p strong { color: var(–ink); font-weight: 600; }
+
+.dare .box {
+background: linear-gradient(180deg, #f6e9d6, #f1e0c8);
+border-color: #e0caa0;
+}
+
+/* word of the day */
+.word-row {
+display: flex;
+align-items: baseline;
+gap: 16px;
+flex-wrap: wrap;
+}
+.word-row .w {
+font-family: ‘Fraunces’, serif;
+font-size: 30px;
+color: var(–ember-deep);
+font-weight: 500;
+}
+.word-row .pos {
+font-style: italic;
+font-size: 15px;
+color: var(–ink-faint);
+}
+.word-def {
+margin-top: 8px;
+font-size: 17px;
+color: var(–ink-soft);
+}
+
+/* resources */
+.resources a {
+display: block;
+text-decoration: none;
+color: var(–ink);
+padding: 13px 0;
+border-bottom: 1px solid var(–line);
+transition: padding 0.2s ease;
+}
+.resources a:last-child { border-bottom: none; }
+.resources a:hover { padding-left: 8px; }
+.resources a:hover .r-title { color: var(–ember-deep); }
+.r-title {
+font-family: ‘Fraunces’, serif;
+font-size: 17px;
+transition: color 0.2s ease;
+}
+.r-title::after {
+content: “→”;
+margin-left: 8px;
+color: var(–gold);
+font-family: ‘Newsreader’, serif;
+}
+.r-meta {
+font-size: 13px;
+letter-spacing: 0.06em;
+text-transform: uppercase;
+color: var(–ink-faint);
+margin-top: 1px;
+}
+
+/* footer */
+footer {
+text-align: center;
+margin-top: 46px;
+color: var(–ink-faint);
+font-size: 14.5px;
+font-style: italic;
+line-height: 1.7;
+}
+footer .fmark {
+font-style: normal;
+font-family: ‘Fraunces’, serif;
+letter-spacing: 0.3em;
+text-transform: uppercase;
+font-size: 11px;
+color: var(–gold);
+margin-bottom: 10px;
+}
+
+@media (max-width: 560px) {
+.card { padding: 34px 24px 32px; }
+.wrap { padding: 0 16px 70px; }
+.verse { font-size: 20px; }
+.devo p { font-size: 17.5px; }
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mark">Security in Christ</div>
+    <h1 class="title">Cele<em>bration</em></h1>
+    <div class="subtitle">A 31-day devotional &mdash; one for each day of the month</div>
+    <div class="rule"></div>
+  </header>
+
+  <div class="datebar">
+    <button class="daynav" id="prev" aria-label="Previous day">&#8592;</button>
+    <div class="datelabel">
+      <div class="big" id="dateBig">&nbsp;</div>
+      <div class="small" id="dateSmall">&nbsp;</div>
+    </div>
+    <button class="daynav" id="next" aria-label="Next day">&#8594;</button>
+  </div>
+  <div class="today-wrap"><span class="today-pill" id="todayBtn" style="display:none;">Return to today</span></div>
+
+  <main id="card"></main>
+
+  <footer>
+    <div class="fmark">✦ &nbsp; The platform is fixed &nbsp; ✦</div>
+    Everything here is a celebration of what is already given &mdash;<br />
+    not a search for what is still missing.<br />
+    <span style="font-size:13px;">&ldquo;Your life is hidden with Christ in God.&rdquo; &mdash; Colossians 3:3</span>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   CELEBRATION — 31-day devotional
+   Each entry keyed to the day of the month (1–31).
+   Theme throughout: security in Christ is the fixed platform;
+   marriage, fatherhood, work, everything else is celebration of it.
+   ============================================================ */
+
+const DEVOTIONALS = {
+  1: {
+    theme: "The Platform, <em>Not the Search</em>",
+    verse: "There is therefore now no condemnation for those who are in Christ Jesus.",
+    ref: "Romans 8:1",
+    devo: [
+      "Most men live their inner life as a <strong>search</strong> — for respect, for being right, for a wife's warmth, for proof they measure up. A searching man is never at rest, because the thing he's searching for can always be withheld.",
+      "Today begins with a different word: <strong>platform</strong>. In Christ, the verdict on you is already in. Not pending. Not partial. <em>No condemnation</em> — none — for those who are in him. Your standing isn't the prize at the end of good behavior. It's the ground you're already standing on.",
+      "A man who knows he's on a fixed platform stops searching and starts celebrating. He can be wrong without it costing him his soul. He can be denied without being destroyed. He can love without grasping. That's where the next 31 days are going. Start here: you are not searching for the ground. You're standing on it."
+    ],
+    tip: "Before your feet hit the floor tomorrow, say one sentence out loud: <strong>\"There is no condemnation for me today.\"</strong> Let it set the platform before the day sets the tone.",
+    dare: "Find one place today where you'd normally defend yourself — and don't. Notice you survived it. The platform held.",
+    word: { w: "Justified", pos: "verb / past tense", def: "Declared righteous by God — a finished verdict, not a running tally. Already done, already true of you in Christ." },
+    resources: [
+      { title: "Does Obedience Secure Your Right Standing with God?", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" },
+      { title: "The Christian's Assurance of Salvation", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/sermons/48-20/the-christians-assurance-of-salvation" }
+    ]
+  },
+
+  2: {
+    theme: "Hidden <em>Where Storms Don't Reach</em>",
+    verse: "For you have died, and your life is hidden with Christ in God.",
+    ref: "Colossians 3:3",
+    devo: [
+      "There is a part of you that the worst day cannot touch. Paul says it plainly: your real life is <strong>hidden</strong> — tucked away with Christ, in God. Not in your performance. Not in your marriage. Not in how the people around you are responding to you today.",
+      "This is why a settled man can take a hard conversation without unraveling. The storm is real — he feels the wind — but the storm is <em>weather</em>, and his life is <em>bedrock</em>. Weather moves. Bedrock doesn't.",
+      "When you feel the surge of defensiveness rise, that surge is just your false self — the part built on being perceived well — feeling threatened. Your true self isn't in the room being criticized. It's hidden, safe, untouchable. Step back over to it."
+    ],
+    tip: "When you feel attacked or dismissed today, name it silently: <strong>\"That's the weather. My life is hidden.\"</strong> Then respond from the bedrock, not the wind.",
+    dare: "Pick the word <strong>Hidden</strong> as your anchor word for the day. Carry it. Return to it three times.",
+    word: { w: "Hidden", pos: "adjective", def: "Concealed, kept safe, out of reach of harm — your truest life stored with Christ where no person's response can reach it." },
+    resources: [
+      { title: "Can Our Trials Separate Us from Christ's Love?", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" },
+      { title: "Assured Security in Christ", meta: "Charles Spurgeon · The Spurgeon Library", url: "https://www.spurgeon.org/resource-library/sermons/assured-security-in-christ/" }
+    ]
+  },
+
+  3: {
+    theme: "His Grace <em>Is Already Enough</em>",
+    verse: "But he said to me, \"My grace is sufficient for you, for my power is made perfect in weakness.\"",
+    ref: "2 Corinthians 12:9",
+    devo: [
+      "Paul begged three times for the thorn to be removed. God said no — and gave him something better than removal: <strong>sufficiency</strong>. Not 'enough once you fix your circumstances.' Enough <em>now</em>, in the lack, in the thorn, in the unanswered prayer.",
+      "Most men are waiting for the conditions to improve before they'll feel okay. The marriage warms up, the season eases, the recognition comes — <em>then</em> I'll have peace. But grace doesn't work on that timeline. It's sufficient today, in exactly the conditions you're actually in.",
+      "Whatever your thorn is right now — and you know what it is — God's grace is not coming later. It's here. The question isn't whether it's enough. He already said it is. The question is whether you'll stop waiting and start drawing on it."
+    ],
+    tip: "Name your current thorn out loud to God once today — specifically. Then say: <strong>\"Your grace is sufficient for this. Right now. As it is.\"</strong>",
+    dare: "Go one full day without mentally rehearsing the phrase \"once things get better.\" Catch it, drop it, return to <em>sufficient</em>.",
+    word: { w: "Sufficient", pos: "adjective", def: "Enough; adequate to the need — not someday, not after conditions improve, but presently and fully enough." },
+    resources: [
+      { title: "Strength in Weakness — God's Sufficient Grace", meta: "Charles Spurgeon · The Spurgeon Library", url: "https://www.spurgeon.org/resource-library/sermons/assured-security-in-christ/" },
+      { title: "Christianity Offers Unshakable Joy in Trials", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" }
+    ]
+  },
+
+  4: {
+    theme: "An <em>Anchor</em> for the Soul",
+    verse: "We have this as a sure and steadfast anchor of the soul, a hope that enters into the inner place behind the curtain.",
+    ref: "Hebrews 6:19",
+    devo: [
+      "Notice where the anchor is set. Not in calmer seas ahead. Not in your wife's response. Not in your circumstances finally cooperating. The anchor is set <strong>behind the curtain</strong> — in the holiest place, in Christ himself, where he has already gone.",
+      "That's why it holds. An anchor dropped into shifting sand drags. An anchor set into bedrock holds through any storm. Your hope is anchored to the one thing in the universe that cannot move.",
+      "You will feel the waves this week. Feeling the waves is not the same as drifting. You are not adrift — you just feel the water. The anchor doesn't stop the storm. It stops <em>you</em> from being carried off by it."
+    ],
+    tip: "When the day gets choppy, picture the anchor line running down — past your circumstances, past the noise — into the holiest place. <strong>It's already set. You're held.</strong>",
+    dare: "Anchor word for today: <strong>Anchored</strong>. Before bed, ask: did I let the waves convince me I was drifting? I wasn't.",
+    word: { w: "Anchored", pos: "adjective", def: "Held firmly in place; secured against drift — fastened not to circumstances but to Christ behind the curtain." },
+    resources: [
+      { title: "What Makes a Christian Unshakably Secure?", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" },
+      { title: "The Immutability of God", meta: "Charles Spurgeon · The Spurgeon Library", url: "https://www.spurgeon.org/resource-library/sermons/the-immutability-of-god/" }
+    ]
+  },
+
+  5: {
+    theme: "It Is <em>Already Finished</em>",
+    verse: "When Jesus had received the sour wine, he said, \"It is finished,\" and he bowed his head and gave up his spirit.",
+    ref: "John 19:30",
+    devo: [
+      "Three words that end the search forever: <strong>It is finished</strong>. The work of making you acceptable to God is not in progress. It's not 90 percent done with your effort filling the gap. It is <em>complete</em>. Signed. Sealed. Closed.",
+      "A man who doesn't believe this is always trying to add to the verdict — be a better husband to earn peace, get it right to feel like a man, perform his way into okay-ness. But there's nothing to add to <em>finished</em>. You can only receive it.",
+      "This is the difference between religion and the gospel. Religion says: do, and you might be accepted. The gospel says: you're accepted — already, fully — now go and live from it. Today you don't have to earn your standing. It was earned. Live like a man who already has it, because you do."
+    ],
+    tip: "Each time you catch yourself trying to <em>earn</em> something today — peace, worth, her approval — stop and say: <strong>\"That's already finished. I'm not adding to it.\"</strong>",
+    dare: "Do one act of love today with zero expectation of return. Finished love doesn't need a receipt.",
+    word: { w: "Already", pos: "adverb", def: "Prior to now; by this time — the gospel tense. Your acceptance is not pending. It is already accomplished." },
+    resources: [
+      { title: "Pardon Comes Before Progress", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" },
+      { title: "The Blessing of Full Assurance", meta: "Charles Spurgeon · The Spurgeon Library", url: "https://www.spurgeon.org/resource-library/sermons/the-blessing-of-full-assurance-2/" }
+    ]
+  },
+
+  6: {
+    theme: "Chosen <em>Before You Could Earn It</em>",
+    verse: "He chose us in him before the foundation of the world, that we should be holy and blameless before him.",
+    ref: "Ephesians 1:4",
+    devo: [
+      "Before the world was made — before you had done one good thing or one bad thing, before you could perform or fail — God set his love on you. Your identity didn't begin with your achievements. It began in eternity, in his choice.",
+      "MacArthur put it bluntly: a true sense of identity comes from knowing that <strong>God himself personally selected you</strong> to be his child. Not because of something attractive he found in you. Because he determined to love you.",
+      "This kills the frantic quest. The man who knows he was chosen before the foundation of the world has nothing left to prove and no one left to convince. He can stop auditioning for a part he was already cast in."
+    ],
+    tip: "When you feel the need to prove yourself today — to your wife, your boss, anyone — pause and remember: <strong>you were chosen before you could earn anything. The audition is over.</strong>",
+    dare: "Notice one moment today where you perform for approval. Name it. Then do the next thing as a chosen son, not an auditioning one.",
+    word: { w: "Chosen", pos: "adjective", def: "Selected by deliberate decision — set apart by God's own initiative before you existed, apart from anything you did." },
+    resources: [
+      { title: "Avoiding a Spiritual Identity Crisis", meta: "John MacArthur · Daily Devotional", url: "https://sermons-online.org/john-macarthur/devo/avoiding-a-spiritual-identity-crisis" },
+      { title: "How God Magnifies His Grace by Beautifying His People", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" }
+    ]
+  },
+
+  7: {
+    theme: "Source <em>Before Service</em>",
+    verse: "I am the vine; you are the branches. Whoever abides in me and I in him, he it is that bears much fruit, for apart from me you can do nothing.",
+    ref: "John 15:5",
+    devo: [
+      "A branch doesn't strain to produce fruit. It produces fruit because it's <strong>connected</strong>. The fruit is the overflow of the connection — not the cause of it, not the proof of it, just the natural result of sap flowing from the vine.",
+      "Most husbands and fathers try to be fruit factories. Generate the patience, manufacture the warmth, will the love into being. And they burn out, because <em>apart from me you can do nothing</em>. You cannot pour from a branch that's been cut off from the vine.",
+      "Source before service. The morning connection before the daily output. If you skip the abiding and go straight to the doing, you're trying to bear fruit with no sap. Get connected first. The fruit takes care of itself."
+    ],
+    tip: "Tomorrow morning, connect to the vine <strong>before</strong> you touch your phone or see anyone. Even ten minutes. Source first. Then let the day's fruit be overflow, not effort.",
+    dare: "Today, when you feel yourself running dry on patience, don't push harder — stop and reconnect with one sentence of prayer. Sap, then fruit.",
+    word: { w: "Abide", pos: "verb", def: "To remain, to dwell, to stay connected — the slow, settled act of staying joined to Christ rather than striving apart from him." },
+    resources: [
+      { title: "Why Chasing Feelings Leaves Us Empty", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" },
+      { title: "First Love: The Joy and Simplicity of Life in Christ", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  8: {
+    theme: "Adopted <em>as a Son</em>",
+    verse: "You did not receive the spirit of slavery to fall back into fear, but you have received the Spirit of adoption as sons, by whom we cry, \"Abba! Father!\"",
+    ref: "Romans 8:15",
+    devo: [
+      "There are two ways to live in God's house: as a slave or as a son. The slave works to keep his place. The son already <strong>has</strong> his place and works from it. Same house, completely different posture.",
+      "A slave fears the master's mood. A son rests in the father's love. A slave's performance determines his standing. A son's standing was settled the day he was adopted, and his performance is just family life, not a survival strategy.",
+      "You did not receive a spirit of slavery. You received the Spirit of <em>adoption</em>. The cry of your heart is not 'please keep me' — it's 'Abba.' Father. You belong. Stop working like a slave to earn what you already have as a son."
+    ],
+    tip: "When fear or anxiety rises today, check your posture: are you working like a slave or resting like a son? Then say one word that resets it: <strong>\"Abba.\"</strong>",
+    dare: "Discipline your child today the way a secure father does — from love, not from annoyance. Sons parent like sons.",
+    word: { w: "Adoption", pos: "noun", def: "The legal act of being made a permanent member of a family — given a son's name, a son's standing, and a son's inheritance, irrevocably." },
+    resources: [
+      { title: "The Christian's Assurance of Salvation (on Adoption)", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/sermons/48-20/the-christians-assurance-of-salvation" },
+      { title: "Why Should Believers Live Without Fear?", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" }
+    ]
+  },
+
+  9: {
+    theme: "A Soft Answer <em>From a Settled Soul</em>",
+    verse: "A soft answer turns away wrath, but a harsh word stirs up anger.",
+    ref: "Proverbs 15:1",
+    devo: [
+      "A soft answer isn't weakness. It's the overflow of a man who has nothing to defend. The man who fires back a harsh word is usually a man whose <strong>identity is on the line</strong> — and so every disagreement feels like a threat to be neutralized.",
+      "But when your identity is hidden and anchored and finished, a hard word from someone else doesn't reach the foundation. It can't. So you don't have to match their heat to protect yourself — there's nothing exposed to protect.",
+      "This is the thermostat, not the thermometer. The thermometer just reads the room and matches it. The thermostat holds its setting and gently warms the room toward it. You can only be the thermostat if you're drawing from a power source the room can't drain."
+    ],
+    tip: "Today, before responding to anything that stings, take a <strong>three-second exhale</strong>. In those three seconds: \"My security isn't on the table here.\" Then give the soft answer.",
+    dare: "Be the thermostat once today. Someone runs cold or harsh — you hold your setting and answer soft. Watch what it does to the room.",
+    word: { w: "Composure", pos: "noun", def: "Calm self-possession under pressure — not the absence of feeling, but a settledness that doesn't need to react to protect itself." },
+    resources: [
+      { title: "What Robs Us of the Freedom to Love Others", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" },
+      { title: "Anxious for Nothing: God's Cure for the Cares of Your Soul", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  10: {
+    theme: "He Will <em>Bring It to Completion</em>",
+    verse: "And I am sure of this, that he who began a good work in you will bring it to completion at the day of Jesus Christ.",
+    ref: "Philippians 1:6",
+    devo: [
+      "The good work in you is not your project. It's <strong>his</strong>. He began it — you didn't — and he is the one who will finish it. Your job is not to complete yourself by force of will. Your job is to stop fighting what he's doing.",
+      "This matters on the hard days, when you fail again, when the old pattern resurfaces, when you wonder if you'll ever actually change. The promise isn't 'you'll fix yourself if you try hard enough.' The promise is: <em>he will bring it to completion.</em> Guaranteed. By him.",
+      "A man who believes this can fail without despair. The failure isn't the end of the project — it's just a Tuesday in a renovation that God himself guaranteed to finish. Keep showing up. The Builder doesn't quit halfway."
+    ],
+    tip: "When you fail today — and you might — don't spiral. Say: <strong>\"He began this. He finishes it. Today's stumble doesn't cancel the guarantee.\"</strong> Then repair fast and keep going.",
+    dare: "If you blow it today, repair within the hour — specific and brief. Fast repair is what a man who trusts the Builder does.",
+    word: { w: "Sanctification", pos: "noun", def: "The lifelong process by which God makes a believer actually holy — slow, certain, and guaranteed by him to be completed." },
+    resources: [
+      { title: "Pursuing a Holy Ambition: Hidden Work, Enduring Example", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/messages" },
+      { title: "Keys to Spiritual Growth", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  11: {
+    theme: "We Love <em>Because He First Loved</em>",
+    verse: "We love because he first loved us.",
+    ref: "1 John 4:19",
+    devo: [
+      "Read the order carefully. <strong>He first.</strong> Your capacity to love anyone — your wife, your kids, the difficult person — is not something you generate. It's something you <em>pass on</em>. You love because you were loved first, and you can only give what you've received.",
+      "This is why a man trying to love his family on empty becomes resentful. He's trying to be the original source of a love he was only ever meant to be a channel for. The well runs dry because it was never meant to be a well — it was meant to be a pipe.",
+      "Get loved first. Sit under the love of God in the morning until it actually lands. Then the love you carry to your family all day is overflow, not output — and overflow doesn't run out, and overflow doesn't keep score."
+    ],
+    tip: "Before you try to love anyone well today, spend two minutes <strong>receiving</strong> God's love. Say it plainly: \"You love me right now, as I am.\" Receive first. Then pass it on.",
+    dare: "Love your wife today specifically out of overflow, not strategy. No tracking whether she responds. You're a pipe, not a vending machine.",
+    word: { w: "Overflow", pos: "noun", def: "What spills over from a full vessel — love given not by effort or extraction, but as the natural runoff of being filled first." },
+    resources: [
+      { title: "God Is the Gospel: God's Love as the Gift of Himself", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/" },
+      { title: "The Love of God That Perseveres Even When We Fail", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  12: {
+    theme: "Be Still <em>and Know</em>",
+    verse: "Be still, and know that I am God.",
+    ref: "Psalm 46:10",
+    devo: [
+      "The command is not 'try harder.' It's <strong>be still</strong>. Stillness is where the knowing happens. A man in constant motion — fixing, managing, performing, monitoring — never actually <em>knows</em> God; he only knows about him. Knowing requires stopping.",
+      "And notice what you're told to know: not a doctrine, but a Person. <em>I am God.</em> You are not. The marriage is not in your hands to control. The timeline is not yours to set. Her healing is not yours to manage. He is God.",
+      "There is enormous rest in that sentence for a man who's been white-knuckling his life. You can put it down. The universe has a competent God, and it isn't you. Be still. Let him be God. Know it in the stillness."
+    ],
+    tip: "Take five literal minutes of stillness today — no phone, no task, no agenda. Just: <strong>\"Be still. He is God. I am not.\"</strong> Let your grip loosen.",
+    dare: "Find the one thing you're trying hardest to control right now. Today, consciously hand it back to God — and leave it there.",
+    word: { w: "Stillness", pos: "noun", def: "The deliberate cessation of striving — quietness of soul in which a man stops managing the world and remembers Who actually governs it." },
+    resources: [
+      { title: "How Do We Pray When Suffering Hides God's Will?", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" },
+      { title: "Alone with God: Rediscovering the Power of Prayer", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  13: {
+    theme: "He Sings <em>Over You</em>",
+    verse: "The Lord your God is in your midst, a mighty one who will save; he will rejoice over you with gladness; he will quiet you by his love; he will exult over you with loud singing.",
+    ref: "Zephaniah 3:17",
+    devo: [
+      "Sit with this one slowly, because most men have never let it land. God does not merely tolerate you. He does not love you grudgingly, the way a tired father loves a difficult child. He <strong>rejoices</strong> over you. He <em>exults</em>. He sings — loud singing — over you.",
+      "You probably find that hard to receive. Most men can serve God all day and not sit still for five minutes to be delighted in by him. Giving is easier than receiving. But this verse isn't asking you to do anything. It's telling you what God is doing — over you, right now.",
+      "And notice: 'he will <em>quiet</em> you by his love.' The overwhelmed, striving, monitoring soul gets quieted — not by achievement, not by fixing the marriage, but by being loved. Let yourself be sung over today."
+    ],
+    tip: "Once today, stop and simply receive: <strong>\"God is, right now, rejoicing over me with singing.\"</strong> Don't argue with it. Don't earn it. Just let it quiet you.",
+    dare: "Anchor word today: <strong>Delighted-in</strong>. Every time you feel like a disappointment, counter it with this verse.",
+    word: { w: "Exult", pos: "verb", def: "To rejoice with overflowing, demonstrative gladness — the opposite of grudging tolerance. What God does over his children." },
+    resources: [
+      { title: "How the Spirit Restores Our Freedom to Love", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" },
+      { title: "He Loves Us In Spite of Our Unattractiveness", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  14: {
+    theme: "Content <em>in Any Situation</em>",
+    verse: "I have learned in whatever situation I am to be content... I know how to be brought low, and I know how to abound. I can do all things through him who strengthens me.",
+    ref: "Philippians 4:11-13",
+    devo: [
+      "Paul says he <strong>learned</strong> contentment. It wasn't automatic. It wasn't a personality trait. It was learned — almost certainly through exactly the kind of hard, lean, unfair seasons you may be in right now.",
+      "And notice what contentment is <em>not</em>: it's not having no needs. Paul had real needs — hunger, want, being brought low. Contentment is having your stability <em>located somewhere other than whether the needs are met</em>. The needs are real. They're just not load-bearing for your soul anymore.",
+      "There are things you genuinely need from your marriage, your work, your life. Real things. But when those become the source of your okay-ness, their absence is a catastrophe. When Christ is the source, their absence is a real loss you can grieve honestly — without it taking the floor out from under you."
+    ],
+    tip: "Name one real need that isn't being met right now. Then practice the reframe: <strong>\"This is a real loss. It is not the loss of my foundation.\"</strong> Grieve it honestly; stay standing.",
+    dare: "Go one full day without letting an unmet need turn into resentment. Feel it, name it, bring it to God — don't let it curdle.",
+    word: { w: "Contentment", pos: "noun", def: "A settled sufficiency of soul that does not rise and fall with circumstances — learned, not inherited, and rooted in Christ rather than conditions." },
+    resources: [
+      { title: "Christianity Doesn't Fix All Suffering — But Offers Unshakable Joy", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" },
+      { title: "The Power of Suffering: Strengthening Your Faith in the Fire", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  15: {
+    theme: "Slow to Speak, <em>Quick to Hear</em>",
+    verse: "Let every person be quick to hear, slow to speak, slow to anger; for the anger of man does not produce the righteousness of God.",
+    ref: "James 1:19-20",
+    devo: [
+      "Here is the order most men get backwards: quick to speak, slow to hear, quick to anger. James flips all three. And he gives the reason in plain words — <strong>the anger of man does not produce the righteousness of God.</strong> It never has. It never will.",
+      "When you discipline a child out of annoyance, that's the anger of man — and it produces compliance at best, never righteousness. When you fire back at your wife to win the point, that's the anger of man — and it produces a wall, never reconciliation.",
+      "A secure man can be slow. He doesn't need to win the moment, because his standing doesn't depend on winning. He can hear fully before he answers — and 'if one gives an answer before he hears, it is his folly' (Proverbs 18:13). Slow is not weak. Slow is strong."
+    ],
+    tip: "Before you correct your child or answer your wife today, ask one question: <strong>\"Am I about to act from peace, or from annoyance?\"</strong> If it's annoyance — pause first.",
+    dare: "Today, when something irritates you, default to a question instead of a verdict. \"Tell me more\" before \"here's what's wrong.\"",
+    word: { w: "Restraint", pos: "noun", def: "The strength to hold back a reaction — not because the feeling isn't there, but because a settled man rules his spirit rather than being ruled by it." },
+    resources: [
+      { title: "How Should Christians Respond Under Pressure?", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" },
+      { title: "The Fruit of the Spirit: Self-Control", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  16: {
+    theme: "He Rules <em>His Own Spirit</em>",
+    verse: "Whoever is slow to anger is better than the mighty, and he who rules his spirit than he who takes a city.",
+    ref: "Proverbs 16:32",
+    devo: [
+      "God ranks the conquests. Taking a city — visible, impressive, the kind of strength the world applauds — comes in <strong>second</strong>. First place goes to the man who rules his own spirit. That is the harder battle, and the more valuable one.",
+      "Any man can react. Reacting requires nothing — it's the path of least resistance, the spirit running the man. Ruling your spirit requires everything: the pause, the prayer, the stepping off the false platform onto the real one, the choosing of the soft answer when the harsh one is loaded and ready.",
+      "And here's the freedom: you can only rule your spirit if your spirit isn't desperate. A desperate man — desperate for respect, for warmth, for being right — cannot govern himself, because the desperation governs him. The man secure in Christ has the slack to rule, because nothing essential is at stake in the moment."
+    ],
+    tip: "Today, treat every surge of reactive emotion as a <strong>signal to relocate</strong>, not a command to react. The surge means: step back to the platform. Then govern.",
+    dare: "Win the harder battle once today. A moment comes where reacting would feel justified — rule your spirit instead. That's the real conquest.",
+    word: { w: "Self-governance", pos: "noun", def: "The inner rule of a man over his own reactions and impulses — esteemed by God above the conquest of cities." },
+    resources: [
+      { title: "Self-Awareness Can Go Too Far — Look to God Instead", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/messages" },
+      { title: "Standing Strong: How to Resist the Enemy of Your Soul", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  17: {
+    theme: "Nothing <em>Can Separate You</em>",
+    verse: "For I am sure that neither death nor life... nor anything else in all creation, will be able to separate us from the love of God in Christ Jesus our Lord.",
+    ref: "Romans 8:38-39",
+    devo: [
+      "Paul makes a list — death, life, angels, rulers, things present, things to come, powers, height, depth — and then, in case he missed anything, he adds <strong>'nor anything else in all creation.'</strong> He is being deliberately exhaustive. There is no item that can be added to that list. Nothing separates you from the love of God.",
+      "Not your worst day. Not your repeated failure. Not your wife's coldness. Not a hard season that drags longer than feels fair. Not your own doubt about whether it's true. None of it can sever the bond.",
+      "Most of a man's fear lives in the gap of 'but what if.' Paul closes the gap. There is no 'what if' large enough. The love that holds you is not fragile, not conditional, not under review. It is the most secure fact in your life."
+    ],
+    tip: "Find your loudest 'but what if' today. Then answer it with Paul's words: <strong>\"Not even that. Nothing in all creation. The list is closed.\"</strong>",
+    dare: "Anchor word today: <strong>Inseparable</strong>. Whenever fear whispers a 'what if,' answer with this verse and move on.",
+    word: { w: "Inseparable", pos: "adjective", def: "Incapable of being divided or pulled apart — the permanent state of the believer's bond to the love of God in Christ." },
+    resources: [
+      { title: "Can Our Trials Separate Us from Christ's Love?", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" },
+      { title: "The Security of the Church", meta: "Charles Spurgeon · Spurgeon Sermons", url: "https://www.blueletterbible.org/Comm/spurgeon_charles/sermons/0161.cfm" }
+    ]
+  },
+
+  18: {
+    theme: "He Holds You — <em>You Don't Hold Him</em>",
+    verse: "I give them eternal life, and they will never perish, and no one will snatch them out of my hand.",
+    ref: "John 10:28",
+    devo: [
+      "Spurgeon drew the picture: a worried man locks his treasure in a safe, bolts the door, bars the room — and still lies awake, sure a thief has broken in. His security depends on <strong>his own grip</strong>, and so he never truly rests.",
+      "The Christian's security is of an entirely different kind. You have not locked yourself in a vault of your own making. You have been placed in the hand of God — and the question is not whether your grip on him will hold. It's whether <em>his</em> grip on <em>you</em> will hold. And it will.",
+      "This is why you can sleep. Not because you've secured yourself well enough, but because the One holding you cannot be overpowered and will not let go. 'No one will snatch them out of my hand.' No one. Including you, on your worst day."
+    ],
+    tip: "When you feel like everything depends on you holding on tight enough, remember: <strong>you are held, not holding.</strong> Then actually rest — let the grip be his.",
+    dare: "Tonight, sleep like a man who is held. Hand the day's unfinished business to the One whose grip doesn't fail, and let go.",
+    word: { w: "Kept", pos: "verb / past participle", def: "Guarded and preserved by another — the believer's safety rests not in his grip on God but in God's unbreakable grip on him." },
+    resources: [
+      { title: "Assured Security in Christ", meta: "Charles Spurgeon · The Spurgeon Library", url: "https://www.spurgeon.org/resource-library/sermons/assured-security-in-christ/" },
+      { title: "If You Could Lose Your Salvation, You Would", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/sermons/48-20/the-christians-assurance-of-salvation" }
+    ]
+  },
+
+  19: {
+    theme: "Aim at Heaven, <em>Get Earth Thrown In</em>",
+    verse: "But seek first the kingdom of God and his righteousness, and all these things will be added to you.",
+    ref: "Matthew 6:33",
+    devo: [
+      "Notice the word <strong>added</strong>. Not 'pursued.' Not 'achieved.' Added — as a byproduct, a thing that comes along with something else when you seek the something else first.",
+      "C.S. Lewis put it this way: aim at heaven and you get earth thrown in; aim at earth and you get neither. The man who makes his marriage the center of his spiritual energy often ends up with a strained marriage <em>and</em> a shallow soul. The man who seeks God first frequently looks up to find the marriage has been added.",
+      "This isn't a trick to manipulate God into fixing your life. It's the actual architecture of reality. Put the kingdom first — genuinely first, not as a strategy for getting the other things — and the other things tend to follow. Put the other things first, and you grasp them so hard you crush them."
+    ],
+    tip: "Audit your spiritual energy today: how much of it is vertical (toward God himself) versus horizontal (about fixing your circumstances)? <strong>Aim higher. Let the rest be added.</strong>",
+    dare: "Make one act of devotion today that has no 'use' — not aimed at fixing anything. Just God, because he's worth it.",
+    word: { w: "Added", pos: "verb / past participle", def: "Given as something extra, alongside the main thing — the manner in which earthly goods come to the one who seeks God's kingdom first." },
+    resources: [
+      { title: "Do You Feel Loved Because God Frees You to Make Much of Him?", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/" },
+      { title: "The Glorious Gospel of the Blessed (Happy) God", meta: "Charles Spurgeon · Precept Austin", url: "https://www.preceptaustin.org/the_attributes_of_god_-_spurgeon" }
+    ]
+  },
+
+  20: {
+    theme: "His Mercies <em>Are New This Morning</em>",
+    verse: "The steadfast love of the Lord never ceases; his mercies never come to an end; they are new every morning; great is your faithfulness.",
+    ref: "Lamentations 3:22-23",
+    devo: [
+      "Jeremiah wrote this in the book called <em>Lamentations</em> — in the rubble, in the grief, in the worst chapter of his nation's story. And right there, in the ashes, he says: <strong>new every morning.</strong>",
+      "Whatever yesterday held — the failure, the harsh word, the wall that didn't move, the prayer that wasn't answered — God's mercy did not get used up on it. There is a fresh, full supply waiting for you this morning. Not a rationed remainder. New.",
+      "This is what makes 'repair fast' possible. You don't have to carry yesterday's failure into today as a debt. The mercy is new. You get to begin again — not because you've earned a fresh start, but because his mercies, by their nature, don't run out."
+    ],
+    tip: "Don't drag yesterday into today. Each morning, receive the new mercy plainly: <strong>\"Yesterday's failures did not deplete the supply. This morning's mercy is new and full.\"</strong>",
+    dare: "Is there a failure from yesterday you're still carrying? Set it down this morning. New mercies don't co-exist with old debts.",
+    word: { w: "Renewed", pos: "verb / past participle", def: "Made fresh and full again — the daily condition of God's mercy, which is never rationed and never runs out." },
+    resources: [
+      { title: "However Long You've Prayed — Don't Lose Heart", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/" },
+      { title: "He Changes Not — God's Immutable Faithfulness", meta: "Charles Spurgeon · The Spurgeon Library", url: "https://www.spurgeon.org/resource-library/sermons/the-immutability-of-god/" }
+    ]
+  },
+
+  21: {
+    theme: "Do Not Grow Weary <em>— There Is a Harvest</em>",
+    verse: "And let us not grow weary of doing good, for in due season we will reap, if we do not give up.",
+    ref: "Galatians 6:9",
+    devo: [
+      "There is a harvest. Paul promises it. But notice the two conditions tucked into the verse: <strong>do not grow weary</strong>, and <strong>do not give up</strong>. The harvest is certain — but it comes in 'due season,' which is God's timing, not yours.",
+      "This is the season of sowing. You are putting seed into ground that shows nothing yet. The temptation will be to dig the seed back up to check on it — to measure, to audit, to demand evidence that it's working. Don't. Farmers don't do that. They sow, and they wait, and they trust the season.",
+      "Most men quit in the gap between sowing and reaping — at month three of a change that needed twelve. The seed was fine. The ground was fine. They just couldn't bear the invisible months. Don't be that man. The harvest is real. Stay in the field."
+    ],
+    tip: "Today, sow without checking the soil. Do the good thing — for your wife, your kids, your soul — and then <strong>release the outcome</strong>. Sowing is your job; the harvest is God's.",
+    dare: "Pick one good thing you've been doing without visible results. Recommit to it today — no measuring, no quitting. Due season is coming.",
+    word: { w: "Persevere", pos: "verb", def: "To continue steadfastly through difficulty and delay — to keep sowing through the invisible months because the harvest is promised." },
+    resources: [
+      { title: "Enduring for the Joy Set Before Us", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/messages" },
+      { title: "Enjoying a Bountiful Harvest", meta: "John MacArthur · Daily Devotional", url: "https://www.gty.org/" }
+    ]
+  },
+
+  22: {
+    theme: "Cast Your Anxiety <em>— He Cares</em>",
+    verse: "Casting all your anxieties on him, because he cares for you.",
+    ref: "1 Peter 5:7",
+    devo: [
+      "The word is <strong>casting</strong> — an active throw, not a passive hope. Anxiety doesn't drift off on its own. You have to deliberately pick it up and throw it onto someone strong enough to carry it. And Peter tells you exactly why you can: <em>because he cares for you.</em>",
+      "Anxiety is, at root, a control problem. The mind grips the future, runs the scenarios, tries to manage what hasn't happened yet — usually some version of 'what if it never gets better, what if I lose this, what if the worst version is the real one.'",
+      "Casting it on him is the deliberate decision to stop being the manager of outcomes you were never strong enough to carry anyway. He cares. He's competent. The future is his department. You can throw the weight and walk lighter."
+    ],
+    tip: "Name your biggest current anxiety out loud. Then physically picture <strong>throwing it</strong> onto God — a real, deliberate cast. \"This is yours now. You care. You carry it.\"",
+    dare: "Each time the same anxious thought comes back today, cast it again. Same throw, every time. It may take a hundred casts — keep throwing.",
+    word: { w: "Cast", pos: "verb", def: "To throw with force and intention — the deliberate act of handing anxiety over to God rather than carrying what was never yours to bear." },
+    resources: [
+      { title: "How the Spirit Intercedes When Suffering Hides God's Will", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" },
+      { title: "Anxious for Nothing", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  23: {
+    theme: "The Lord <em>Is Your Portion</em>",
+    verse: "\"The Lord is my portion,\" says my soul, \"therefore I will hope in him.\"",
+    ref: "Lamentations 3:24",
+    devo: [
+      "A portion is your allotted share — your inheritance, the thing that is genuinely <strong>yours</strong>. And the soul that has learned to say 'the Lord is my portion' has located its treasure somewhere that cannot be taken, withheld, or run dry.",
+      "Most men have made something else their portion without naming it. The marriage. The career. The respect of others. A particular outcome. And so their hope rises and falls with whether that thing is delivering — because their portion is hostage to it.",
+      "Numbers 18 says of the priests: the Lord himself is their inheritance. Not the land. Him. That's the reframe for your whole life. Your wife is a gift. Your work is a gift. Your kids are a gift. But none of them is your <em>portion</em>. He is. And he is never withheld."
+    ],
+    tip: "Say it deliberately today, as your own confession: <strong>\"The Lord is my portion.\"</strong> Not the marriage. Not the outcome. Him. Therefore — hope.",
+    dare: "Identify what you've quietly made your portion. Today, demote it back to 'gift' and put God back in the portion's place.",
+    word: { w: "Portion", pos: "noun", def: "One's allotted share or inheritance — for the believer, God himself, who can be neither taken away nor withheld." },
+    resources: [
+      { title: "God Is the Gospel: God's Love as the Gift of Himself", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/" },
+      { title: "The Riches of Our Identity in Christ", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/sermons/48-20/the-christians-assurance-of-salvation" }
+    ]
+  },
+
+  24: {
+    theme: "True Humility <em>— Self-Forgetfulness</em>",
+    verse: "For by the grace given to me I say to everyone among you not to think of himself more highly than he ought to think, but to think with sober judgment.",
+    ref: "Romans 12:3",
+    devo: [
+      "C.S. Lewis gave the cleanest definition: true humility is not thinking less of yourself — it is thinking of yourself <strong>less</strong>. Not self-hatred. Self-<em>forgetfulness</em>.",
+      "This is the quiet engine under everything in this devotional. The reason a hard word from your wife can wreck your whole day is that you are intensely interesting to yourself — your image, your standing, your being-perceived-rightly is always running in the background, always on the line.",
+      "When you become less interesting to yourself — because your worth is settled, hidden, finished, anchored — her words stop being a threat. They become just information about reality, which you can now be curious about instead of defended against. The humble man isn't the one with the lowest view of himself. He's the one who's stopped checking the mirror."
+    ],
+    tip: "Today, catch yourself running the background program of 'how am I being perceived?' Each time, gently turn the camera outward: <strong>think of yourself less.</strong>",
+    dare: "Have one conversation today where you give the other person your complete attention — with zero monitoring of how you're coming across.",
+    word: { w: "Humility", pos: "noun", def: "Not a low view of oneself, but a freedom from the constant thought of oneself — self-forgetfulness made possible by settled security." },
+    resources: [
+      { title: "Self-Awareness Can Go Too Far", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/messages" },
+      { title: "The Quest for Character", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  25: {
+    theme: "Walk <em>in the Light</em>",
+    verse: "But if we walk in the light, as he is in the light, we have fellowship with one another, and the blood of Jesus his Son cleanses us from all sin.",
+    ref: "1 John 1:7",
+    devo: [
+      "The self-deceived man does one of two things with his struggles: he pretends he doesn't have them, or he acts on them in secret. Both are <strong>walking in darkness</strong> — and darkness is where struggles grow, fed by the very secrecy that hides them.",
+      "Walking in the light means bringing the real thing into the open — first to God, then to a trusted brother, then to your wife where wise. Not because exposure is comfortable. Because darkness is where sin metastasizes, and light is where it loses its power.",
+      "And notice the promise attached: walking in the light brings <em>fellowship</em> and <em>cleansing</em>. You don't walk into the light to be condemned. You walk into it to be cleaned. The blood does what the hiding never could."
+    ],
+    tip: "Is there something you've been keeping in the dark — a temptation, a resentment, a struggle? <strong>Bring it into the light today.</strong> To God first. To one trusted brother soon.",
+    dare: "Tell one trusted brother one true thing you've been carrying alone. Darkness loses its grip the moment it's spoken in the light.",
+    word: { w: "Confession", pos: "noun", def: "The act of bringing what was hidden into the open before God and trusted others — the doorway out of darkness into cleansing and fellowship." },
+    resources: [
+      { title: "What Turns Forgiven Sinners into Sacrificial Servants?", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" },
+      { title: "Saved Without a Doubt: Being Sure of Your Salvation", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  26: {
+    theme: "Be Angry <em>and Do Not Sin</em>",
+    verse: "Be angry and do not sin; do not let the sun go down on your anger, and give no opportunity to the devil.",
+    ref: "Ephesians 4:26-27",
+    devo: [
+      "The verse does not forbid anger. It does something more useful: it puts <strong>guardrails</strong> on it. Be angry — the feeling itself isn't the sin — but don't let the anger drive you into sin, and don't let it <em>stay</em>.",
+      "'Do not let the sun go down on it' is a same-day rule. Anger that's handled before nightfall is just anger. Anger that's allowed to sleep over, night after night, becomes something else — it builds a house, and the name of that house is bitterness.",
+      "And bitterness, Paul says, 'gives opportunity to the devil.' It's the open door. The secure man feels his anger honestly, names it, deals with it before the sun goes down — and refuses to let it harden into a standing structure in his soul."
+    ],
+    tip: "Don't let anger sleep over tonight. Before the day ends, deal with whatever's stirred up — name it, confess it, repair it. <strong>Same day. Don't let it build a house.</strong>",
+    dare: "If there's anger you've let sleep over — even for weeks — start dismantling that house today. Confession is the first brick out.",
+    word: { w: "Reconciliation", pos: "noun", def: "The restoration of a broken relationship to peace — the same-day work that keeps anger from hardening into bitterness." },
+    resources: [
+      { title: "What Robs Us of Joy and Freedom to Love", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/authors/john-piper" },
+      { title: "The Sin of Bitterness and the Path Out", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  27: {
+    theme: "Whoever Loses His Life <em>Will Find It</em>",
+    verse: "For whoever would save his life will lose it, but whoever loses his life for my sake will find it.",
+    ref: "Matthew 16:25",
+    devo: [
+      "This is the great paradox at the center of the Christian life, and it runs against every instinct you have. The tighter you grip your life — your rights, your outcomes, your sense of being treated fairly — the more it slips. The more you <strong>release</strong> it, the more you actually have it.",
+      "It works in marriage with uncomfortable precision. The man who grips — who must have the response, the warmth, the fairness, the timeline — strangles the very thing he's reaching for. The man who genuinely surrenders the outcome creates the conditions where it can actually return.",
+      "Not faked surrender. Faked surrender is just grasping with a quieter voice, and everyone can feel it. Real surrender — actually losing your life for his sake, actually opening the hand — is the only posture that finds anything. The grasping is what keeps it from coming. The releasing is what makes room."
+    ],
+    tip: "Find the thing you're gripping hardest. Today, practice the open hand: <strong>\"I release the outcome. I lose this for your sake. Whatever you do with it, I trust you.\"</strong>",
+    dare: "Surrender one outcome completely today — actually, not performatively. Open the hand and leave it open. Watch what room that makes.",
+    word: { w: "Surrender", pos: "noun / verb", def: "The deliberate release of one's grip on rights and outcomes — the paradoxical posture in which a man finally finds his life by losing it." },
+    resources: [
+      { title: "Don't Waste Your Life", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/" },
+      { title: "Follow Me: The Call to Lose Your Life for Christ", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  28: {
+    theme: "Come to Me <em>— I Will Give You Rest</em>",
+    verse: "Come to me, all who labor and are heavy laden, and I will give you rest... For my yoke is easy, and my burden is light.",
+    ref: "Matthew 11:28-30",
+    devo: [
+      "Jesus does not say 'try harder and you'll find rest.' He says <strong>come to me</strong>. The rest is not a technique you achieve. It's a Person you come to. The labor and the heavy load get exchanged — not for no yoke, but for <em>his</em> yoke, which is easy.",
+      "A striving man hears 'rest' and assumes it means the circumstances have to ease first — the marriage warms, the season lifts, the load lightens. But the rest Jesus offers is available <em>while still under load</em>. It's a rest of soul, not a rest of circumstance.",
+      "And here's the quiet mercy in it for a husband: you cannot be your wife's source of rest, and you were never meant to be. Your job is not to be her savior — it's to point her, and yourself, to the One who actually said 'come to me.' Bring your own heavy load there first."
+    ],
+    tip: "Stop trying to manufacture rest by fixing your circumstances. Today, simply <strong>come</strong> — bring the actual heavy load to Jesus and trade your yoke for his.",
+    dare: "Do one thing today that helps your wife get closer to <em>her</em> rest in Christ — not by being her savior, but by clearing the path to the real one.",
+    word: { w: "Rest", pos: "noun", def: "A settledness of soul that is found in coming to Christ — available even under load, because it depends on him and not on circumstances easing." },
+    resources: [
+      { title: "Exercise, Movement, and the Deepening of Joy", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/messages" },
+      { title: "Finding Rest for Your Soul in Christ", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  29: {
+    theme: "He Gently Leads <em>Those With Young</em>",
+    verse: "He will tend his flock like a shepherd; he will gather the lambs in his arms; he will carry them in his bosom, and gently lead those that are with young.",
+    ref: "Isaiah 40:11",
+    devo: [
+      "Look at the pace God keeps. He does not drive the flock at the speed of the strongest animal. He <strong>gently leads those that are with young</strong> — he moves at the pace of the mothers, the nursing ewes, the ones who are depleted and slow because they are keeping something small alive.",
+      "If God himself slows his leading for the sake of those with young, then a husband can slow his expectations for the same reason. A season of caring for little ones is a season of legitimate slowness — physically, emotionally, every way. That's not a flaw in your wife or your marriage. It's the season.",
+      "And the same Shepherd who carries the lambs in his arms is carrying you, too. You don't have to be the strong one driving the pace. You get to be led — gently — by One who already knows exactly how much weight this season is carrying."
+    ],
+    tip: "Wherever you're tempted to push the pace today — with your wife, your kids, yourself — ask: <strong>\"Would the Shepherd drive here, or gently lead?\"</strong> Then match his pace.",
+    dare: "Lower one expectation today that doesn't fit the actual season. Then carry, gently, whatever load you can take off someone slower than you.",
+    word: { w: "Gentleness", pos: "noun", def: "Strength that adjusts its pace and force to the weakness of another — the manner of the Shepherd toward those who are carrying the most." },
+    resources: [
+      { title: "When God Ordains Suffering, He Sustains His People", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/messages" },
+      { title: "The Tender Shepherd Who Carries His Flock", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/" }
+    ]
+  },
+
+  30: {
+    theme: "Faithful <em>in Little</em>",
+    verse: "One who is faithful in a very little is also faithful in much, and one who is dishonest in a very little is also dishonest in much.",
+    ref: "Luke 16:10",
+    devo: [
+      "The Christian life is not built out of grand gestures. It is built out of <strong>very little</strong> — the small, repeated, unglamorous, mostly-invisible faithfulnesses that no one applauds and no one even sees.",
+      "The morning ten minutes with God. The dish done without announcement. The soft answer given the hundredth time. The repair made within the hour. The anchor word remembered. None of these is impressive on its own. All of them, repeated, are what an actual changed life is made of.",
+      "Don't despise the small obedience because it's small. The man who is faithful in the little things is, quietly, becoming the man who can be trusted with much. And the trustworthiness is built in the unseen hours. Faithful in little. That's the whole path."
+    ],
+    tip: "Pick the smallest faithful thing you've been neglecting — and do it today. Then do it tomorrow. <strong>The little, repeated, is the path. There is no other one.</strong>",
+    dare: "Choose two small faithfulnesses to do daily — just two. Do them today. Faithfulness in little is not the warm-up; it's the thing itself.",
+    word: { w: "Faithfulness", pos: "noun", def: "Steady reliability in small, repeated obligations — the quiet material out of which a trustworthy life is actually built." },
+    resources: [
+      { title: "Pursuing a Holy Ambition Takes Hidden Work", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/messages" },
+      { title: "A Bible Falling Apart Belongs to Someone Who Isn't", meta: "John MacArthur · Grace to You", url: "https://www.oneplace.com/ministries/grace-to-you/" }
+    ]
+  },
+
+  31: {
+    theme: "He Who Began It <em>Will Finish It</em>",
+    verse: "Now to him who is able to keep you from stumbling and to present you blameless before the presence of his glory with great joy...",
+    ref: "Jude 24",
+    devo: [
+      "Thirty-one days in, end where the whole thing has been pointing: it is <strong>he</strong> who is able. Not you. The keeping is his. The presenting is his. And look at how the verse describes the destination — you, presented blameless, before the presence of his glory, <em>with great joy</em>.",
+      "That is where this is all going. Not to a perfectly fixed marriage as the final word. Not to a man who finally got everything right. To you, kept by him, presented by him, standing in his presence — and the dominant note of that whole scene is joy. Great joy.",
+      "So the search really is over, because it was always the wrong frame. You were never meant to be searching for a security you might one day secure. You were meant to be <strong>celebrating</strong> a security he already secured and will himself bring to completion. Everything else — the marriage, the fatherhood, the work, the hard seasons and the good ones — is the celebration of that. Begin again tomorrow on day one. The platform hasn't moved. It never will."
+    ],
+    tip: "Today, look back over the month — not to grade yourself, but to celebrate Him. <strong>He kept you. He's still keeping you. He will finish what he started.</strong> Then begin again at day one.",
+    dare: "Write down, in one sentence, what God has been doing in you this month. Put it where you'll see it. Then start the 31 days again — same platform, deeper roots.",
+    word: { w: "Celebration", pos: "noun", def: "Joyful acknowledgment of something already given and already true — the right and final posture of a soul secured in Christ." },
+    resources: [
+      { title: "He Is Able to Keep You — The God Who Finishes", meta: "John Piper · Desiring God", url: "https://www.desiringgod.org/" },
+      { title: "The Believer's Eternal Security and Final Joy", meta: "John MacArthur · Grace to You", url: "https://www.gty.org/sermons/48-20/the-christians-assurance-of-salvation" },
+      { title: "The Blessing of Full Assurance", meta: "Charles Spurgeon · The Spurgeon Library", url: "https://www.spurgeon.org/resource-library/sermons/the-blessing-of-full-assurance-2/" }
+    ]
+  }
+};
+
+/* ---------- rendering ---------- */
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const ORD = n => {
+  const s = ["th","st","nd","rd"], v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+};
+
+const realToday = new Date();
+let viewDay = realToday.getDate(); // 1..31
+
+function maxDayThisView() {
+  // days available are 1..31; entries exist for all 31
+  return 31;
+}
+
+function render() {
+  const d = DEVOTIONALS[viewDay];
+  const card = document.getElementById("card");
+
+  // date label
+  const isToday = viewDay === realToday.getDate();
+  document.getElementById("dateBig").textContent = "Day " + viewDay;
+  document.getElementById("dateSmall").textContent = isToday
+    ? MONTHS[realToday.getMonth()] + " " + ORD(realToday.getDate())
+    : "the " + ORD(viewDay) + " of the month";
+  document.getElementById("todayBtn").style.display = isToday ? "none" : "inline-block";
+
+  const resHtml = d.resources.map(r =>
+    `<a href="${r.url}" target="_blank" rel="noopener">
+       <div class="r-title">${r.title}</div>
+       <div class="r-meta">${r.meta}</div>
+     </a>`).join("");
+
+  card.innerHTML = `
+    <div class="card" key="${viewDay}">
+      <div class="daytag">Day ${viewDay} of 31</div>
+      <h2 class="theme">${d.theme}</h2>
+
+      <div class="section">
+        <div class="label">The Verse</div>
+        <div class="verse">${d.verse}<span class="ref">${d.ref}</span></div>
+      </div>
+
+      <div class="section devo">
+        <div class="label">Five Minutes</div>
+        ${d.devo.map(p => `<p>${p}</p>`).join("")}
+      </div>
+
+      <div class="section tip">
+        <div class="label">A Practical Tip</div>
+        <div class="box"><p>${d.tip}</p></div>
+      </div>
+
+      <div class="section dare">
+        <div class="label">The Dare</div>
+        <div class="box"><p>${d.dare}</p></div>
+      </div>
+
+      <div class="section">
+        <div class="label">Word of the Day</div>
+        <div class="word-row">
+          <span class="w">${d.word.w}</span>
+          <span class="pos">${d.word.pos}</span>
+        </div>
+        <div class="word-def">${d.word.def}</div>
+      </div>
+
+      <div class="section resources">
+        <div class="label">Go Deeper</div>
+        ${resHtml}
+      </div>
+    </div>
+  `;
+}
+
+document.getElementById("prev").addEventListener("click", () => {
+  viewDay = viewDay === 1 ? 31 : viewDay - 1;
+  render();
+});
+document.getElementById("next").addEventListener("click", () => {
+  viewDay = viewDay === 31 ? 1 : viewDay + 1;
+  render();
+});
+document.getElementById("todayBtn").addEventListener("click", () => {
+  viewDay = realToday.getDate();
+  render();
+});
+
+render();
+</script>
+
+</body>
+</html>
