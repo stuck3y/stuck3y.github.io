@@ -1,6 +1,13 @@
 {
   "apps": [
     {
+      "slug": "big",
+      "name": "big",
+      "description": "A big, quiet timer. Tap the rim for a countdown, tap the face to start. Optional task labels.",
+      "path": "./big/",
+      "featured": true
+    },
+    {
       "slug": "slantboard",
       "name": "Slant Board Timer",
       "description": "Short morning routine for patellar tendon and tarsal tunnel — 5, 10, or 12 minutes.",

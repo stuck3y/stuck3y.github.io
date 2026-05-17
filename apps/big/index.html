@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>big</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,400&family=JetBrains+Mono:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5efe6;
+    --fg: #2a2520;
+    --muted: #8a8275;
+    --rim: rgba(42, 37, 32, 0.10);
+    --tick: rgba(42, 37, 32, 0.22);
+    --accent: #b85d3c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1715;
+      --fg: #d8cfc2;
+      --muted: #6b6357;
+      --rim: rgba(216, 207, 194, 0.12);
+      --tick: rgba(216, 207, 194, 0.28);
+      --accent: #d97a4f;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Fraunces", "Iowan Old Style", Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow: hidden;
+  }
+
+  main {
+    height: 100vh;
+    height: 100dvh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    align-items: center;
+    justify-items: center;
+    padding: 1rem 1rem 2rem;
+    gap: 1rem;
+  }
+
+  .brand {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 400;
+    font-variation-settings: "opsz" 12;
+    letter-spacing: 0.22em;
+    text-transform: lowercase;
+    padding: 1rem 1.5rem;
+    margin-top: 0.25rem;
+    opacity: 0.55;
+    transition: opacity 220ms ease;
+    user-select: none;
+  }
+  .brand:hover, .brand:focus-visible { opacity: 1; outline: none; }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.75rem;
+    width: 100%;
+  }
+
+  .clock {
+    position: relative;
+    width: min(78vmin, 560px);
+    aspect-ratio: 1;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  .clock svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+  }
+
+  .numerals {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-weight: 300;
+    font-size: clamp(3.25rem, 13.5vmin, 9rem);
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    color: var(--fg);
+    pointer-events: none;
+    transition: color 700ms ease, opacity 320ms ease;
+  }
+  .numerals.idle { opacity: 0.45; }
+  .numerals.armed { opacity: 0.85; }
+  .numerals.paused { opacity: 0.65; }
+  .numerals.zero { color: var(--accent); opacity: 1; }
+
+  .arc {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    opacity: 0.85;
+    transition: opacity 400ms ease;
+  }
+  .arc.zero { opacity: 0; }
+
+  .dial {
+    width: min(78vmin, 560px);
+    display: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-padding-inline: 30%;
+    padding: 0.25rem 30%;
+    gap: 2rem;
+    align-items: center;
+  }
+  .dial.visible { display: flex; }
+  .dial::-webkit-scrollbar { display: none; }
+
+  .dial-item {
+    flex: 0 0 40%;
+    scroll-snap-align: center;
+    text-align: center;
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(1.05rem, 2.4vmin, 1.35rem);
+    color: var(--fg);
+    opacity: 0.28;
+    transition: opacity 260ms ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0.4rem 0.2rem;
+    cursor: pointer;
+  }
+  .dial-item.active { opacity: 0.88; }
+
+  .fab {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    border: 1px solid var(--rim);
+    background: transparent;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 220ms ease, border-color 220ms ease;
+    user-select: none;
+  }
+  .fab:hover, .fab:focus-visible {
+    opacity: 1;
+    border-color: var(--muted);
+    outline: none;
+  }
+
+  .sheet {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    gap: 1.25rem;
+    z-index: 10;
+  }
+  .sheet.open { display: flex; }
+  .sheet textarea {
+    width: 100%;
+    max-width: 30rem;
+    min-height: 50vh;
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--rim);
+    border-radius: 4px;
+    padding: 1.25rem;
+    font-family: "Fraunces", serif;
+    font-size: 1.1rem;
+    line-height: 1.55;
+    resize: vertical;
+    outline: none;
+    transition: border-color 200ms ease;
+  }
+  .sheet textarea:focus { border-color: var(--accent); }
+  .sheet textarea::placeholder {
+    color: var(--muted);
+    font-style: italic;
+  }
+  .sheet-actions { display: flex; gap: 1rem; }
+  .sheet button {
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 0.55rem 1.6rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    letter-spacing: 0.12em;
+    text-transform: lowercase;
+    cursor: pointer;
+    transition: background 200ms ease, color 200ms ease;
+  }
+  .sheet button:hover { background: var(--accent); color: var(--bg); }
+  .sheet button.muted {
+    border-color: var(--rim);
+    color: var(--muted);
+  }
+  .sheet button.muted:hover { background: transparent; color: var(--fg); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+<main>
+  <button class="brand" id="brand" title="reset">big</button>
+
+  <div class="stage">
+    <div class="clock" id="clock" role="button" aria-label="timer">
+      <svg viewBox="-100 -100 200 200" aria-hidden="true">
+        <circle cx="0" cy="0" r="92" fill="none" stroke="var(--rim)" stroke-width="0.6"/>
+        <g id="ticks"></g>
+        <path id="arc" class="arc" d=""/>
+      </svg>
+      <div class="numerals idle" id="numerals">0:00</div>
+    </div>
+
+    <div class="dial" id="dial"></div>
+  </div>
+
+  <div></div>
+</main>
+
+<button class="fab" id="fab" title="tasks" aria-label="add tasks">+</button>
+
+<div class="sheet" id="sheet">
+  <textarea id="textarea" placeholder="one task per line&hellip;" spellcheck="false"></textarea>
+  <div class="sheet-actions">
+    <button class="muted" id="sheet-cancel">cancel</button>
+    <button id="sheet-save">save</button>
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  const clockEl    = $('clock');
+  const numeralsEl = $('numerals');
+  const arcEl      = $('arc');
+  const ticksEl    = $('ticks');
+  const dialEl     = $('dial');
+  const brandEl    = $('brand');
+  const fabEl      = $('fab');
+  const sheetEl    = $('sheet');
+  const taEl       = $('textarea');
+
+  const ARC_RADIUS = 90;
+
+  // mode: 'idle' | 'armed' | 'running' | 'paused' | 'zero'
+  // 'idle'    : 0:00, no countdown set
+  // 'armed'   : countdown duration set, not yet started
+  // 'running' : ticking
+  // 'paused'  : ticking suspended
+  // 'zero'    : countdown completed
+  let mode = 'idle';
+  let direction = null; // 'up' | 'down'
+  let targetMs = 0;
+  let elapsedMs = 0;
+  let startedAt = 0;
+  let tasks = [];
+  let tickHandle = null;
+
+  // build subtle 60-position tick marks; every 5 = major
+  (function buildTicks () {
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < 60; i++) {
+      const angle = (i / 60) * Math.PI * 2 - Math.PI / 2;
+      const major = i % 5 === 0;
+      const r1 = major ? 84 : 87;
+      const r2 = 90;
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', (Math.cos(angle) * r1).toFixed(2));
+      line.setAttribute('y1', (Math.sin(angle) * r1).toFixed(2));
+      line.setAttribute('x2', (Math.cos(angle) * r2).toFixed(2));
+      line.setAttribute('y2', (Math.sin(angle) * r2).toFixed(2));
+      line.setAttribute('stroke', major ? 'var(--tick)' : 'var(--rim)');
+      line.setAttribute('stroke-width', major ? '0.9' : '0.45');
+      line.setAttribute('stroke-linecap', 'round');
+      frag.appendChild(line);
+    }
+    ticksEl.appendChild(frag);
+  })();
+
+  function fmt (ms) {
+    const total = Math.max(0, Math.round(ms / 1000));
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    return `${m}:${String(s).padStart(2,'0')}`;
+  }
+
+  function describeArc (fraction) {
+    if (fraction <= 0) return '';
+    if (fraction >= 1) fraction = 0.99999;
+    const angle = fraction * Math.PI * 2 - Math.PI / 2;
+    const x = (Math.cos(angle) * ARC_RADIUS).toFixed(3);
+    const y = (Math.sin(angle) * ARC_RADIUS).toFixed(3);
+    const large = fraction > 0.5 ? 1 : 0;
+    return `M 0 ${-ARC_RADIUS} A ${ARC_RADIUS} ${ARC_RADIUS} 0 ${large} 1 ${x} ${y}`;
+  }
+
+  function liveElapsed () {
+    return mode === 'running' ? elapsedMs + (Date.now() - startedAt) : elapsedMs;
+  }
+
+  function displayMs () {
+    if (direction === 'down') return Math.max(0, targetMs - liveElapsed());
+    if (direction === 'up')   return liveElapsed();
+    return 0;
+  }
+
+  function render () {
+    numeralsEl.textContent = fmt(displayMs());
+
+    numeralsEl.classList.remove('idle','armed','paused','zero');
+    arcEl.classList.toggle('zero', mode === 'zero');
+
+    if (mode === 'idle')   numeralsEl.classList.add('idle');
+    if (mode === 'armed')  numeralsEl.classList.add('armed');
+    if (mode === 'paused') numeralsEl.classList.add('paused');
+    if (mode === 'zero')   numeralsEl.classList.add('zero');
+
+    if (direction === 'down') {
+      let frac = 0;
+      if (mode === 'armed')   frac = Math.min(1, targetMs / (60 * 60 * 1000));
+      if (mode === 'running' || mode === 'paused') {
+        frac = targetMs > 0 ? Math.max(0, (targetMs - liveElapsed()) / targetMs) : 0;
+        // visual scale of countdown shrinking — keep proportional to the original armed fraction
+        frac = frac * Math.min(1, targetMs / (60 * 60 * 1000));
+      }
+      arcEl.setAttribute('d', describeArc(frac));
+    } else {
+      arcEl.setAttribute('d', '');
+    }
+
+    if (mode === 'running' && direction === 'down' && liveElapsed() >= targetMs) {
+      enterZero();
+    }
+  }
+
+  function startTicking () {
+    stopTicking();
+    tickHandle = setInterval(render, 200);
+  }
+  function stopTicking () {
+    if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
+  }
+
+  function enterZero () {
+    elapsedMs = targetMs;
+    startedAt = 0;
+    mode = 'zero';
+    stopTicking();
+    render();
+    try { if (document.title !== '— big') document.title = '— big'; } catch {}
+  }
+
+  function tapClockInterior () {
+    if (mode === 'zero') return;             // hold the moment; brand resets
+    if (mode === 'idle') {                    // no countdown set → count up
+      direction = 'up';
+      elapsedMs = 0;
+      startedAt = Date.now();
+      mode = 'running';
+      startTicking();
+      render();
+      return;
+    }
+    if (mode === 'armed') {                   // begin countdown
+      elapsedMs = 0;
+      startedAt = Date.now();
+      mode = 'running';
+      startTicking();
+      render();
+      return;
+    }
+    if (mode === 'running') {                 // pause
+      elapsedMs = liveElapsed();
+      startedAt = 0;
+      mode = 'paused';
+      stopTicking();
+      render();
+      return;
+    }
+    if (mode === 'paused') {                  // resume
+      startedAt = Date.now();
+      mode = 'running';
+      startTicking();
+      render();
+    }
+  }
+
+  function armFromAngle (angle) {
+    // angle: radians, 0 at 12 o'clock, clockwise positive
+    let frac = angle / (Math.PI * 2);
+    if (frac < 0) frac += 1;
+    let minutes = Math.round(frac * 60);
+    if (minutes === 0) minutes = 60;          // tap exactly at 12 → 60 min
+    direction = 'down';
+    targetMs = minutes * 60 * 1000;
+    elapsedMs = 0;
+    startedAt = 0;
+    mode = 'armed';
+    render();
+  }
+
+  clockEl.addEventListener('click', (e) => {
+    const rect = clockEl.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    const dist = Math.hypot(dx, dy);
+    const half = rect.width / 2;
+    const rimInner = half * 0.70;
+
+    // rim taps only set countdown when we haven't started
+    if ((mode === 'idle' || mode === 'armed') && dist > rimInner && dist <= half + 8) {
+      armFromAngle(Math.atan2(dx, -dy));
+      return;
+    }
+    tapClockInterior();
+  });
+
+  brandEl.addEventListener('click', () => {
+    mode = 'idle';
+    direction = null;
+    targetMs = 0;
+    elapsedMs = 0;
+    startedAt = 0;
+    stopTicking();
+    document.title = 'big';
+    render();
+  });
+
+  // tasks ----------------------------------------------------
+
+  function escapeHtml (s) {
+    return s.replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  function renderDial () {
+    if (!tasks.length) {
+      dialEl.classList.remove('visible');
+      dialEl.innerHTML = '';
+      return;
+    }
+    dialEl.innerHTML = tasks.map(t => `<div class="dial-item">${escapeHtml(t)}</div>`).join('');
+    dialEl.classList.add('visible');
+    requestAnimationFrame(() => {
+      const first = dialEl.querySelector('.dial-item');
+      if (first) first.scrollIntoView({ block: 'nearest', inline: 'center' });
+      updateActiveDialItem();
+    });
+    dialEl.querySelectorAll('.dial-item').forEach(item => {
+      item.addEventListener('click', () => {
+        item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      });
+    });
+  }
+
+  function updateActiveDialItem () {
+    const items = dialEl.querySelectorAll('.dial-item');
+    if (!items.length) return;
+    const r = dialEl.getBoundingClientRect();
+    const center = r.left + r.width / 2;
+    let best = items[0], bestDist = Infinity;
+    items.forEach(item => {
+      const ir = item.getBoundingClientRect();
+      const ic = ir.left + ir.width / 2;
+      const d = Math.abs(ic - center);
+      if (d < bestDist) { bestDist = d; best = item; }
+    });
+    items.forEach(i => i.classList.toggle('active', i === best));
+  }
+
+  dialEl.addEventListener('scroll', () => updateActiveDialItem(), { passive: true });
+
+  // tasks sheet ----------------------------------------------
+
+  function openSheet () {
+    taEl.value = tasks.join('\n');
+    sheetEl.classList.add('open');
+    setTimeout(() => { taEl.focus(); taEl.setSelectionRange(taEl.value.length, taEl.value.length); }, 30);
+  }
+  function closeSheet () { sheetEl.classList.remove('open'); }
+
+  fabEl.addEventListener('click', openSheet);
+  $('sheet-cancel').addEventListener('click', closeSheet);
+  $('sheet-save').addEventListener('click', () => {
+    tasks = taEl.value.split('\n').map(s => s.trim()).filter(Boolean);
+    renderDial();
+    closeSheet();
+  });
+
+  // keyboard: space toggles start/pause, esc closes the sheet
+  document.addEventListener('keydown', (e) => {
+    if (sheetEl.classList.contains('open')) {
+      if (e.key === 'Escape') { e.preventDefault(); closeSheet(); }
+      return;
+    }
+    if (e.key === ' ') { e.preventDefault(); tapClockInterior(); }
+  });
+
+  // hub handshake: anyone may write tasks into sessionStorage and link here
+  try {
+    const incoming = sessionStorage.getItem('big-incoming');
+    if (incoming) {
+      sessionStorage.removeItem('big-incoming');
+      const lines = incoming.split('\n').map(s => s.trim()).filter(Boolean);
+      if (lines.length) { tasks = lines; renderDial(); }
+    }
+  } catch {}
+
+  render();
+</script>
+</body>
+</html>
