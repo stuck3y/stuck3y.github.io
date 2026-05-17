@@ -138,9 +138,9 @@
   }
   .arc.done { opacity: 0; }
 
-  /* task label — tap to cycle forward */
+  /* task label — tap cycles forward, hold opens sheet, '…' when empty */
   .label {
-    display: none;
+    display: block;
     background: none;
     border: none;
     cursor: pointer;
@@ -158,11 +158,20 @@
     text-overflow: ellipsis;
     user-select: none;
     -webkit-user-select: none;
+    -webkit-touch-callout: none;
     -webkit-tap-highlight-color: transparent;
     text-align: center;
+    transition: color 200ms ease, opacity 200ms ease;
   }
-  .label.visible { display: block; }
   .label:focus-visible { outline: 1px dashed var(--rim); outline-offset: 4px; border-radius: 2px; }
+  .label.empty {
+    color: var(--muted);
+    opacity: 0.42;
+    font-style: normal;
+    font-size: clamp(1.4rem, 3.2vmin, 1.8rem);
+    letter-spacing: 0.34em;
+    padding-inline-start: calc(1.4rem + 0.34em);
+  }
   .label.flip { animation: task-flip 280ms cubic-bezier(0.16, 1, 0.3, 1); }
 
   @keyframes task-flip {
@@ -170,31 +179,13 @@
     100% { opacity: 0.72; transform: translateY(0); }
   }
 
-  .fab {
-    position: fixed;
-    right: 1.25rem;
-    bottom: 1.25rem;
-    width: 2.4rem;
-    height: 2.4rem;
-    border-radius: 50%;
-    border: 1px solid var(--rim);
-    background: var(--bg);
-    color: var(--muted);
-    font-family: inherit;
-    font-size: 1.5rem;
-    line-height: 1;
-    cursor: pointer;
-    opacity: 0.4;
-    transition: opacity 220ms ease, border-color 220ms ease;
-    user-select: none;
-    z-index: 20;
-  }
-  .fab:hover, .fab:focus-visible {
-    opacity: 1;
-    border-color: var(--muted);
-    outline: none;
-  }
-  .fab.hidden { opacity: 0; pointer-events: none; }
+  /* big-screen: clock fills the viewport, everything else recedes */
+  body.big-screen main { padding: 0; }
+  body.big-screen .brand,
+  body.big-screen .label { display: none; }
+  body.big-screen .stage { gap: 0; }
+  body.big-screen .clock { width: min(96vmin, 96vh); }
+  body.big-screen .numerals { font-size: clamp(5rem, 22vmin, 16rem); }
 
   .sheet {
     position: fixed;
@@ -252,13 +243,11 @@
       <div class="numerals idle" id="numerals">0:00</div>
     </div>
 
-    <button class="label" id="label" aria-label="next task"></button>
+    <button class="label empty" id="label" aria-label="task">&hellip;</button>
   </div>
 
   <div></div>
 </main>
-
-<button class="fab" id="fab" title="tasks" aria-label="tasks">+</button>
 
 <div class="sheet" id="sheet">
   <textarea id="textarea" placeholder="one task per line&hellip;" spellcheck="false"></textarea>
@@ -274,7 +263,6 @@
   const labelsEl   = $('labels');
   const labelEl    = $('label');
   const brandEl    = $('brand');
-  const fabEl      = $('fab');
   const sheetEl    = $('sheet');
   const taEl       = $('textarea');
 
@@ -284,8 +272,9 @@
   const TICK_LABEL_RADIUS = 76;
   const STATE_KEY = 'big-state';
   const TASKS_KEY = 'big-tasks';
-  const LONG_PRESS_MS = 600;
-  const COPY_HOLD_MS  = 1100;
+  const LONG_PRESS_MS   = 600;
+  const COPY_HOLD_MS    = 1100;
+  const DBL_TAP_WINDOW  = 230;
 
   // mode: 'idle' | 'armed' | 'running' | 'paused' | 'done'
   let mode      = 'idle';
@@ -572,13 +561,12 @@
 
   // ── tap routing ──────────────────────────────────────────
 
-  clockEl.addEventListener('click', (e) => {
-    if (longPressed) { longPressed = false; return; }
+  function runClockTap (clientX, clientY) {
     const rect = clockEl.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
-    const dx = e.clientX - cx;
-    const dy = e.clientY - cy;
+    const dx = clientX - cx;
+    const dy = clientY - cy;
     const dist = Math.hypot(dx, dy);
     const half = rect.width / 2;
     const rimInner = half * 0.66;
@@ -588,6 +576,41 @@
       return;
     }
     tapInterior();
+  }
+
+  // single-click is delayed briefly so a follow-up click can be claimed
+  // as a double-click without firing the single-click action twice.
+  let pendingClick = null;
+  clockEl.addEventListener('click', (e) => {
+    if (longPressed) { longPressed = false; return; }
+    if (pendingClick) {
+      clearTimeout(pendingClick);
+      pendingClick = null;
+      return;
+    }
+    const x = e.clientX, y = e.clientY;
+    pendingClick = setTimeout(() => {
+      pendingClick = null;
+      runClockTap(x, y);
+    }, DBL_TAP_WINDOW);
+  });
+
+  clockEl.addEventListener('dblclick', () => {
+    if (pendingClick) { clearTimeout(pendingClick); pendingClick = null; }
+    toggleBigScreen();
+  });
+
+  function toggleBigScreen () {
+    const goingBig = !document.body.classList.contains('big-screen');
+    document.body.classList.toggle('big-screen', goingBig);
+    try {
+      if (goingBig) document.documentElement.requestFullscreen?.().catch(() => {});
+      else if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+    } catch {}
+  }
+
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement) document.body.classList.remove('big-screen');
   });
 
   brandEl.addEventListener('click', resetTimer);
@@ -601,13 +624,14 @@
   function renderLabel (animate = false) {
     const tasks = currentTasks();
     if (!tasks.length) {
-      labelEl.classList.remove('visible', 'flip');
-      labelEl.textContent = '';
+      labelEl.classList.add('empty');
+      labelEl.classList.remove('flip');
+      labelEl.textContent = '…';
       return;
     }
+    labelEl.classList.remove('empty');
     if (taskIndex >= tasks.length) taskIndex = 0;
     labelEl.textContent = tasks[taskIndex];
-    labelEl.classList.add('visible');
     if (animate) {
       labelEl.classList.remove('flip');
       void labelEl.offsetWidth;
@@ -622,7 +646,29 @@
     renderLabel(true);
   }
 
-  labelEl.addEventListener('click', cycleTask);
+  // hold the label to open the task sheet; tap (when filled) cycles
+  let labelPressTimer = null;
+  let labelLongPressed = false;
+  labelEl.addEventListener('pointerdown', () => {
+    labelLongPressed = false;
+    if (labelEl.classList.contains('empty')) return;
+    labelPressTimer = setTimeout(() => {
+      labelLongPressed = true;
+      openSheet();
+    }, LONG_PRESS_MS);
+  });
+  function cancelLabelPress () {
+    if (labelPressTimer) { clearTimeout(labelPressTimer); labelPressTimer = null; }
+  }
+  labelEl.addEventListener('pointerup',     cancelLabelPress);
+  labelEl.addEventListener('pointercancel', cancelLabelPress);
+  labelEl.addEventListener('pointerleave',  cancelLabelPress);
+
+  labelEl.addEventListener('click', () => {
+    if (labelLongPressed) { labelLongPressed = false; return; }
+    if (labelEl.classList.contains('empty')) openSheet();
+    else cycleTask();
+  });
 
   taEl.addEventListener('input', () => {
     try { localStorage.setItem(TASKS_KEY, taEl.value); } catch {}
@@ -633,7 +679,6 @@
 
   function openSheet () {
     sheetEl.classList.add('open');
-    fabEl.classList.add('hidden');
     setTimeout(() => {
       taEl.focus();
       const end = taEl.value.length;
@@ -642,14 +687,8 @@
   }
   function closeSheet () {
     sheetEl.classList.remove('open');
-    fabEl.classList.remove('hidden');
-  }
-  function toggleSheet () {
-    if (sheetEl.classList.contains('open')) closeSheet();
-    else openSheet();
   }
 
-  fabEl.addEventListener('click', toggleSheet);
   sheetEl.addEventListener('click', (e) => {
     if (e.target === sheetEl) closeSheet();
   });
