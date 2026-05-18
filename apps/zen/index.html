@@ -199,6 +199,8 @@
 <main id="app"></main>
 <script>
   const KEY = "zen-reader";
+  const RIVER_KEY = "river-reads";
+  const RIVER_TTL_MS = 30 * 24 * 60 * 60 * 1000;
   const MAX_WORDS = 80;
   const DEFAULT_WPM = 150;
   const MIN_SAMPLE_MS = 500;
@@ -221,6 +223,61 @@
 
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+    if (state.riverId) riverUpdate(state.riverId, state.i, state.paragraphs.length);
+  }
+
+  function riverLoad() {
+    try {
+      const raw = localStorage.getItem(RIVER_KEY);
+      const data = raw ? JSON.parse(raw) : null;
+      const reads = data && Array.isArray(data.reads) ? data.reads : [];
+      const cutoff = Date.now() - RIVER_TTL_MS;
+      return reads.filter(r => (r.addedAt || 0) >= cutoff);
+    } catch { return []; }
+  }
+
+  function riverSave(reads) {
+    try { localStorage.setItem(RIVER_KEY, JSON.stringify({ reads })); } catch {}
+  }
+
+  function makeTitle(text) {
+    const firstLine = (text.split(/\n+/).find(l => l.trim()) || "").trim();
+    let t = firstLine.replace(/^[#>*\-\s"'“‘»«]+/, "").trim();
+    if (t.length > 120) t = t.slice(0, 117) + "…";
+    return t || "untitled";
+  }
+
+  function riverUpsert(text, total) {
+    try {
+      const reads = riverLoad();
+      const now = Date.now();
+      const existing = reads.find(r => r.text === text);
+      if (existing) {
+        existing.lastReadAt = now;
+        existing.total = total;
+        riverSave(reads);
+        return existing.id;
+      }
+      const id = "rv_" + Math.random().toString(36).slice(2, 10) + now.toString(36);
+      reads.push({
+        id, title: makeTitle(text), text,
+        addedAt: now, lastReadAt: now, i: 0, total
+      });
+      riverSave(reads);
+      return id;
+    } catch { return null; }
+  }
+
+  function riverUpdate(id, i, total) {
+    try {
+      const reads = riverLoad();
+      const r = reads.find(x => x.id === id);
+      if (!r) return;
+      r.i = i;
+      r.total = total;
+      r.lastReadAt = Date.now();
+      riverSave(reads);
+    } catch {}
   }
 
   function wordCount(s) {
@@ -326,7 +383,11 @@
   }
 
   function reset() {
-    state = { paragraphs: [], i: 0, totalWords: state.totalWords, totalMs: state.totalMs };
+    state = {
+      paragraphs: [], i: 0,
+      totalWords: state.totalWords, totalMs: state.totalMs,
+      riverId: undefined
+    };
     chunkStart = 0;
     showFinishTime = false;
     save();
@@ -348,9 +409,15 @@
     `;
     const ta = document.getElementById("ta");
     document.getElementById("begin").onclick = () => {
-      const paras = splitParagraphs(ta.value);
+      const text = ta.value;
+      const paras = splitParagraphs(text);
       if (!paras.length) return;
-      state = { paragraphs: paras, i: 0, totalWords: state.totalWords, totalMs: state.totalMs };
+      const riverId = riverUpsert(text, paras.length);
+      state = {
+        paragraphs: paras, i: 0,
+        totalWords: state.totalWords, totalMs: state.totalMs,
+        riverId
+      };
       save();
       render();
     };
@@ -407,10 +474,22 @@
   try {
     const incoming = sessionStorage.getItem("zen-reader-incoming");
     if (incoming) {
+      const incomingRiverId = sessionStorage.getItem("zen-reader-river-id");
       sessionStorage.removeItem("zen-reader-incoming");
+      sessionStorage.removeItem("zen-reader-river-id");
       const paras = splitParagraphs(incoming);
       if (paras.length) {
-        state = { paragraphs: paras, i: 0, totalWords: state.totalWords, totalMs: state.totalMs };
+        const riverId = incomingRiverId || riverUpsert(incoming, paras.length);
+        let startAt = 0;
+        if (incomingRiverId) {
+          const r = riverLoad().find(x => x.id === incomingRiverId);
+          if (r && typeof r.i === "number") startAt = Math.min(r.i, paras.length - 1);
+        }
+        state = {
+          paragraphs: paras, i: startAt,
+          totalWords: state.totalWords, totalMs: state.totalMs,
+          riverId
+        };
         save();
       }
     }
