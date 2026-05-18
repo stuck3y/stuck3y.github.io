@@ -408,6 +408,7 @@ pointer-events: none;
         <button data-fmt="json">json</button>
         <button data-fmt="csv">csv</button>
         <button data-fmt="ai">ai</button>
+        <button data-fmt="big">big</button>
       </div>
     </div>
   </section>
@@ -765,7 +766,15 @@ ${list}`;
   }
 };
 
-const destinations = {};
+const destinations = {
+  big: () => {
+    const open = items.filter(i => !i.done);
+    if (!open.length) return false;
+    const tasks = encodeURIComponent(open.map(i => i.text).join('|'));
+    location.href = `../big/?t=25&tasks=${tasks}`;
+    return true;
+  }
+};
 
 $('#formats').addEventListener('click', async e => {
   const b = e.target.closest('button');
