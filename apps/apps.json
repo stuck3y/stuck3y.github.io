@@ -36,6 +36,13 @@
       "featured": false
     },
     {
+      "slug": "river",
+      "name": "river",
+      "description": "Your bank of recent Zen Reader reads. Drifts away after 30 days.",
+      "path": "./river/",
+      "featured": false
+    },
+    {
       "slug": "food",
       "name": "What to Eat?",
       "description": "A decision-tree helper for when nothing sounds good.",
