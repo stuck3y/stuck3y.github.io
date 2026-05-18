@@ -272,9 +272,11 @@
   const TICK_LABEL_RADIUS = 76;
   const STATE_KEY = 'big-state';
   const TASKS_KEY = 'big-tasks';
-  const LONG_PRESS_MS   = 600;
-  const COPY_HOLD_MS    = 1100;
-  const DBL_TAP_WINDOW  = 230;
+  const LONG_PRESS_MS    = 600;
+  const COPY_HOLD_MS     = 1100;
+  const DBL_TAP_WINDOW   = 230;
+  const DBL_TAP_MAX_MS   = 320;
+  const DBL_TAP_MAX_DIST = 40;
 
   // mode: 'idle' | 'armed' | 'running' | 'paused' | 'done'
   let mode      = 'idle';
@@ -498,6 +500,11 @@
   let longPressed = false;
   let pressOrigin = null;
 
+  // double-tap detection (iOS Safari does not fire dblclick reliably)
+  let lastTapTime = 0;
+  let lastTapPos  = null;
+  let isDoubleTap = false;
+
   function writeClipboard (text) {
     // try modern API first; fall back to the legacy textarea trick,
     // which still works when the gesture context is lost (timeout-fired).
@@ -545,14 +552,31 @@
     pressOrigin = { x: e.clientX, y: e.clientY };
     pressTimer = setTimeout(() => {
       longPressed = true;
+      lastTapTime = 0;
+      lastTapPos = null;
       copyTime();
     }, LONG_PRESS_MS);
+
+    const now = Date.now();
+    if (lastTapTime &&
+        (now - lastTapTime) < DBL_TAP_MAX_MS &&
+        lastTapPos &&
+        Math.hypot(e.clientX - lastTapPos.x, e.clientY - lastTapPos.y) < DBL_TAP_MAX_DIST) {
+      isDoubleTap = true;
+      lastTapTime = 0;
+      lastTapPos = null;
+      if (pendingClick) { clearTimeout(pendingClick); pendingClick = null; }
+      if (pressTimer)   { clearTimeout(pressTimer);   pressTimer = null; }
+    } else {
+      lastTapTime = now;
+      lastTapPos = { x: e.clientX, y: e.clientY };
+    }
   });
   function cancelPress () {
     if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
   }
   clockEl.addEventListener('pointerup',     cancelPress);
-  clockEl.addEventListener('pointercancel', cancelPress);
+  clockEl.addEventListener('pointercancel', () => { cancelPress(); isDoubleTap = false; });
   clockEl.addEventListener('pointerleave',  cancelPress);
   clockEl.addEventListener('pointermove', (e) => {
     if (!pressOrigin || !pressTimer) return;
@@ -578,11 +602,18 @@
     tapInterior();
   }
 
-  // single-click is delayed briefly so a follow-up click can be claimed
-  // as a double-click without firing the single-click action twice.
+  // single-click is delayed briefly so a follow-up tap can be claimed
+  // as a double-tap without firing the single-click action first.
+  // Double-tap itself is detected manually in pointerdown above.
   let pendingClick = null;
   clockEl.addEventListener('click', (e) => {
     if (longPressed) { longPressed = false; return; }
+    if (isDoubleTap) {
+      isDoubleTap = false;
+      if (pendingClick) { clearTimeout(pendingClick); pendingClick = null; }
+      toggleBigScreen();
+      return;
+    }
     if (pendingClick) {
       clearTimeout(pendingClick);
       pendingClick = null;
@@ -593,11 +624,6 @@
       pendingClick = null;
       runClockTap(x, y);
     }, DBL_TAP_WINDOW);
-  });
-
-  clockEl.addEventListener('dblclick', () => {
-    if (pendingClick) { clearTimeout(pendingClick); pendingClick = null; }
-    toggleBigScreen();
   });
 
   function toggleBigScreen () {
