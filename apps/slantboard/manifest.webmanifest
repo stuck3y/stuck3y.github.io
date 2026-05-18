@@ -1,0 +1,20 @@
+{
+  "name": "Slant Board Timer",
+  "short_name": "Slantboard",
+  "description": "Short morning routine for patellar tendon and tarsal tunnel — 5, 10, or 12 minutes.",
+  "scope": "/apps/slantboard/",
+  "start_url": "/apps/slantboard/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0b1020",
+  "background_color": "#0b1020",
+  "categories": ["health", "fitness", "productivity"],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

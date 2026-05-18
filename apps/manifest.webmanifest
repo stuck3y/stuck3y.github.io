@@ -1,0 +1,20 @@
+{
+  "name": "Bench",
+  "short_name": "Bench",
+  "description": "A bench of small, single-focused tools.",
+  "scope": "/apps/",
+  "start_url": "/apps/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#fbfbfd",
+  "background_color": "#fbfbfd",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
