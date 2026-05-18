@@ -40,7 +40,7 @@
       "name": "river",
       "description": "Your bank of recent Zen Reader reads. Drifts away after 30 days.",
       "path": "./river/",
-      "featured": false
+      "featured": true
     },
     {
       "slug": "food",
