@@ -1,0 +1,20 @@
+{
+  "name": "Ketchapp",
+  "short_name": "Ketchapp",
+  "description": "The dumbest pomodoro. Tap the icon, the timer starts. 25/5.",
+  "scope": "/apps/ketchapp/",
+  "start_url": "/apps/ketchapp/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#c92a2a",
+  "background_color": "#c92a2a",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

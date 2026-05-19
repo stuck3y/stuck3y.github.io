@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Ketchapp">
+  <rect width="512" height="512" rx="112" ry="112" fill="#c92a2a"/>
+  <g fill="#fff" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', Helvetica, Arial, sans-serif" font-weight="800" text-anchor="middle" font-variant-numeric="tabular-nums" letter-spacing="-6">
+    <text x="256" y="232" font-size="180">25</text>
+    <text x="256" y="408" font-size="180">00</text>
+  </g>
+</svg>
