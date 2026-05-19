@@ -137,14 +137,14 @@
       "slug": "iron",
       "name": "Iron Sharpens Iron",
       "description": "A 30-day fitness and spiritual tracker.",
-      "path": "./iron/",
+      "path": "./iron.html",
       "featured": false
     },
     {
       "slug": "iron2",
       "name": "Iron Sharpens Iron · v2",
       "description": "Second pass at the 30-day fitness and spiritual tracker.",
-      "path": "./iron2/",
+      "path": "./iron2.html",
       "featured": false
     },
     {
