@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bench &middot; Jon's Data Company</title>
+    <title>Apps &middot; Jon's Data Company</title>
     <meta name="theme-color" content="#fbfbfd">
-    <link rel="manifest" href="./manifest.webmanifest">
-    <link rel="icon" href="./icon.svg" type="image/svg+xml">
     <style>
         :root {
             --bg: #fbfbfd;
@@ -73,66 +71,6 @@
             line-height: 1.1;
         }
 
-        .philosophy {
-            margin: 0 0 48px;
-            scroll-margin-top: 24px;
-        }
-        .philosophy .prose {
-            font-size: 17px;
-            line-height: 1.6;
-            color: var(--fg);
-            max-width: 56ch;
-        }
-        .philosophy .prose p {
-            margin: 0 0 1em;
-        }
-        .philosophy .prose p:last-child {
-            margin-bottom: 0;
-        }
-        .zen-read-link {
-            display: inline-block;
-            margin-top: 14px;
-            font-size: 12px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--fg-muted);
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
-        .zen-read-link:hover {
-            color: var(--link-hover);
-        }
-
-        .search-wrap { margin: 0 0 32px; }
-        .search {
-            width: 100%;
-            padding: 12px 0;
-            border: 0;
-            border-bottom: 1px solid var(--rule);
-            background: transparent;
-            color: var(--fg);
-            font: inherit;
-            font-size: 16px;
-            outline: none;
-            transition: border-color 0.2s ease;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        .search::placeholder { color: var(--fg-muted); }
-        .search:focus { border-bottom-color: var(--link-hover); }
-        .search::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
-
-        .section { margin: 0 0 40px; }
-        .section:last-of-type { margin-bottom: 0; }
-        .section-label {
-            margin: 0 0 8px;
-            font-size: 12px;
-            font-weight: 500;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--fg-muted);
-        }
-
         .app-list {
             list-style: none;
             margin: 0;
@@ -186,6 +124,45 @@
             border-bottom: 1px solid var(--rule);
         }
 
+        .why {
+            margin-top: 56px;
+            border-top: 1px solid var(--rule);
+            padding-top: 24px;
+        }
+        .why summary {
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--fg-muted);
+            list-style: none;
+            outline: none;
+            transition: color 0.2s ease;
+        }
+        .why summary::-webkit-details-marker { display: none; }
+        .why summary:hover { color: var(--link-hover); }
+        .why[open] summary { margin-bottom: 20px; }
+        .why .prose {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--fg);
+            max-width: 56ch;
+        }
+        .why .prose p { margin: 0 0 1em; }
+        .why .prose p:last-child { margin-bottom: 0; }
+        .zen-read-link {
+            display: inline-block;
+            margin-top: 14px;
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--fg-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .zen-read-link:hover { color: var(--link-hover); }
+
         footer {
             width: 100%;
             max-width: 640px;
@@ -203,18 +180,6 @@
             transition: color 0.2s ease;
         }
         footer a:hover { color: var(--link-hover); }
-
-        .visually-hidden {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
     </style>
 </head>
 <body>
@@ -223,10 +188,13 @@
             <a href="../">&larr; Jon's Data Company</a>
         </nav>
 
-        <h1>Bench</h1>
+        <h1>Apps</h1>
 
-        <section class="philosophy" id="philosophy" aria-labelledby="philosophy-label">
-            <h2 id="philosophy-label" class="visually-hidden">Philosophy</h2>
+        <ul class="app-list" id="app-list"></ul>
+        <p id="app-empty" class="app-empty" hidden>Nothing here yet.</p>
+
+        <details class="why">
+            <summary>Why these apps</summary>
             <div class="prose">
                 <p>Here you will find a bank of software that is carefully thought-through.</p>
                 <p>These are intentionally biased toward being dumb, single-focused software applications for maximum usefulness.</p>
@@ -235,23 +203,7 @@
                 <p>That may not be the end-all-be-all, but I believe this approach makes for purposeful craft.</p>
             </div>
             <a data-zen-read href="./zen/" class="zen-read-link">Zen read &rarr;</a>
-        </section>
-
-        <div class="search-wrap" id="search-wrap" hidden>
-            <input type="search" id="search" class="search" placeholder="Filter&hellip;" autocomplete="off" aria-label="Filter apps">
-        </div>
-
-        <section class="section" id="section-featured" hidden>
-            <h2 class="section-label">Featured</h2>
-            <ul class="app-list" id="featured-list"></ul>
-        </section>
-
-        <section class="section" id="section-all" hidden>
-            <h2 class="section-label">All</h2>
-            <ul class="app-list" id="all-list"></ul>
-        </section>
-
-        <p id="app-empty" class="app-empty" hidden>Nothing here yet.</p>
+        </details>
     </main>
 
     <footer>
@@ -264,102 +216,41 @@
 
     <script>
     (async () => {
-        const featuredList = document.getElementById("featured-list");
-        const allList = document.getElementById("all-list");
-        const sectionFeatured = document.getElementById("section-featured");
-        const sectionAll = document.getElementById("section-all");
+        const list = document.getElementById("app-list");
         const empty = document.getElementById("app-empty");
-        const searchWrap = document.getElementById("search-wrap");
-        const search = document.getElementById("search");
-
-        function makeRow(app) {
-            const li = document.createElement("li");
-            li.dataset.name = (app.name || "").toLowerCase();
-            li.dataset.desc = (app.description || "").toLowerCase();
-            const a = document.createElement("a");
-            a.className = "app-link";
-            a.href = app.path;
-            a.innerHTML = `
-                <span class="app-text">
-                    <span class="app-name"></span>
-                    <span class="app-desc"></span>
-                </span>
-                <span class="app-arrow" aria-hidden="true">&rsaquo;</span>
-            `;
-            a.querySelector(".app-name").textContent = app.name;
-            a.querySelector(".app-desc").textContent = app.description || "";
-            li.appendChild(a);
-            return li;
-        }
-
-        let apps = [];
-        let hasFeatured = false;
-        let hasOthers = false;
-
         try {
             const res = await fetch("./apps.json", { cache: "no-cache" });
             if (!res.ok) throw new Error("manifest fetch failed");
             const data = await res.json();
-            apps = data.apps || [];
-
-            const featured = apps.filter(a => a.featured);
-            const others = apps.filter(a => !a.featured);
-            hasFeatured = featured.length > 0;
-            hasOthers = others.length > 0;
-
-            if (hasFeatured) {
-                const frag = document.createDocumentFragment();
-                for (const app of featured) frag.appendChild(makeRow(app));
-                featuredList.appendChild(frag);
+            const apps = data.apps || [];
+            if (!apps.length) {
+                empty.hidden = false;
+                return;
             }
-            if (hasOthers) {
-                const frag = document.createDocumentFragment();
-                for (const app of others) frag.appendChild(makeRow(app));
-                allList.appendChild(frag);
+            const frag = document.createDocumentFragment();
+            for (const app of apps) {
+                const li = document.createElement("li");
+                const a = document.createElement("a");
+                a.className = "app-link";
+                a.href = app.path;
+                a.innerHTML = `
+                    <span class="app-text">
+                        <span class="app-name"></span>
+                        <span class="app-desc"></span>
+                    </span>
+                    <span class="app-arrow" aria-hidden="true">&rsaquo;</span>
+                `;
+                a.querySelector(".app-name").textContent = app.name;
+                a.querySelector(".app-desc").textContent = app.description || "";
+                li.appendChild(a);
+                frag.appendChild(li);
             }
-            if (apps.length >= 8) searchWrap.hidden = false;
+            list.appendChild(frag);
         } catch (err) {
             empty.textContent = "Couldn't load the apps list.";
             empty.hidden = false;
-            return;
         }
-
-        function filterList(ul, q) {
-            let visible = 0;
-            for (const li of ul.children) {
-                const match = !q || li.dataset.name.includes(q) || li.dataset.desc.includes(q);
-                li.hidden = !match;
-                if (match) visible++;
-            }
-            return visible;
-        }
-
-        function applyFilter() {
-            const q = search.value.trim().toLowerCase();
-            const fv = filterList(featuredList, q);
-            const av = filterList(allList, q);
-            sectionFeatured.hidden = !hasFeatured || fv === 0;
-            sectionAll.hidden = !hasOthers || av === 0;
-            if (!apps.length) {
-                empty.textContent = "Nothing here yet.";
-                empty.hidden = false;
-            } else if (q && (fv + av) === 0) {
-                empty.textContent = `Nothing matches "${search.value.trim()}".`;
-                empty.hidden = false;
-            } else {
-                empty.hidden = true;
-            }
-        }
-
-        search.addEventListener("input", applyFilter);
-        applyFilter();
     })();
-
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
-        });
-    }
     </script>
     <script src="../zen-link.js"></script>
 </body>
