@@ -118,6 +118,10 @@
             label: "Refactor",
             template: "Refactor [FILE/COMPONENT] to [GOAL]. Keep the external API/behavior identical. Run existing tests after to confirm nothing broke. If no tests exist, flag that.",
           },
+          {
+            label: "PWA App Icon (SVG)",
+            template: "Write a single self-contained SVG icon, 512x512 viewBox. A [SUBJECT] in [FG_COLOR] on a solid rounded-square [BG_COLOR] background (rx 112, ry 112 — iOS-style corners). Use plain shapes only: rect, circle, path, polygon. No external fonts, no filters, no text. Subject stays within the central 80% — the maskable safe zone. Bold simple geometry that reads cleanly at 48x48 pixels. Output the SVG only, no commentary.",
+          },
         ],
       },
       chatgpt: {
@@ -145,6 +149,10 @@
             label: "Design Review",
             template: "Here's my approach for [FEATURE]: [DESCRIPTION]. Poke holes in it. What will break at scale? What am I not thinking about? Be brutally honest.",
           },
+          {
+            label: "PWA App Icon",
+            template: "A 1024x1024 mobile app icon: a single [SUBJECT] centered on a solid [BG_COLOR] background. Flat vector style, bold geometric shapes, palette restricted to [PALETTE_COLOR_1] and [PALETTE_COLOR_2], high contrast. Subject fills roughly 60% of the canvas and stays within the central 80% (maskable safe zone). No text, no watermark, no border, no shadow, no gradient. Must read clearly at 48x48 pixels.",
+          },
         ],
       },
       gemini: {
@@ -167,6 +175,10 @@
           {
             label: "Codebase Overview",
             template: "Here's my project structure and key files. Give me: 1) Architecture summary, 2) Dependencies map, 3) Potential issues you see, 4) What's well-done. Be concise.",
+          },
+          {
+            label: "PWA App Icon",
+            template: "Generate a 1024x1024 mobile app icon. Subject: a single [SUBJECT] in [FG_COLOR], centered on a solid [BG_COLOR] background. Style: flat minimalist vector, bold simple shapes, no gradients, no text, no shadows. Palette restricted to [PALETTE_COLORS]. Subject stays within the central 80% (maskable safe zone) so it survives both circular and rounded-square OS masks. Clarity at 48x48 pixels is the priority.",
           },
         ],
       },
