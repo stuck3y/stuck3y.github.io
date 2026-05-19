@@ -45,9 +45,9 @@ Changes are automatically deployed via GitHub Pages when pushed to the main bran
 ## Conventions
 
 - **New apps go in `/apps/<slug>/`** as self-contained static folders (typically `index.html` + `styles.css` + `app.js`). No build step.
-- **Register every app in `apps/apps.json`.** This manifest is the source of truth for `/apps/`. Each entry: `{ slug, name, description, path, featured }`. The `/apps/` index ("Bench") renders a **Featured** shelf (the `featured: true` entries) and an **All** section (everything else), with a type-to-filter input. `/apps/manage/` provides a UI to curate the list (toggle featured, edit, reorder, discover new apps via the GitHub API). When you create a new app, append an entry to `apps.json` — set `featured: true` only if it belongs on the curated top shelf. The homepage links to `/apps/` but does not list apps directly.
-- **Bench is a PWA.** `/apps/` itself is installable. `/apps/manifest.webmanifest` + `/apps/sw.js` ship the launcher shell; `/apps/icon.svg` is the icon; `/apps/lib/pwa.js` + `/apps/lib/sw-app.js` are the shared opt-in helpers for individual apps. Bump `launcher-v1` in `sw.js` when you ship a meaningful change so caches refresh on next visit.
-- **Per-app PWA opt-in (folder apps only).** To make a folder app installable + offline, drop these three lines in its `<head>` and add a `sw.js` next to its `index.html`:
+- **Folder = app. Single `.html` file = reference sheet.** Anything in `/apps/<slug>/` is a real app: registered in `apps.json`, installable as a PWA (see below). Anything sitting in `/apps/` as a bare `.html` file is just a reference sheet — not registered, not a PWA, not advertised. If a reference sheet earns its place, fold it into `/apps/<slug>/index.html` and register it.
+- **Register every app in `apps/apps.json`.** This manifest is the source of truth for `/apps/`. Each entry: `{ slug, name, description, path, featured }`. The `/apps/` index is a dumb portfolio page that lists every registered app in `apps.json` order — one row, one tap, one link. `/apps/manage/` provides a UI to curate the list (edit, reorder, discover new apps via the GitHub API). When you create a new app, append an entry to `apps.json`. The homepage links to `/apps/` but does not list apps directly. Functional access to the apps is meant to be through the OS (install each as a PWA, launch from the home screen) — `/apps/` exists to share/showcase, not to launch.
+- **Every folder app is a PWA.** That's the default, not an opt-in. New folder apps ship with these three lines in `<head>` and a `sw.js` next to `index.html`:
 
   ```html
   <meta name="theme-color" content="#xxxxxx" />
@@ -55,7 +55,7 @@ Changes are automatically deployed via GitHub Pages when pushed to the main bran
   <script src="../lib/pwa.js" defer></script>
   ```
 
-  Copy `/apps/lib/sw-app.js` to `./sw.js` and edit `CACHE` (e.g. `app-<slug>-v1`) and `SHELL` (the precache list). Add a `manifest.webmanifest` modeled on `/apps/big/manifest.webmanifest`. Opt apps in organically — only when they earn it through repeated use. **Single-file apps** (e.g. `pom.html`, `bd.html`) cannot opt in until they're folder-ified first; don't speculatively convert.
+  Copy `/apps/lib/sw-app.js` to `./sw.js` and edit `CACHE` (e.g. `app-<slug>-v1`) and `SHELL` (the precache list — `['./', './index.html', './manifest.webmanifest']` plus any app-specific files). Add a `manifest.webmanifest` modeled on `/apps/ketchapp/manifest.webmanifest`; reference `../icon.svg` for the icon unless the app ships its own (`./icon.svg`). `/apps/manage/` is the one folder under `/apps/` that is *not* a registered app and not a PWA — it's the curation UI.
 - **Branch off `main` by default.** When starting new work, branch off the latest `main` rather than stacking on top of an unmerged feature branch. After a branch merges, return to `main`, pull, then cut a fresh branch for the next change.
 
 ## Application-Specific Notes

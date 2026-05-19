@@ -8,6 +8,13 @@
       "featured": true
     },
     {
+      "slug": "ketchapp",
+      "name": "Ketchapp",
+      "description": "The dumbest pomodoro. Tap the icon, the timer starts. 25/5.",
+      "path": "./ketchapp/",
+      "featured": true
+    },
+    {
       "slug": "slantboard",
       "name": "Slant Board Timer",
       "description": "Short morning routine for patellar tendon and tarsal tunnel — 5, 10, or 12 minutes.",
@@ -64,13 +71,6 @@
       "featured": false
     },
     {
-      "slug": "merrychat",
-      "name": "Merry Chat",
-      "description": "A small chat experiment.",
-      "path": "./merrychat/",
-      "featured": false
-    },
-    {
       "slug": "hn",
       "name": "Hacker News Plus",
       "description": "A reader for Hacker News with a few extras.",
@@ -82,13 +82,6 @@
       "name": "HN Feed Builder",
       "description": "Build a personal feed from Hacker News.",
       "path": "./hn-feed/",
-      "featured": false
-    },
-    {
-      "slug": "ketchapp",
-      "name": "Ketchapp",
-      "description": "Public pomodoro status — share what you're focused on.",
-      "path": "./ketchapp/",
       "featured": false
     },
     {
@@ -106,66 +99,52 @@
       "featured": false
     },
     {
-      "slug": "sig",
-      "name": "Sig",
-      "description": "A signal-tracking experiment.",
-      "path": "./sig/",
+      "slug": "celebration",
+      "name": "Celebration",
+      "description": "A 31-day devotional. Everything is a celebration of what is already given.",
+      "path": "./celebration/",
       "featured": false
     },
     {
-      "slug": "pom",
-      "name": "Pomo",
-      "description": "A minimal pomodoro timer.",
-      "path": "./pom.html",
+      "slug": "schooling",
+      "name": "Schooling One-Pager",
+      "description": "One-pager for weighing a schooling decision.",
+      "path": "./schooling/",
       "featured": false
     },
     {
       "slug": "breath",
       "name": "Wim Hof Breath",
       "description": "Guided breathing rounds in the Wim Hof method.",
-      "path": "./breath.html",
+      "path": "./breath/",
       "featured": false
     },
     {
       "slug": "bd",
       "name": "Brain Dumper",
       "description": "Minimal capture for whatever's swirling.",
-      "path": "./bd.html",
+      "path": "./bd/",
       "featured": false
     },
     {
       "slug": "ai",
       "name": "AI Dev Command Center",
       "description": "A workbench for AI development tasks.",
-      "path": "./ai.html",
-      "featured": false
-    },
-    {
-      "slug": "iron",
-      "name": "Iron Sharpens Iron",
-      "description": "A 30-day fitness and spiritual tracker.",
-      "path": "./iron.html",
-      "featured": false
-    },
-    {
-      "slug": "iron2",
-      "name": "Iron Sharpens Iron · v2",
-      "description": "Second pass at the 30-day fitness and spiritual tracker.",
-      "path": "./iron2.html",
+      "path": "./ai/",
       "featured": false
     },
     {
       "slug": "clean",
       "name": "Home Cleaning Checklist",
       "description": "Rotating checklist for keeping the house in order.",
-      "path": "./clean.html",
+      "path": "./clean/",
       "featured": false
     },
     {
       "slug": "spark",
       "name": "Build Brief",
       "description": "Sketch the brief for a new build, fast.",
-      "path": "./spark.html",
+      "path": "./spark/",
       "featured": false
     }
   ]

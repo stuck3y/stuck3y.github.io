@@ -1,0 +1,23 @@
+{
+  "name": "AI Dev Command Center",
+  "short_name": "AI Dev Command Center",
+  "description": "A workbench for AI development tasks.",
+  "scope": "/apps/ai/",
+  "start_url": "/apps/ai/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#F5F1EB",
+  "background_color": "#F5F1EB",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

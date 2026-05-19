@@ -1,0 +1,23 @@
+{
+  "name": "Act",
+  "short_name": "Act",
+  "description": "A small action-capture tool.",
+  "scope": "/apps/act/",
+  "start_url": "/apps/act/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#f6f3ec",
+  "background_color": "#f6f3ec",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "Well Read",
+  "short_name": "Well Read",
+  "description": "A tiny home for reading notes.",
+  "scope": "/apps/wellread/",
+  "start_url": "/apps/wellread/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#F5F0EB",
+  "background_color": "#F5F0EB",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "Hacker News Plus",
+  "short_name": "Hacker News Plus",
+  "description": "A reader for Hacker News with a few extras.",
+  "scope": "/apps/hn/",
+  "start_url": "/apps/hn/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#f7f7f7",
+  "background_color": "#f7f7f7",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
