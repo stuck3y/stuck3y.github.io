@@ -134,20 +134,6 @@
       "featured": false
     },
     {
-      "slug": "iron",
-      "name": "Iron Sharpens Iron",
-      "description": "A 30-day fitness and spiritual tracker.",
-      "path": "./iron.html",
-      "featured": false
-    },
-    {
-      "slug": "iron2",
-      "name": "Iron Sharpens Iron · v2",
-      "description": "Second pass at the 30-day fitness and spiritual tracker.",
-      "path": "./iron2.html",
-      "featured": false
-    },
-    {
       "slug": "clean",
       "name": "Home Cleaning Checklist",
       "description": "Rotating checklist for keeping the house in order.",
