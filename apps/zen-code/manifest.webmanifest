@@ -1,0 +1,23 @@
+{
+  "name": "Zen Code Reader",
+  "short_name": "Zen Code Reader",
+  "description": "The same calm reading flow, tuned for source code.",
+  "scope": "/apps/zen-code/",
+  "start_url": "/apps/zen-code/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#f5efe6",
+  "background_color": "#f5efe6",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

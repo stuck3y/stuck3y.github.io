@@ -1,0 +1,23 @@
+{
+  "name": "Wim Hof Breath",
+  "short_name": "Wim Hof Breath",
+  "description": "Guided breathing rounds in the Wim Hof method.",
+  "scope": "/apps/breath/",
+  "start_url": "/apps/breath/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0a0a0a",
+  "background_color": "#0a0a0a",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "Schooling One-Pager",
+  "short_name": "Schooling One-Pager",
+  "description": "One-pager for weighing a schooling decision.",
+  "scope": "/apps/schooling/",
+  "start_url": "/apps/schooling/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#faf8f4",
+  "background_color": "#faf8f4",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "Zen Reader",
+  "short_name": "Zen Reader",
+  "description": "Paste a long read, get it back as small, focused chunks. One thought at a time.",
+  "scope": "/apps/zen/",
+  "start_url": "/apps/zen/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#f5efe6",
+  "background_color": "#f5efe6",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

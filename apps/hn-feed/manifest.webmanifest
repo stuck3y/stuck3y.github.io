@@ -1,0 +1,23 @@
+{
+  "name": "HN Feed Builder",
+  "short_name": "HN Feed Builder",
+  "description": "Build a personal feed from Hacker News.",
+  "scope": "/apps/hn-feed/",
+  "start_url": "/apps/hn-feed/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0e0e0e",
+  "background_color": "#0e0e0e",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

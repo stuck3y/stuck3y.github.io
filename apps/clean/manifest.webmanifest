@@ -1,0 +1,23 @@
+{
+  "name": "Home Cleaning Checklist",
+  "short_name": "Home Cleaning Checklist",
+  "description": "Rotating checklist for keeping the house in order.",
+  "scope": "/apps/clean/",
+  "start_url": "/apps/clean/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#f5f5f7",
+  "background_color": "#f5f5f7",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

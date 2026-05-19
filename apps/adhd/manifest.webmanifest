@@ -1,0 +1,23 @@
+{
+  "name": "The ADHD Playbook",
+  "short_name": "The ADHD Playbook",
+  "description": "A small set of plays for getting unstuck.",
+  "scope": "/apps/adhd/",
+  "start_url": "/apps/adhd/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#f5f0eb",
+  "background_color": "#f5f0eb",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

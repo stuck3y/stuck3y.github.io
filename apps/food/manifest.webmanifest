@@ -1,0 +1,23 @@
+{
+  "name": "What to Eat?",
+  "short_name": "What to Eat?",
+  "description": "A decision-tree helper for when nothing sounds good.",
+  "scope": "/apps/food/",
+  "start_url": "/apps/food/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#FFF7ED",
+  "background_color": "#FFF7ED",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

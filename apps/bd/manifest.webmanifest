@@ -1,0 +1,23 @@
+{
+  "name": "Brain Dumper",
+  "short_name": "Brain Dumper",
+  "description": "Minimal capture for whatever's swirling.",
+  "scope": "/apps/bd/",
+  "start_url": "/apps/bd/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0b0b0c",
+  "background_color": "#0b0b0c",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

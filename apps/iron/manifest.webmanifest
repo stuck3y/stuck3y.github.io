@@ -1,0 +1,23 @@
+{
+  "name": "Iron Sharpens Iron",
+  "short_name": "Iron Sharpens Iron",
+  "description": "A 30-day fitness and spiritual tracker.",
+  "scope": "/apps/iron/",
+  "start_url": "/apps/iron/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0c0a09",
+  "background_color": "#0c0a09",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

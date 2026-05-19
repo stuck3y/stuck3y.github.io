@@ -1,0 +1,23 @@
+{
+  "name": "Build Brief",
+  "short_name": "Build Brief",
+  "description": "Sketch the brief for a new build, fast.",
+  "scope": "/apps/spark/",
+  "start_url": "/apps/spark/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#FAFAF8",
+  "background_color": "#FAFAF8",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

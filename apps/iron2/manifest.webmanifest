@@ -1,0 +1,23 @@
+{
+  "name": "Iron Sharpens Iron \u00b7 v2",
+  "short_name": "Iron Sharpens Iron \u00b7 v2",
+  "description": "Second pass at the 30-day fitness and spiritual tracker.",
+  "scope": "/apps/iron2/",
+  "start_url": "/apps/iron2/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0c0a09",
+  "background_color": "#0c0a09",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
