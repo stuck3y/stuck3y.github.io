@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#181410">
+    <title>Clay &middot; Body Measurement Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main id="app">
+        <header class="top">
+            <h1>Clay</h1>
+            <p class="subtitle">Sculpt with measurements. Set a goal. Track the shape.</p>
+        </header>
+
+        <section class="stage">
+            <div class="figure-wrap">
+                <svg id="figure" viewBox="-100 0 200 380" aria-label="Body silhouette"></svg>
+                <div class="legend">
+                    <span class="swatch swatch-current"></span><span>Now</span>
+                    <span class="swatch swatch-goal"></span><span>Goal</span>
+                </div>
+            </div>
+
+            <div class="readout">
+                <div class="readout-row">
+                    <span class="readout-label">BMI</span>
+                    <span id="readout-bmi" class="readout-value">—</span>
+                </div>
+                <div class="readout-row">
+                    <span class="readout-label">W : H</span>
+                    <span id="readout-whr" class="readout-value">—</span>
+                </div>
+                <div class="readout-row">
+                    <span class="readout-label">Shoulder : Waist</span>
+                    <span id="readout-swr" class="readout-value">—</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="controls">
+            <div class="mode-row">
+                <div class="seg" role="tablist" aria-label="Edit which figure">
+                    <button class="seg-btn active" data-mode="current">Now</button>
+                    <button class="seg-btn" data-mode="goal">Goal</button>
+                </div>
+                <div class="seg" role="tablist" aria-label="Units">
+                    <button class="seg-btn active" data-units="cm">cm</button>
+                    <button class="seg-btn" data-units="in">in</button>
+                </div>
+            </div>
+
+            <div id="fields" class="fields"></div>
+
+            <div class="actions">
+                <button id="snapshot-btn" class="primary-btn">Save snapshot</button>
+                <button id="copy-goal-btn" class="ghost-btn">Copy now &rarr; goal</button>
+                <button id="reset-btn" class="ghost-btn">Reset</button>
+            </div>
+        </section>
+
+        <section class="history">
+            <header class="history-header">
+                <h2>Trail</h2>
+                <span id="history-count" class="muted">0 snapshots</span>
+            </header>
+            <div id="history-list" class="history-list"></div>
+            <p id="history-empty" class="muted history-empty">Save your first snapshot to start a trail.</p>
+        </section>
+
+        <footer class="bottom">
+            <a href="../">&larr; Bench</a>
+        </footer>
+    </main>
+
+    <script src="app.js" defer></script>
+</body>
+</html>

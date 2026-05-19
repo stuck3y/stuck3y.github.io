@@ -8,6 +8,13 @@
       "featured": true
     },
     {
+      "slug": "clay",
+      "name": "Clay",
+      "description": "Sculpt with measurements. Set a goal silhouette and track the shape over time.",
+      "path": "./clay/",
+      "featured": false
+    },
+    {
       "slug": "slantboard",
       "name": "Slant Board Timer",
       "description": "Short morning routine for patellar tendon and tarsal tunnel — 5, 10, or 12 minutes.",
