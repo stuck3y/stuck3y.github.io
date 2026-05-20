@@ -1,5 +1,5 @@
 // Slant Board Timer — per-app service worker. Scope: /apps/slantboard/
-const CACHE = 'app-slantboard-v1';
+const CACHE = 'app-slantboard-v2';
 const SHELL = ['./', './index.html', './styles.css', './app.js'];
 
 self.addEventListener('install', (event) => {
