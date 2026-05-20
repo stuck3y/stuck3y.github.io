@@ -4,18 +4,21 @@
     const EXERCISES = {
         gastroc: {
             name: 'Gastroc Calf Stretch',
+            stance: 'Toes ↑ · Heels ↓ · Face the high end',
             cue: 'Stand on the board, knees straight. Hips stacked over heels. Lean slightly forward until you feel a long stretch through the upper calf.',
             focus: 'Calf · ankle mobility',
             duration: 60,
         },
         soleus: {
             name: 'Soleus Calf Stretch',
+            stance: 'Toes ↑ · Heels ↓ · Face the high end',
             cue: 'Same stance, soften the knees a few degrees and sit back. Stretch should drop into the lower calf, just above the heel.',
             focus: 'Soleus · tarsal tunnel',
             duration: 60,
         },
         ankleMobility: {
             name: 'Ankle Mobility',
+            stance: 'Off the board',
             cue: 'Off the board. Slow circles each direction, then trace the alphabet with each foot. Big, deliberate ranges.',
             focus: 'Ankle · nerve glide',
             duration: 60,
@@ -23,36 +26,42 @@
         },
         tibialis: {
             name: 'Tibialis Raises',
+            stance: 'Heels grounded · Toes lift up',
             cue: 'Heels on the floor (or board edge), lift the toes and balls of feet as high as possible. Slow up, slow down.',
             focus: 'Shin · ankle balance',
             duration: 60,
         },
         calfRaises: {
             name: 'Slow Calf Raises',
+            stance: 'Heels flat · Press up onto balls of feet',
             cue: 'Heels flat to start. Press up tall onto the balls of your feet over 3 seconds, lower over 3 seconds. Controlled.',
             focus: 'Calf strength',
             duration: 60,
         },
         heelDrops: {
             name: 'Eccentric Heel Drops',
+            stance: 'Balls of feet on board edge · Heels hang off',
             cue: 'Balls of feet on the board edge. Press up with both, then slowly lower the heels below board level over 3-4 seconds.',
             focus: 'Achilles · calf eccentric',
             duration: 60,
         },
         spanishSquat: {
             name: 'Spanish Squat Hold',
+            stance: 'Toes ↓ · Heels ↑ · Face the low end',
             cue: 'Feet on board, loop a band or strap behind your knees anchored in front. Sit back into a quarter-squat and hold. Shins vertical.',
             focus: 'Patellar tendon iso',
             duration: 60,
         },
         declineSquat: {
             name: 'Slow Decline Squats',
+            stance: 'Toes ↓ · Heels ↑ · Face the low end',
             cue: 'Both feet on the board, toes down. Squat down over 3 seconds, up over 3. Let knees travel forward over toes. Stay pain-free.',
             focus: 'Patellar tendon (Stanish)',
             duration: 60,
         },
         singleLeg: {
             name: 'Single-Leg Balance + Short Foot',
+            stance: 'Off the board · Barefoot',
             cue: 'Barefoot, off the board. Stand on one leg. Spread toes, draw the ball of your foot toward the heel to lift the arch. Switch at the halfway beep.',
             focus: 'Foot intrinsics · tibialis posterior',
             duration: 60,
@@ -60,18 +69,21 @@
         },
         finalStretch: {
             name: 'Gastroc + Nerve Glide',
+            stance: 'Toes ↑ · Heels ↓ · Face the high end',
             cue: 'Back on the board, knees straight. Slowly point and flex the toes while holding the stretch. Long exhales.',
             focus: 'Calf · posterior tibial nerve',
             duration: 60,
         },
         hamstring: {
             name: 'Hamstring Forward Fold',
+            stance: 'Heels on the board · Toes ↑',
             cue: 'Heels on the board, toes up. Hinge from the hips, soft knees, reach toward your shins. Breathe into the back of the legs.',
             focus: 'Posterior chain',
             duration: 60,
         },
         reverseLunge: {
             name: 'Slow Reverse Lunge',
+            stance: 'Off the board',
             cue: 'Step back into a lunge, front knee tracks over the toes. Slow tempo, drive through the front heel to stand. Switch at halfway.',
             focus: 'Quad · glute · knee control',
             duration: 60,
@@ -118,11 +130,10 @@
     const stepIndicator = $('#step-indicator');
     const progressFill = $('#progress-fill');
     const ringFg = $('#ring-fg');
-    const timeRemainingEl = $('#time-remaining');
     const sideLabel = $('#side-label');
     const exerciseNameEl = $('#exercise-name');
+    const exerciseStanceEl = $('#exercise-stance');
     const exerciseCueEl = $('#exercise-cue');
-    const exerciseFocusEl = $('#exercise-focus');
     const nextNameEl = $('#next-name');
     const doneSummary = $('#done-summary');
     const againBtn = $('#again-btn');
@@ -204,8 +215,8 @@
         session.elapsed = 0;
 
         exerciseNameEl.textContent = ex.name;
+        exerciseStanceEl.textContent = ex.stance || '';
         exerciseCueEl.textContent = ex.cue;
-        exerciseFocusEl.textContent = ex.focus;
 
         stepIndicator.textContent = `${session.index + 1} / ${session.keys.length}`;
         const overallPct = (session.index / session.keys.length) * 100;
@@ -219,13 +230,11 @@
     }
 
     function updateTimerDisplay() {
-        const remaining = Math.max(0, session.duration - session.elapsed);
-        timeRemainingEl.textContent = String(remaining);
-
         const pct = session.elapsed / session.duration;
         const offset = RING_CIRCUMFERENCE * pct;
         ringFg.style.strokeDashoffset = offset;
 
+        const remaining = Math.max(0, session.duration - session.elapsed);
         ringFg.classList.remove('warn', 'hot');
         if (remaining <= 3) ringFg.classList.add('hot');
         else if (remaining <= 10) ringFg.classList.add('warn');
