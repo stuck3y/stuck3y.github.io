@@ -1,5 +1,5 @@
 // Anchor — per-app service worker. Scope: /apps/anchor/
-const CACHE = 'app-anchor-v1';
+const CACHE = 'app-anchor-v2';
 const SHELL = [
   './',
   './index.html',
