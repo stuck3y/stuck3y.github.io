@@ -1,5 +1,7 @@
 // Anchor — per-app service worker. Scope: /apps/anchor/
-const CACHE = 'app-anchor-v2';
+// HTML navigations are network-first (so the app shell can never get stuck on
+// a stale cached page); other static assets are cache-first for offline use.
+const CACHE = 'app-anchor-v3';
 const SHELL = [
   './',
   './index.html',
@@ -16,11 +18,12 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((names) =>
-      Promise.all(names.filter((n) => n !== CACHE).map((n) => caches.delete(n)))
-    )
+    caches.keys()
+      .then((names) =>
+        Promise.all(names.filter((n) => n !== CACHE).map((n) => caches.delete(n)))
+      )
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
@@ -33,6 +36,28 @@ self.addEventListener('fetch', (event) => {
   const scopePath = new URL('./', self.location.href).pathname;
   if (!url.pathname.startsWith(scopePath)) return;
 
+  const accept = req.headers.get('accept') || '';
+  const isHTML = req.mode === 'navigate' || accept.includes('text/html');
+
+  if (isHTML) {
+    // Network-first: always try the freshest shell, fall back to cache offline.
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(req, copy));
+          }
+          return res;
+        })
+        .catch(() =>
+          caches.match(req).then((cached) => cached || caches.match('./index.html'))
+        )
+    );
+    return;
+  }
+
+  // Cache-first for other static assets.
   event.respondWith(
     caches.match(req).then((cached) =>
       cached ||
