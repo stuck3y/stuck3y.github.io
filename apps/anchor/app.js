@@ -32,24 +32,28 @@
     };
   }
 
+  function normalize(parsed) {
+    const d = defaultState();
+    if (!parsed || typeof parsed !== 'object') return d;
+    return {
+      version: 2,
+      blocks: (parsed.blocks && typeof parsed.blocks === 'object') ? parsed.blocks : d.blocks,
+      prefs: parsed.prefs || d.prefs,
+      prayers: Array.isArray(parsed.prayers) ? parsed.prayers : d.prayers,
+      blessings: Array.isArray(parsed.blessings) ? parsed.blessings : d.blessings,
+      bible: (parsed.bible && typeof parsed.bible === 'object') ? parsed.bible : d.bible,
+      body: {
+        weights: (parsed.body && Array.isArray(parsed.body.weights)) ? parsed.body.weights : [],
+        workouts: (parsed.body && parsed.body.workouts) ? parsed.body.workouts : {}
+      }
+    };
+  }
+
   function loadState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return defaultState();
-      const parsed = JSON.parse(raw);
-      const d = defaultState();
-      return {
-        version: 2,
-        blocks: parsed.blocks || d.blocks,
-        prefs: parsed.prefs || d.prefs,
-        prayers: Array.isArray(parsed.prayers) ? parsed.prayers : d.prayers,
-        blessings: Array.isArray(parsed.blessings) ? parsed.blessings : d.blessings,
-        bible: parsed.bible || d.bible,
-        body: {
-          weights: (parsed.body && Array.isArray(parsed.body.weights)) ? parsed.body.weights : [],
-          workouts: (parsed.body && parsed.body.workouts) ? parsed.body.workouts : {}
-        }
-      };
+      return normalize(JSON.parse(raw));
     } catch (_) {
       return defaultState();
     }
@@ -152,7 +156,7 @@
     deleteBtn: $('delete-btn'), cancelBtn: $('cancel-btn'), error: $('sheet-error'),
     tabBar: $('tab-bar'),
     rememberCard: $('remember-card'), bibleCard: $('bible-card'), prayersCard: $('prayers-card'), blessingsCard: $('blessings-card'),
-    weightCard: $('weight-card'), workoutCard: $('workout-card'),
+    weightCard: $('weight-card'), workoutCard: $('workout-card'), backupCard: $('backup-card'),
     gsheet: $('gsheet'), gTitle: $('g-title'), gFields: $('g-fields'), gError: $('g-error'),
     gDelete: $('g-delete'), gCancel: $('g-cancel'), gSave: $('g-save')
   };
@@ -441,6 +445,9 @@
       if (p.answered) out.push({ kind: 'Answered prayer', text: p.text, sub: p.answerNote || '', date: p.answeredAt });
     }
     for (const b of state.blessings) out.push({ kind: 'Blessing', text: b.text, sub: '', date: b.date });
+    for (const [date, e] of Object.entries(state.bible)) {
+      if (e && e.note) out.push({ kind: 'From your reading', text: e.note, sub: e.passage || '', date });
+    }
     return out.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   }
 
@@ -803,7 +810,58 @@
     });
   }
 
-  function renderBody() { renderWeight(); renderWorkout(); }
+  function renderBackup() {
+    els.backupCard.innerHTML = `
+      <div class="card">
+        <div class="card-head"><h2 class="card-title">Backup</h2></div>
+        <p class="muted">Everything lives only on this device. Export a copy now and then so a cleared browser can't take your prayers, blessings, and history with it.</p>
+        <div class="row-actions">
+          <button class="pill-btn primary" id="export-btn">Export</button>
+          <button class="pill-btn" id="import-btn">Restore</button>
+          <input type="file" id="import-file" accept="application/json,.json" hidden />
+        </div>
+      </div>`;
+    $('export-btn').addEventListener('click', exportData);
+    const fileInput = $('import-file');
+    $('import-btn').addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) importData(file);
+      e.target.value = '';
+    });
+  }
+
+  function exportData() {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `anchor-backup-${todayISO()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function importData(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      let parsed;
+      try { parsed = JSON.parse(reader.result); }
+      catch (_) { alert('That file isn’t a valid Anchor backup.'); return; }
+      const looksValid = parsed && typeof parsed === 'object' &&
+        ('blocks' in parsed || 'prayers' in parsed || 'blessings' in parsed || 'bible' in parsed || 'body' in parsed);
+      if (!looksValid) { alert('That file isn’t a valid Anchor backup.'); return; }
+      if (!confirm('Restore this backup? It replaces all data currently on this device.')) return;
+      state = normalize(parsed);
+      saveState();
+      renderActive();
+    };
+    reader.onerror = () => alert('Couldn’t read that file.');
+    reader.readAsText(file);
+  }
+
+  function renderBody() { renderWeight(); renderWorkout(); renderBackup(); }
 
   // ============================================================
   //  SHEETS (shared)
