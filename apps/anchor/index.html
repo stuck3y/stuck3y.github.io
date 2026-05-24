@@ -18,6 +18,9 @@
   <script src="./app.js" defer></script>
 </head>
 <body>
+
+<!-- ============ DAY ============ -->
+<section class="screen active" id="screen-day">
   <header class="topbar">
     <button id="prev-day" class="nav-btn" aria-label="Previous day">&lsaquo;</button>
     <div class="date-wrap" id="date-wrap">
@@ -50,53 +53,116 @@
 
   <button id="fab" class="fab" aria-label="Add block">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <line x1="12" y1="5" x2="12" y2="19"/>
-      <line x1="5" y1="12" x2="19" y2="12"/>
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
     </svg>
   </button>
+</section>
 
-  <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
-  <div class="sheet" id="sheet" hidden role="dialog" aria-label="Edit block">
-    <div class="sheet-handle" aria-hidden="true"></div>
-    <h2 class="sheet-title" id="sheet-title">New block</h2>
-    <form id="sheet-form" autocomplete="off">
-      <label class="field">
-        <span class="field-label">What is it?</span>
-        <input type="text" id="f-title" name="title" maxlength="80" placeholder="e.g., Morning prayer" required />
-      </label>
-      <div class="field-row">
-        <label class="field">
-          <span class="field-label">Start</span>
-          <input type="time" id="f-start" name="start" required />
-        </label>
-        <label class="field">
-          <span class="field-label">End</span>
-          <input type="time" id="f-end" name="end" required />
-        </label>
-      </div>
-      <div class="field">
-        <span class="field-label">Category</span>
-        <div class="cat-grid" id="cat-grid" role="radiogroup"></div>
-      </div>
-      <label class="field">
-        <span class="field-label">Notes (optional)</span>
-        <textarea id="f-notes" name="notes" rows="2" maxlength="500" placeholder="A verse, a reminder, a why&hellip;"></textarea>
-      </label>
-      <div class="field" id="status-field" hidden>
-        <span class="field-label">Status</span>
-        <div class="seg" id="status-seg" role="radiogroup">
-          <button type="button" class="seg-btn" data-status="planned">Planned</button>
-          <button type="button" class="seg-btn" data-status="done">Done</button>
-          <button type="button" class="seg-btn" data-status="skipped">Skipped</button>
-        </div>
-      </div>
-      <p class="sheet-error" id="sheet-error" hidden></p>
-      <div class="sheet-actions">
-        <button type="button" id="delete-btn" class="btn-danger" hidden>Delete</button>
-        <button type="button" id="cancel-btn" class="btn-secondary">Cancel</button>
-        <button type="submit" class="btn-primary">Save</button>
-      </div>
-    </form>
+<!-- ============ SOUL ============ -->
+<section class="screen" id="screen-soul">
+  <header class="screen-header">
+    <h1>Soul</h1>
+    <p class="screen-sub">Tend the inner life.</p>
+  </header>
+  <div class="scroll-area" id="soul-scroll">
+    <div id="remember-card"></div>
+    <div id="bible-card"></div>
+    <div id="prayers-card"></div>
+    <div id="blessings-card"></div>
   </div>
+</section>
+
+<!-- ============ BODY ============ -->
+<section class="screen" id="screen-body">
+  <header class="screen-header">
+    <h1>Body</h1>
+    <p class="screen-sub">Steward the temple.</p>
+  </header>
+  <div class="scroll-area" id="body-scroll">
+    <div id="weight-card"></div>
+    <div id="workout-card"></div>
+  </div>
+</section>
+
+<!-- ============ TAB BAR ============ -->
+<nav class="tab-bar" id="tab-bar">
+  <button class="tab-btn active" data-tab="day">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>
+    </svg>
+    <span>Day</span>
+  </button>
+  <button class="tab-btn" data-tab="soul">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M4 5a2 2 0 0 1 2-2h7v17H6a2 2 0 0 0-2 2z"/><path d="M20 5a2 2 0 0 0-2-2h-5v17h5a2 2 0 0 1 2 2z"/>
+    </svg>
+    <span>Soul</span>
+  </button>
+  <button class="tab-btn" data-tab="body">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3 12h4l2 6 4-14 2 8h6"/>
+    </svg>
+    <span>Body</span>
+  </button>
+</nav>
+
+<!-- ============ BLOCK SHEET (Day) ============ -->
+<div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+<div class="sheet" id="sheet" hidden role="dialog" aria-label="Edit block">
+  <div class="sheet-handle" aria-hidden="true"></div>
+  <h2 class="sheet-title" id="sheet-title">New block</h2>
+  <form id="sheet-form" autocomplete="off">
+    <label class="field">
+      <span class="field-label">What is it?</span>
+      <input type="text" id="f-title" name="title" maxlength="80" placeholder="e.g., Morning prayer" required />
+    </label>
+    <div class="field-row">
+      <label class="field">
+        <span class="field-label">Start</span>
+        <input type="time" id="f-start" name="start" required />
+      </label>
+      <label class="field">
+        <span class="field-label">End</span>
+        <input type="time" id="f-end" name="end" required />
+      </label>
+    </div>
+    <div class="field">
+      <span class="field-label">Category</span>
+      <div class="cat-grid" id="cat-grid" role="radiogroup"></div>
+    </div>
+    <label class="field">
+      <span class="field-label">Notes (optional)</span>
+      <textarea id="f-notes" name="notes" rows="2" maxlength="500" placeholder="A verse, a reminder, a why&hellip;"></textarea>
+    </label>
+    <div class="field" id="status-field" hidden>
+      <span class="field-label">Status</span>
+      <div class="seg" id="status-seg" role="radiogroup">
+        <button type="button" class="seg-btn" data-status="planned">Planned</button>
+        <button type="button" class="seg-btn" data-status="done">Done</button>
+        <button type="button" class="seg-btn" data-status="skipped">Skipped</button>
+      </div>
+    </div>
+    <p class="sheet-error" id="sheet-error" hidden></p>
+    <div class="sheet-actions">
+      <button type="button" id="delete-btn" class="btn-danger" hidden>Delete</button>
+      <button type="button" id="cancel-btn" class="btn-secondary">Cancel</button>
+      <button type="submit" class="btn-primary">Save</button>
+    </div>
+  </form>
+</div>
+
+<!-- ============ GENERIC SHEET (Soul / Body) ============ -->
+<div class="sheet" id="gsheet" hidden role="dialog" aria-label="Entry">
+  <div class="sheet-handle" aria-hidden="true"></div>
+  <h2 class="sheet-title" id="g-title">Add</h2>
+  <div id="g-fields"></div>
+  <p class="sheet-error" id="g-error" hidden></p>
+  <div class="sheet-actions">
+    <button type="button" id="g-delete" class="btn-danger" hidden>Delete</button>
+    <button type="button" id="g-cancel" class="btn-secondary">Cancel</button>
+    <button type="button" id="g-save" class="btn-primary">Save</button>
+  </div>
+</div>
+
 </body>
 </html>
