@@ -1,7 +1,7 @@
 // Anchor — per-app service worker. Scope: /apps/anchor/
 // HTML navigations are network-first (so the app shell can never get stuck on
 // a stale cached page); other static assets are cache-first for offline use.
-const CACHE = 'app-anchor-v3';
+const CACHE = 'app-anchor-v4';
 const SHELL = [
   './',
   './index.html',
