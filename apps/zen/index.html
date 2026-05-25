@@ -411,11 +411,10 @@
       </div>
     `;
     const ta = document.getElementById("ta");
-    const beginBtn = document.getElementById("begin");
 
     const begin = (text) => {
       const paras = splitParagraphs(text);
-      if (!paras.length) return false;
+      if (!paras.length) return;
       const riverId = riverUpsert(text, paras.length);
       state = {
         paragraphs: paras, i: 0,
@@ -424,33 +423,17 @@
       };
       save();
       render();
-      return true;
     };
 
-    // Easter egg: hold "begin" to read straight from the clipboard.
-    let holdTimer = 0;
-    let held = false;
-
-    const startHold = () => {
-      held = false;
-      clearTimeout(holdTimer);
-      holdTimer = setTimeout(async () => {
-        held = true;
+    document.getElementById("begin").onclick = async () => {
+      // Easter egg: empty textarea pulls straight from the clipboard.
+      if (!ta.value.trim()) {
         try {
-          const text = await navigator.clipboard.readText();
-          if (text && text.trim()) begin(text);
+          const clip = await navigator.clipboard.readText();
+          if (clip && clip.trim()) begin(clip);
         } catch {}
-      }, 600);
-    };
-    const cancelHold = () => clearTimeout(holdTimer);
-
-    beginBtn.addEventListener("pointerdown", startHold);
-    beginBtn.addEventListener("pointerup", cancelHold);
-    beginBtn.addEventListener("pointerleave", cancelHold);
-    beginBtn.addEventListener("pointercancel", cancelHold);
-
-    beginBtn.onclick = () => {
-      if (held) { held = false; return; }
+        return;
+      }
       begin(ta.value);
     };
   }
