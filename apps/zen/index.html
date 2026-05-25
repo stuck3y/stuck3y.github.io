@@ -200,11 +200,14 @@
 </head>
 <body>
 <main id="app"></main>
-<script>
+<script type="module">
+  import {
+    wordCount, splitParagraphs, makeTitle, escapeHtml, pickBeginText
+  } from "./reader.js";
+
   const KEY = "zen-reader";
   const RIVER_KEY = "river-reads";
   const RIVER_TTL_MS = 30 * 24 * 60 * 60 * 1000;
-  const MAX_WORDS = 80;
   const DEFAULT_WPM = 150;
   const MIN_SAMPLE_MS = 500;
   const MAX_SAMPLE_MS = 5 * 60 * 1000;
@@ -243,13 +246,6 @@
     try { localStorage.setItem(RIVER_KEY, JSON.stringify({ reads })); } catch {}
   }
 
-  function makeTitle(text) {
-    const firstLine = (text.split(/\n+/).find(l => l.trim()) || "").trim();
-    let t = firstLine.replace(/^[#>*\-\s"'“‘»«]+/, "").trim();
-    if (t.length > 120) t = t.slice(0, 117) + "…";
-    return t || "untitled";
-  }
-
   function riverUpsert(text, total) {
     try {
       const reads = riverLoad();
@@ -281,48 +277,6 @@
       r.lastReadAt = Date.now();
       riverSave(reads);
     } catch {}
-  }
-
-  function wordCount(s) {
-    return s.trim().split(/\s+/).filter(Boolean).length;
-  }
-
-  function chunkParagraph(para) {
-    if (wordCount(para) <= MAX_WORDS) return [para];
-
-    const sentences = para.match(/[^.!?…]+[.!?…]+["')\]]*\s*|[^.!?…]+$/g) || [para];
-    const chunks = [];
-    let buf = "";
-
-    for (const raw of sentences) {
-      const sent = raw.trim();
-      if (!sent) continue;
-      const candidate = buf ? buf + " " + sent : sent;
-      if (wordCount(candidate) > MAX_WORDS && buf) {
-        chunks.push(buf);
-        buf = sent;
-      } else {
-        buf = candidate;
-      }
-    }
-    if (buf) chunks.push(buf);
-
-    const final = [];
-    for (const chunk of chunks) {
-      if (wordCount(chunk) <= MAX_WORDS) { final.push(chunk); continue; }
-      const words = chunk.split(/\s+/);
-      for (let i = 0; i < words.length; i += MAX_WORDS) {
-        final.push(words.slice(i, i + MAX_WORDS).join(" "));
-      }
-    }
-    return final;
-  }
-
-  function splitParagraphs(text) {
-    return text.split(/\n\s*\n+/)
-      .map(s => s.trim())
-      .filter(Boolean)
-      .flatMap(chunkParagraph);
   }
 
   function sampleCurrentChunk() {
@@ -397,12 +351,6 @@
     render();
   }
 
-  function escapeHtml(s) {
-    return s.replace(/[&<>"']/g, c => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-    }[c]));
-  }
-
   function renderPaste() {
     app.innerHTML = `
       <div class="paste">
@@ -411,6 +359,7 @@
       </div>
     `;
     const ta = document.getElementById("ta");
+    const btn = document.getElementById("begin");
 
     const begin = (text) => {
       const paras = splitParagraphs(text);
@@ -425,16 +374,31 @@
       render();
     };
 
-    document.getElementById("begin").onclick = async () => {
-      // Easter egg: empty textarea pulls straight from the clipboard.
+    let hintTimer = 0;
+    const hint = (msg) => {
+      clearTimeout(hintTimer);
+      btn.textContent = msg;
+      hintTimer = setTimeout(() => { btn.textContent = "begin"; }, 1800);
+    };
+
+    btn.onclick = async () => {
+      // Easter egg: an empty textarea pulls straight from the clipboard.
+      let clip = null;
       if (!ta.value.trim()) {
+        if (!navigator.clipboard || !navigator.clipboard.readText) {
+          hint("paste text first");
+          return;
+        }
         try {
-          const clip = await navigator.clipboard.readText();
-          if (clip && clip.trim()) begin(clip);
-        } catch {}
-        return;
+          clip = await navigator.clipboard.readText();
+        } catch {
+          hint("clipboard blocked");
+          return;
+        }
       }
-      begin(ta.value);
+      const text = pickBeginText(ta.value, clip);
+      if (text) begin(text);
+      else hint("clipboard empty");
     };
   }
 
