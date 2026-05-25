@@ -411,10 +411,11 @@
       </div>
     `;
     const ta = document.getElementById("ta");
-    document.getElementById("begin").onclick = () => {
-      const text = ta.value;
+    const beginBtn = document.getElementById("begin");
+
+    const begin = (text) => {
       const paras = splitParagraphs(text);
-      if (!paras.length) return;
+      if (!paras.length) return false;
       const riverId = riverUpsert(text, paras.length);
       state = {
         paragraphs: paras, i: 0,
@@ -423,6 +424,34 @@
       };
       save();
       render();
+      return true;
+    };
+
+    // Easter egg: hold "begin" to read straight from the clipboard.
+    let holdTimer = 0;
+    let held = false;
+
+    const startHold = () => {
+      held = false;
+      clearTimeout(holdTimer);
+      holdTimer = setTimeout(async () => {
+        held = true;
+        try {
+          const text = await navigator.clipboard.readText();
+          if (text && text.trim()) begin(text);
+        } catch {}
+      }, 600);
+    };
+    const cancelHold = () => clearTimeout(holdTimer);
+
+    beginBtn.addEventListener("pointerdown", startHold);
+    beginBtn.addEventListener("pointerup", cancelHold);
+    beginBtn.addEventListener("pointerleave", cancelHold);
+    beginBtn.addEventListener("pointercancel", cancelHold);
+
+    beginBtn.onclick = () => {
+      if (held) { held = false; return; }
+      begin(ta.value);
     };
   }
 
