@@ -1,6 +1,6 @@
 // Zen Reader — per-app service worker. Scope: /apps/zen/
-const CACHE = 'app-zen-v1';
-const SHELL = ['./', './index.html', './manifest.webmanifest'];
+const CACHE = 'app-zen-v2';
+const SHELL = ['./', './index.html', './reader.js', './manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
