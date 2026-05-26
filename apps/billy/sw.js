@@ -1,5 +1,5 @@
 // Billy — per-app service worker. Scope: /apps/billy/
-const CACHE = 'app-billy-v2';
+const CACHE = 'app-billy-v3';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {
