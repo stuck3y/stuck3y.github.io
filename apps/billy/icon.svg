@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Billy">
+  <rect width="512" height="512" rx="112" ry="112" fill="#1f7a4d"/>
+  <text x="256" y="356" text-anchor="middle"
+        font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', Helvetica, Arial, sans-serif"
+        font-weight="800" font-size="300" letter-spacing="-10" fill="#fbfbfd">B</text>
+</svg>
