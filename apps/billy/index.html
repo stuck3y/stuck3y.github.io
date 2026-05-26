@@ -2,524 +2,592 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Billy</title>
-<meta name="theme-color" content="#1f7a4d" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#f6f3ec" />
+<title>billy</title>
 <link rel="manifest" href="./manifest.webmanifest" />
 <script src="../lib/pwa.js" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #fbfbfd;
-    --surface: #ffffff;
-    --fg: #1d1d1f;
-    --fg-muted: #6e6e73;
-    --rule: #e5e5e7;
-    --field: #f0f0f2;
-    --pos: #1f7a4d;
-    --neg: #c92a2a;
-    --accent: #1f7a4d;
+    --bg: #f6f3ec;
+    --ink: #1a1a1c;
+    --soft: #6e6e74;
+    --faint: #d4d1c8;
+    --accent: #c8451d;
+    --clear: #3f7d4f;
+    --serif: 'Fraunces', ui-serif, Georgia, serif;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #0a0a0c;
-      --surface: #16161a;
-      --fg: #f5f5f7;
-      --fg-muted: #86868b;
-      --rule: #2a2a2c;
-      --field: #1f1f24;
-      --pos: #3ddc84;
-      --neg: #ff5a52;
-      --accent: #3ddc84;
+      --bg: #2a2825;
+      --ink: #f2efe8;
+      --soft: #a6a39b;
+      --faint: #44413c;
+      --accent: #f0805a;
+      --clear: #7fb98c;
     }
   }
-
-  *, *::before, *::after { box-sizing: border-box; }
-  html, body {
-    margin: 0;
-    padding: 0;
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: var(--serif);
     background: var(--bg);
-    color: var(--fg);
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    font-size: 19px;
+    line-height: 1.5;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    overflow: hidden;
     -webkit-tap-highlight-color: transparent;
   }
-  body {
-    min-height: 100dvh;
-    padding:
-      calc(env(safe-area-inset-top) + 28px)
-      env(safe-area-inset-right)
-      calc(env(safe-area-inset-bottom) + 40px)
-      env(safe-area-inset-left);
+  ::selection { background: var(--accent); color: #fff; }
+
+  .stage { position: relative; width: 100%; height: 100dvh; overflow: hidden; }
+  .surface {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    transition: opacity .35s ease, transform .35s cubic-bezier(.2,.8,.2,1);
+    overflow: hidden;
   }
-  main {
-    width: 100%;
-    max-width: 560px;
-    margin: 0 auto;
-    padding: 0 20px;
+  body[data-mode="capture"] #captureSurface { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  body[data-mode="capture"] #ledgerSurface { opacity: 0; transform: translateY(20px); pointer-events: none; }
+  body[data-mode="ledger"] #captureSurface { opacity: 0; transform: translateY(-20px); pointer-events: none; }
+  body[data-mode="ledger"] #ledgerSurface { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+  /* ============ CAPTURE ============ */
+  #captureSurface { align-items: center; justify-content: flex-start; padding: 56px 28px 140px; }
+  .capture-inner { width: 100%; max-width: 560px; text-align: center; }
+
+  h1 {
+    font-weight: 400; font-size: 44px; letter-spacing: -0.02em;
+    margin: 0 0 28px; color: var(--accent); font-style: italic;
+    transition: opacity .3s ease;
   }
 
-  .nav { margin-bottom: 18px; font-size: 14px; }
-  .nav a { color: var(--fg-muted); text-decoration: none; }
-  .nav a:hover { color: var(--accent); }
+  #input {
+    width: 100%; border: 0; background: transparent; color: var(--ink);
+    font-family: var(--serif); font-size: 22px; line-height: 1.4;
+    padding: 0 0 12px; outline: none;
+    border-bottom: 1px solid var(--faint);
+    transition: border-color .2s ease; text-align: center;
+    caret-color: transparent;
+  }
+  #input::placeholder { color: var(--soft); font-style: italic; }
+  #input:focus { border-bottom-color: var(--ink); }
 
-  .wordmark {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    margin-bottom: 22px;
+  /* recents strip — confirm what you dumped, tap to see the picture */
+  .recents {
+    margin-top: 28px; display: flex; flex-direction: column; gap: 6px;
+    align-items: center; transition: opacity .25s ease; cursor: pointer;
+    padding: 12px 24px; border-radius: 10px;
   }
-  .wordmark h1 {
-    margin: 0;
-    font-size: 30px;
-    font-weight: 700;
-    letter-spacing: -0.03em;
+  .recents:hover { background: rgba(0,0,0,0.02); }
+  @media (prefers-color-scheme: dark) { .recents:hover { background: rgba(255,255,255,0.03); } }
+  .recents.empty { display: none; }
+  .recents.hidden { opacity: 0; pointer-events: none; }
+  .recents .recent {
+    font-family: var(--serif); font-size: 15px; color: var(--soft);
+    font-style: italic; opacity: 0.7; animation: recentIn .25s ease;
+    display: flex; gap: 10px; align-items: baseline; justify-content: center;
   }
-  .wordmark .tag { font-size: 14px; color: var(--fg-muted); }
-
-  /* Summary card */
-  .summary {
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: 16px;
-    padding: 22px 22px 18px;
-    margin-bottom: 20px;
-  }
-  .on-hand-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 18px;
-  }
-  .on-hand-row label {
-    font-size: 13px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-  }
-  .on-hand-field {
-    display: flex;
-    align-items: baseline;
-    font-size: 24px;
-    font-weight: 600;
+  .recents .recent .ramt { font-variant-numeric: tabular-nums; font-style: normal; }
+  .recents .recent:nth-child(1) { opacity: 0.9; font-size: 16px; color: var(--ink); font-style: normal; }
+  .recents .recent:nth-child(2) { opacity: 0.55; }
+  .recents .recent:nth-child(3) { opacity: 0.35; }
+  .recents .peek {
+    margin-top: 8px; font-size: 13px; color: var(--soft); font-style: italic;
     font-variant-numeric: tabular-nums;
   }
-  .on-hand-field .currency { color: var(--fg-muted); margin-right: 2px; font-size: 20px; }
-  #onHand {
-    width: 7ch;
-    text-align: right;
-    border: none;
-    background: transparent;
-    color: var(--fg);
-    font: inherit;
-    padding: 2px 4px;
-    border-bottom: 2px solid var(--rule);
-    outline: none;
-  }
-  #onHand:focus { border-bottom-color: var(--accent); }
+  @keyframes recentIn { from { opacity: 0; transform: translateY(-4px); } to {} }
 
-  .net {
-    border-top: 1px solid var(--rule);
-    padding-top: 16px;
-  }
-  .net .net-label {
-    font-size: 13px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-    margin-bottom: 4px;
-  }
-  .net .net-value {
-    font-size: clamp(40px, 13vw, 56px);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-  }
-  .net .net-value.pos { color: var(--pos); }
-  .net .net-value.neg { color: var(--neg); }
-  .net .net-sub {
-    margin-top: 8px;
-    font-size: 14px;
-    color: var(--fg-muted);
-  }
-  .net .net-sub strong { color: var(--fg); font-weight: 600; }
+  body.focused h1, body.focused .recents { opacity: 0; pointer-events: none; transition: opacity .3s ease; }
 
-  /* Add form */
-  form.add {
-    display: grid;
-    grid-template-columns: 1fr 30%;
-    gap: 10px;
-    margin-bottom: 8px;
+  /* ============ LEDGER ============ */
+  #ledgerSurface { padding: 56px 0 32px; }
+  .ledger-head { text-align: center; padding: 0 28px; margin-bottom: 8px; }
+  .back-title {
+    background: transparent; border: 0; color: var(--accent);
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 44px; letter-spacing: -0.02em; cursor: pointer; padding: 0; margin: 0;
+    transition: opacity .2s ease;
   }
-  form.add .full { grid-column: 1 / -1; }
-  form.add input {
-    width: 100%;
-    padding: 13px 14px;
-    font-size: 16px;
-    background: var(--field);
-    border: 1px solid transparent;
-    border-radius: 10px;
-    color: var(--fg);
-    outline: none;
-  }
-  form.add input::placeholder { color: var(--fg-muted); }
-  form.add input:focus { border-color: var(--accent); }
-  form.add button {
-    grid-column: 1 / -1;
-    padding: 13px;
-    font-size: 16px;
-    font-weight: 600;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-  }
-  @media (prefers-color-scheme: dark) {
-    form.add button { color: #07120c; }
-  }
-  form.add button:active { filter: brightness(0.92); }
+  .back-title:hover { opacity: 0.75; }
 
-  .hint {
-    font-size: 12px;
-    color: var(--fg-muted);
-    margin: 14px 2px 8px;
+  .ledger-scroll {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 0 28px; max-width: 600px; width: 100%; margin: 0 auto;
   }
 
-  /* Bill list */
-  ul.bills { list-style: none; margin: 0; padding: 0; }
-  ul.bills li {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 2px;
-    border-top: 1px solid var(--rule);
+  .figures { text-align: center; margin: 12px 0 36px; }
+  .onhand { font-size: 15px; color: var(--soft); font-style: italic; margin-bottom: 14px; }
+  .onhand .num {
+    font-style: normal; color: var(--ink); font-variant-numeric: tabular-nums;
+    outline: none; border-bottom: 1px dashed var(--faint); padding: 0 2px 1px;
+    caret-color: transparent;
   }
-  ul.bills li:last-child { border-bottom: 1px solid var(--rule); }
+  .onhand .num:focus { border-bottom-color: var(--ink); border-bottom-style: solid; }
+  .net .num {
+    display: block; font-size: clamp(52px, 16vw, 76px); font-weight: 400;
+    letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .net.clear .num { color: var(--ink); }
+  .net.short .num { color: var(--accent); }
+  .net .word { display: block; margin-top: 8px; font-size: 16px; font-style: italic; color: var(--soft); }
+  .net .word b { font-variant-numeric: tabular-nums; font-style: normal; color: var(--ink); font-weight: 500; }
+
+  ul { list-style: none; padding: 0; margin: 0 0 12px; }
+  li {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--faint);
+    overflow: hidden; max-height: 200px; animation: in .2s ease;
+    transition: opacity .2s ease, max-height .25s ease, padding .25s ease, border-color .25s ease, transform .18s ease;
+  }
+  @keyframes in { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: none; } }
+  li.removing { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; border-color: transparent; }
 
   .check {
-    flex-shrink: 0;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: 2px solid var(--rule);
-    background: transparent;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    color: transparent;
-    font-size: 14px;
-    padding: 0;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    flex-shrink: 0; width: 16px; height: 16px; border: 1px solid var(--soft);
+    border-radius: 50%; margin-top: 9px; cursor: pointer; background: transparent;
+    padding: 0; transition: all .15s ease;
   }
-  li.paid .check {
-    background: var(--pos);
-    border-color: var(--pos);
-    color: #fff;
-  }
+  .check:hover { border-color: var(--ink); }
+  li.paid .check { background: var(--clear); border-color: var(--clear); }
+  li.paid .text, li.paid .amount { color: var(--soft); text-decoration: line-through; text-decoration-thickness: 1px; }
 
-  .bill-text { flex: 1; min-width: 0; }
-  .bill-name {
-    font-size: 16px;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .text {
+    flex: 1; border: 0; background: transparent; color: var(--ink);
+    font-family: var(--serif); font-size: 19px; line-height: 1.5; outline: none;
+    padding: 4px 0; resize: none; overflow: hidden; word-break: break-word;
+    caret-color: transparent;
   }
-  .bill-meta { font-size: 13px; color: var(--fg-muted); margin-top: 2px; }
-  .bill-meta .due-soon { color: var(--neg); }
-  li.paid .bill-name, li.paid .bill-amount { text-decoration: line-through; color: var(--fg-muted); }
+  .right { flex-shrink: 0; text-align: right; padding-top: 4px; min-width: 90px; }
+  .amount {
+    font-size: 19px; font-variant-numeric: tabular-nums; color: var(--ink);
+    outline: none; caret-color: transparent; padding: 0 1px 1px;
+    border-bottom: 1px dashed transparent;
+  }
+  .amount:focus { border-bottom-color: var(--ink); border-bottom-style: solid; }
+  .running { font-size: 12px; color: var(--soft); margin-top: 3px; font-variant-numeric: tabular-nums; font-style: italic; }
+  .running.short { color: var(--accent); font-style: normal; }
+  .running.paid { color: var(--clear); }
 
-  .bill-right { text-align: right; flex-shrink: 0; }
-  .bill-amount {
-    font-size: 16px;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-  }
-  .running {
-    font-size: 12px;
-    margin-top: 2px;
-    font-variant-numeric: tabular-nums;
-    color: var(--fg-muted);
-  }
-  .running.short { color: var(--neg); font-weight: 600; }
+  .list-empty { text-align: center; color: var(--soft); font-style: italic; font-size: 16px; padding: 24px; }
 
-  .del {
-    flex-shrink: 0;
-    border: none;
-    background: transparent;
-    color: var(--fg-muted);
-    font-size: 20px;
-    line-height: 1;
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
-    cursor: pointer;
+  .formats {
+    position: sticky; bottom: 0; padding: 16px 0 8px;
+    background: linear-gradient(to bottom, transparent, var(--bg) 30%);
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 18px;
   }
-  .del:hover { color: var(--neg); }
+  .formats button {
+    background: transparent; border: 0; padding: 6px 0;
+    font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 15px;
+    color: var(--soft); cursor: pointer; transition: color .15s ease;
+  }
+  .formats button:hover { color: var(--ink); }
+  .formats button:active { color: var(--accent); }
 
-  .empty {
-    padding: 28px 2px;
-    color: var(--fg-muted);
-    font-size: 15px;
-    border-top: 1px solid var(--rule);
-    border-bottom: 1px solid var(--rule);
-    text-align: center;
+  /* editing fades the rest away so you can't fat-finger anything else */
+  body.editing h1, body.editing .recents, body.editing .ledger-head,
+  body.editing .figures, body.editing .formats { opacity: 0; pointer-events: none; transition: opacity .3s ease; }
+  body.editing ul li { opacity: 0; pointer-events: none; transition: opacity .3s ease; }
+  body.editing ul li.editing-row { opacity: 1; pointer-events: auto; }
+  body.editing ul li.editing-row .check { opacity: 0; pointer-events: none; }
+
+  .check-flash {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.85);
+    width: 88px; height: 88px; border-radius: 50%;
+    background: var(--ink); color: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; z-index: 60;
+    transition: opacity .15s ease, transform .25s cubic-bezier(.2,.9,.3,1.3);
+    box-shadow: 0 12px 40px -8px rgba(0,0,0,0.3);
   }
+  .check-flash svg { width: 36px; height: 36px; }
+  .check-flash.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+  .toast {
+    position: fixed; bottom: 92px; left: 50%; transform: translateX(-50%) translateY(8px);
+    background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 999px;
+    font-size: 13px; font-style: italic; opacity: 0;
+    transition: all .2s ease; z-index: 50; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
-<body>
-<main>
-  <nav class="nav"><a href="../../">&larr; Jon's Data Company</a></nav>
+<body data-mode="capture">
 
-  <div class="wordmark">
-    <h1>Billy</h1>
-    <span class="tag">bills, out of your head</span>
-  </div>
+<div class="stage">
 
-  <section class="summary" aria-label="Summary">
-    <div class="on-hand-row">
-      <label for="onHand">On hand</label>
-      <div class="on-hand-field">
-        <span class="currency">$</span>
-        <input id="onHand" type="text" inputmode="decimal" value="0" aria-label="Cash on hand" />
-      </div>
-    </div>
-    <div class="net">
-      <div class="net-label">Net after unpaid bills</div>
-      <div class="net-value pos" id="netValue">$0</div>
-      <div class="net-sub" id="netSub"></div>
+  <!-- ================= CAPTURE ================= -->
+  <section class="surface" id="captureSurface">
+    <div class="capture-inner">
+      <h1 id="title">billy</h1>
+      <input id="input" type="text" placeholder="what do you owe?" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="text" />
+      <div class="recents" id="recents"></div>
     </div>
   </section>
 
-  <form class="add" id="addForm" autocomplete="off">
-    <input class="full" id="nameInput" type="text" placeholder="Bill (e.g. Rent, Card, Phone)" required maxlength="60" />
-    <input id="amountInput" type="text" inputmode="decimal" placeholder="Amount" required />
-    <input id="dueInput" type="date" aria-label="Due date (optional)" />
-    <button type="submit">Add bill</button>
-  </form>
+  <!-- ================= LEDGER ================= -->
+  <section class="surface" id="ledgerSurface">
+    <div class="ledger-head">
+      <button class="back-title" id="backTitle" aria-label="back">billy</button>
+    </div>
+    <div class="ledger-scroll">
+      <div class="figures">
+        <div class="onhand">
+          <span class="num" id="onHand" contenteditable="true" inputmode="decimal" aria-label="cash on hand">$0</span> on hand
+        </div>
+        <div class="net clear" id="netBox">
+          <span class="num" id="net">$0</span>
+          <span class="word" id="netWord">clear</span>
+        </div>
+      </div>
+      <ul id="list"></ul>
+      <div class="formats" id="formats">
+        <button data-fmt="txt">plain</button>
+        <button data-fmt="md">markdown</button>
+        <button data-fmt="csv">csv</button>
+      </div>
+    </div>
+  </section>
 
-  <p class="hint" id="hint">Dump every bill in. Set what you've got on hand. Watch where it runs out.</p>
+</div>
 
-  <ul class="bills" id="billList"></ul>
-  <p class="empty" id="empty" hidden>No bills yet. Add the ones rattling around your head.</p>
-</main>
+<div class="check-flash" id="check" aria-hidden="true">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+</div>
+<div class="toast" id="toast"></div>
 
 <script>
-(() => {
-  "use strict";
-  const KEY = "ledger.v1";
-  const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+const STORAGE_KEY = 'billy.v2';
+const RECENTS_COUNT = 3;
 
-  const el = {
-    onHand: document.getElementById("onHand"),
-    net: document.getElementById("netValue"),
-    netSub: document.getElementById("netSub"),
-    form: document.getElementById("addForm"),
-    name: document.getElementById("nameInput"),
-    amount: document.getElementById("amountInput"),
-    due: document.getElementById("dueInput"),
-    list: document.getElementById("billList"),
-    empty: document.getElementById("empty"),
-  };
+let state = { onHand: 0, items: [] };
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 9);
+const input = $('#input');
 
-  let state = load();
+const money = new Intl.NumberFormat('en-US', {
+  style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 2
+});
+function fmt(n) { return money.format(n); }
+function fmtSigned(n) { return (n < 0 ? '-' : '') + money.format(Math.abs(n)); }
+function parseNum(str) {
+  const n = parseFloat(String(str).replace(/[^0-9.\-]/g, ''));
+  return isFinite(n) ? n : 0;
+}
 
-  function load() {
-    try {
-      const raw = JSON.parse(localStorage.getItem(KEY));
-      if (raw && typeof raw === "object") {
-        return {
-          onHand: Number(raw.onHand) || 0,
-          bills: Array.isArray(raw.bills) ? raw.bills.map(normalizeBill).filter(Boolean) : [],
-        };
-      }
-    } catch (_) {}
-    return { onHand: 0, bills: [] };
-  }
-
-  function normalizeBill(b) {
-    if (!b || typeof b !== "object") return null;
-    const amount = Number(b.amount);
-    if (!isFinite(amount)) return null;
-    return {
-      id: String(b.id || (Date.now() + "-" + Math.random().toString(36).slice(2))),
-      name: String(b.name || "Bill").slice(0, 60),
-      amount: Math.max(0, amount),
-      due: typeof b.due === "string" ? b.due : "",
-      paid: !!b.paid,
-    };
-  }
-
-  function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {}
-  }
-
-  function parseAmount(str) {
-    const n = parseFloat(String(str).replace(/[^0-9.\-]/g, ""));
-    return isFinite(n) ? n : NaN;
-  }
-
-  // Sort: unpaid first, by due date (dated before undated), then paid at the bottom.
-  function sortedBills() {
-    return state.bills.slice().sort((a, b) => {
-      if (a.paid !== b.paid) return a.paid ? 1 : -1;
-      if (a.due && b.due) return a.due < b.due ? -1 : a.due > b.due ? 1 : 0;
-      if (a.due) return -1;
-      if (b.due) return 1;
-      return 0;
-    });
-  }
-
-  function todayStr() {
-    const d = new Date();
-    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-  }
-
-  function dueLabel(due) {
-    if (!due) return "";
-    const parts = due.split("-");
-    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-    if (isNaN(d)) return "";
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const days = Math.round((d - today) / 86400000);
-    const date = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    if (days < 0) return { text: "Overdue · " + date, soon: true };
-    if (days === 0) return { text: "Due today", soon: true };
-    if (days === 1) return { text: "Due tomorrow", soon: true };
-    if (days <= 7) return { text: "Due in " + days + " days · " + date, soon: true };
-    return { text: "Due " + date, soon: false };
-  }
-
-  function render() {
-    el.onHand.value = String(state.onHand);
-
-    const unpaid = state.bills.filter((b) => !b.paid);
-    const owed = unpaid.reduce((s, b) => s + b.amount, 0);
-    const net = state.onHand - owed;
-
-    el.net.textContent = (net < 0 ? "-" : "") + fmt.format(Math.abs(net));
-    el.net.classList.toggle("pos", net >= 0);
-    el.net.classList.toggle("neg", net < 0);
-
-    if (state.bills.length === 0) {
-      el.netSub.textContent = "";
-    } else if (net >= 0) {
-      el.netSub.innerHTML = "You can cover all " + unpaid.length + " unpaid · owed <strong>" + fmt.format(owed) + "</strong>";
-    } else {
-      el.netSub.innerHTML = "Short <strong>" + fmt.format(Math.abs(net)) + "</strong> · owed " + fmt.format(owed);
+// ---------- storage ----------
+function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {} }
+function load() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (raw && typeof raw === 'object') {
+      state.onHand = Number(raw.onHand) || 0;
+      state.items = Array.isArray(raw.items) ? raw.items.map(b => ({
+        id: String(b.id || uid()),
+        name: String(b.name || 'bill'),
+        amount: Math.max(0, Number(b.amount) || 0),
+        paid: !!b.paid
+      })) : [];
     }
+  } catch {}
+}
+load();
 
-    el.list.innerHTML = "";
-    const ordered = sortedBills();
-    el.empty.hidden = ordered.length > 0;
-
-    let running = state.onHand;
-    for (const b of ordered) {
-      const li = document.createElement("li");
-      if (b.paid) li.className = "paid";
-
-      const check = document.createElement("button");
-      check.className = "check";
-      check.type = "button";
-      check.setAttribute("aria-label", b.paid ? "Mark unpaid" : "Mark paid");
-      check.textContent = "✓";
-      check.addEventListener("click", () => togglePaid(b.id));
-
-      const text = document.createElement("div");
-      text.className = "bill-text";
-      const name = document.createElement("div");
-      name.className = "bill-name";
-      name.textContent = b.name;
-      text.appendChild(name);
-      const due = dueLabel(b.due);
-      if (due) {
-        const meta = document.createElement("div");
-        meta.className = "bill-meta";
-        const span = document.createElement("span");
-        if (due.soon && !b.paid) span.className = "due-soon";
-        span.textContent = due.text;
-        meta.appendChild(span);
-        text.appendChild(meta);
-      }
-
-      const right = document.createElement("div");
-      right.className = "bill-right";
-      const amt = document.createElement("div");
-      amt.className = "bill-amount";
-      amt.textContent = fmt.format(b.amount);
-      right.appendChild(amt);
-
-      if (!b.paid) {
-        running -= b.amount;
-        const run = document.createElement("div");
-        run.className = "running" + (running < 0 ? " short" : "");
-        run.textContent = (running < 0 ? "short " : "left ") +
-          (running < 0 ? "-" : "") + fmt.format(Math.abs(running));
-        right.appendChild(run);
-      }
-
-      const del = document.createElement("button");
-      del.className = "del";
-      del.type = "button";
-      del.setAttribute("aria-label", "Delete " + b.name);
-      del.innerHTML = "&times;";
-      del.addEventListener("click", () => removeBill(b.id));
-
-      li.append(check, text, right, del);
-      el.list.appendChild(li);
-    }
+// ---------- capture: one line in, split off the amount ----------
+function parseLine(raw) {
+  const re = /\$?\s*(\d[\d,]*(?:\.\d{1,2})?)/g;
+  let m, last = null;
+  while ((m = re.exec(raw)) !== null) last = m;
+  let amount = 0, name = raw.trim();
+  if (last) {
+    amount = parseFloat(last[1].replace(/,/g, ''));
+    name = (raw.slice(0, last.index) + raw.slice(last.index + last[0].length))
+      .replace(/\s+/g, ' ').trim();
   }
+  name = name.replace(/^[\s,;:–—-]+|[\s,;:–—-]+$/g, '');
+  if (!name) name = 'bill';
+  return { name, amount: isFinite(amount) ? amount : 0 };
+}
 
-  function addBill(name, amount, due) {
-    state.bills.push({
-      id: Date.now() + "-" + Math.random().toString(36).slice(2),
-      name: name.slice(0, 60),
-      amount: Math.max(0, amount),
-      due: due || "",
-      paid: false,
-    });
-    save();
-    render();
+function commit() {
+  const text = input.value.trim();
+  if (!text) return false;
+  const { name, amount } = parseLine(text);
+  state.items.unshift({ id: uid(), name, amount, paid: false });
+  input.value = '';
+  save();
+  updateRecents();
+  return true;
+}
+
+input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } });
+input.addEventListener('focus', () => document.body.classList.add('focused'));
+input.addEventListener('blur', () => { commit(); document.body.classList.remove('focused'); });
+
+// ---------- recents ----------
+function updateRecents() {
+  const el = $('#recents');
+  el.innerHTML = '';
+  if (!state.items.length) { el.classList.add('empty'); return; }
+  el.classList.remove('empty');
+
+  for (const it of state.items.slice(0, RECENTS_COUNT)) {
+    const div = document.createElement('div');
+    div.className = 'recent';
+    const name = document.createElement('span');
+    name.textContent = it.name;
+    const amt = document.createElement('span');
+    amt.className = 'ramt';
+    amt.textContent = it.amount ? fmt(it.amount) : '—';
+    div.append(name, amt);
+    el.appendChild(div);
   }
+  const open = state.items.filter(i => !i.paid);
+  const owed = open.reduce((s, b) => s + b.amount, 0);
+  const peek = document.createElement('div');
+  peek.className = 'peek';
+  peek.textContent = open.length
+    ? `${fmt(owed)} owed · tap to settle up`
+    : 'all paid · tap to look';
+  el.appendChild(peek);
+}
 
-  function togglePaid(id) {
-    const b = state.bills.find((x) => x.id === id);
-    if (b) { b.paid = !b.paid; save(); render(); }
+// ---------- mode ----------
+function setMode(m) {
+  document.body.dataset.mode = m;
+  if (m === 'ledger') { input.blur(); renderLedger(); }
+  else { updateRecents(); }
+}
+$('#recents').addEventListener('click', () => {
+  if ($('#recents').classList.contains('empty')) return;
+  setMode('ledger');
+});
+$('#backTitle').addEventListener('click', () => setMode('capture'));
+
+// ---------- on hand (inline, no caret, commit on blur/enter) ----------
+const onHandEl = $('#onHand');
+function selectAllText(el) {
+  const r = document.createRange();
+  r.selectNodeContents(el);
+  const s = getSelection();
+  s.removeAllRanges();
+  s.addRange(r);
+}
+onHandEl.addEventListener('focus', () => requestAnimationFrame(() => selectAllText(onHandEl)));
+onHandEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); onHandEl.blur(); } });
+onHandEl.addEventListener('blur', () => {
+  state.onHand = Math.max(0, parseNum(onHandEl.textContent));
+  save();
+  renderLedger();
+});
+
+// ---------- ledger ----------
+function updateFigures() {
+  onHandEl.textContent = fmt(state.onHand);
+  const open = state.items.filter(i => !i.paid);
+  const owed = open.reduce((s, b) => s + b.amount, 0);
+  const net = state.onHand - owed;
+  const box = $('#netBox');
+  $('#net').textContent = fmtSigned(net);
+  box.classList.toggle('clear', net >= 0);
+  box.classList.toggle('short', net < 0);
+  if (!state.items.length) $('#netWord').innerHTML = 'nothing owed yet';
+  else if (net >= 0) $('#netWord').innerHTML = `clear — <b>${fmt(net)}</b> left over`;
+  else $('#netWord').innerHTML = `short <b>${fmt(Math.abs(net))}</b>`;
+}
+
+function renderList() {
+  const list = $('#list');
+  list.innerHTML = '';
+  if (!state.items.length) {
+    list.innerHTML = '<div class="list-empty">nothing here — dump a bill on the first screen</div>';
+    return;
   }
-
-  function removeBill(id) {
-    state.bills = state.bills.filter((x) => x.id !== id);
-    save();
-    render();
+  let running = state.onHand;
+  for (const it of state.items) {
+    if (!it.paid) running -= it.amount;
+    list.appendChild(buildRow(it, it.paid ? null : running));
   }
+}
 
-  el.form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const name = el.name.value.trim();
-    const amount = parseAmount(el.amount.value);
-    if (!name || !isFinite(amount)) return;
-    addBill(name, amount, el.due.value);
-    el.form.reset();
-    el.name.focus();
+function renderLedger() { updateFigures(); renderList(); }
+
+function buildRow(it, running) {
+  const li = document.createElement('li');
+  li.dataset.id = it.id;
+  if (it.paid) li.classList.add('paid');
+
+  const check = document.createElement('button');
+  check.className = 'check';
+  check.setAttribute('aria-label', it.paid ? 'mark unpaid' : 'mark paid');
+  check.addEventListener('click', () => togglePaid(it));
+
+  const ta = document.createElement('textarea');
+  ta.className = 'text';
+  ta.rows = 1;
+  ta.value = it.name;
+  ta.addEventListener('focus', () => enterEdit(li));
+  ta.addEventListener('input', e => { it.name = e.target.value; autoSize(e.target); save(); });
+  ta.addEventListener('blur', () => {
+    exitEdit(li);
+    if (!it.name.trim()) removeItem(it, li);
   });
 
-  function commitOnHand() {
-    const v = parseAmount(el.onHand.value);
-    state.onHand = isFinite(v) ? v : 0;
+  const right = document.createElement('div');
+  right.className = 'right';
+  const amt = document.createElement('span');
+  amt.className = 'amount';
+  amt.contentEditable = 'true';
+  amt.setAttribute('inputmode', 'decimal');
+  amt.textContent = fmt(it.amount);
+  amt.addEventListener('focus', () => { enterEdit(li); requestAnimationFrame(() => selectAllText(amt)); });
+  amt.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); amt.blur(); } });
+  amt.addEventListener('blur', () => {
+    it.amount = Math.max(0, parseNum(amt.textContent));
+    exitEdit(li);
     save();
-    render();
-  }
-  el.onHand.addEventListener("change", commitOnHand);
-  el.onHand.addEventListener("blur", commitOnHand);
-  el.onHand.addEventListener("focus", () => el.onHand.select());
+    renderLedger();
+  });
+  right.appendChild(amt);
 
-  render();
-})();
+  const run = document.createElement('div');
+  if (it.paid) { run.className = 'running paid'; run.textContent = 'paid'; }
+  else if (running < 0) { run.className = 'running short'; run.textContent = 'short ' + fmtSigned(running); }
+  else { run.className = 'running'; run.textContent = fmt(running) + ' left'; }
+  right.appendChild(run);
+
+  li.append(check, ta, right);
+  requestAnimationFrame(() => autoSize(ta));
+  attachSwipe(li, it);
+  return li;
+}
+
+function enterEdit(li) { document.body.classList.add('editing'); li.classList.add('editing-row'); }
+function exitEdit(li) { document.body.classList.remove('editing'); li.classList.remove('editing-row'); }
+
+function togglePaid(it) { it.paid = !it.paid; save(); renderLedger(); }
+
+function removeItem(it, li) {
+  state.items = state.items.filter(y => y.id !== it.id);
+  save();
+  li.classList.add('removing');
+  li.addEventListener('transitionend', () => { li.remove(); renderLedger(); }, { once: true });
+  setTimeout(() => { if (li.isConnected) { li.remove(); renderLedger(); } }, 400);
+}
+
+function autoSize(ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
+
+// ---------- swipe to pay (damped peek, like act) ----------
+function attachSwipe(li, it) {
+  let startX = 0, startY = 0, dx = 0, dy = 0;
+  let active = false, decided = false, isHorizontal = false;
+  const THRESHOLD = 40, LOCK_AT = 8, MAX_TRAVEL = 24;
+
+  const onStart = (x, y) => {
+    if (document.body.classList.contains('editing')) return;
+    startX = x; startY = y; dx = 0; dy = 0;
+    active = true; decided = false; isHorizontal = false;
+    li.style.transition = 'none';
+  };
+  const onMove = (x, y, ev) => {
+    if (!active) return;
+    dx = x - startX; dy = y - startY;
+    if (!decided) {
+      if (Math.abs(dx) > LOCK_AT || Math.abs(dy) > LOCK_AT) {
+        isHorizontal = Math.abs(dx) > Math.abs(dy);
+        decided = true;
+        if (!isHorizontal) { active = false; return; }
+      } else return;
+    }
+    if (isHorizontal) {
+      if (ev && ev.cancelable) ev.preventDefault();
+      const eased = Math.sign(dx) * Math.min(MAX_TRAVEL, Math.abs(dx) * 0.35);
+      li.style.transform = `translateX(${eased}px)`;
+    }
+  };
+  const onEnd = () => {
+    if (!active && !decided) { reset(); return; }
+    li.style.transition = 'transform .2s ease';
+    li.style.transform = '';
+    if (isHorizontal && Math.abs(dx) > THRESHOLD) togglePaid(it);
+    active = false;
+  };
+  const reset = () => { li.style.transition = ''; li.style.transform = ''; active = false; decided = false; };
+
+  li.addEventListener('touchstart', e => { const t = e.changedTouches[0]; onStart(t.clientX, t.clientY); }, { passive: true });
+  li.addEventListener('touchmove', e => { const t = e.changedTouches[0]; onMove(t.clientX, t.clientY, e); }, { passive: false });
+  li.addEventListener('touchend', onEnd, { passive: true });
+  li.addEventListener('touchcancel', reset, { passive: true });
+  li.addEventListener('mousedown', e => {
+    if (e.target !== li) return;
+    onStart(e.clientX, e.clientY);
+    const move = ev => onMove(ev.clientX, ev.clientY, ev);
+    const up = () => { onEnd(); window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  });
+}
+
+// ---------- export ----------
+function stamp() {
+  return new Date().toLocaleString(undefined, {
+    weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+  }).toLowerCase();
+}
+function totals() {
+  const open = state.items.filter(i => !i.paid);
+  const owed = open.reduce((s, b) => s + b.amount, 0);
+  return { owed, net: state.onHand - owed };
+}
+const formats = {
+  txt: () => {
+    const { owed, net } = totals();
+    const head = `${stamp()}\non hand ${fmt(state.onHand)} · owed ${fmt(owed)} · net ${fmtSigned(net)}`;
+    return head + '\n\n' + state.items.map(i => `${i.paid ? '✓' : '·'} ${i.name} — ${fmt(i.amount)}`).join('\n');
+  },
+  md: () => {
+    const { owed, net } = totals();
+    const head = `**${stamp()}**\n\nOn hand: ${fmt(state.onHand)} · Owed: ${fmt(owed)} · Net: ${fmtSigned(net)}`;
+    return head + '\n\n' + state.items.map(i => `- [${i.paid ? 'x' : ' '}] ${i.name} — ${fmt(i.amount)}`).join('\n');
+  },
+  csv: () => {
+    const { owed, net } = totals();
+    const head = `# ${stamp()} | on hand ${state.onHand} | owed ${owed} | net ${net}\nbill,amount,paid`;
+    return head + '\n' + state.items.map(i => `"${i.name.replace(/"/g, '""')}",${i.amount},${i.paid ? 1 : 0}`).join('\n');
+  }
+};
+$('#formats').addEventListener('click', async e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (!state.items.length) { toast('nothing yet'); return; }
+  try { await navigator.clipboard.writeText(formats[b.dataset.fmt]()); flashCheck(); }
+  catch { toast('copy failed'); }
+});
+
+// ---------- feedback ----------
+function flashCheck() {
+  const el = $('#check');
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 900);
+}
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 1400);
+}
+
+// ---------- init ----------
+updateRecents();
 </script>
+
 </body>
 </html>

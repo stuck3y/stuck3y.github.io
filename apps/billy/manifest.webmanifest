@@ -1,13 +1,13 @@
 {
-  "name": "Billy",
-  "short_name": "Billy",
-  "description": "Dump every bill, set what's on hand, see what you can pay when.",
+  "name": "billy",
+  "short_name": "billy",
+  "description": "Bills, out of your head. Dump them, set what's on hand, see how you net.",
   "scope": "/apps/billy/",
   "start_url": "/apps/billy/?source=pwa",
   "display": "standalone",
   "orientation": "any",
-  "theme_color": "#1f7a4d",
-  "background_color": "#fbfbfd",
+  "theme_color": "#f6f3ec",
+  "background_color": "#f6f3ec",
   "categories": ["finance", "productivity", "utilities"],
   "icons": [
     {
