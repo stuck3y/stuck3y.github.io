@@ -67,16 +67,28 @@
     transition: opacity .3s ease;
   }
 
-  #input {
-    width: 100%; border: 0; background: transparent; color: var(--ink);
-    font-family: var(--serif); font-size: 22px; line-height: 1.4;
-    padding: 0 0 12px; outline: none;
-    border-bottom: 1px solid var(--faint);
-    transition: border-color .2s ease; text-align: center;
-    caret-color: transparent;
+  /* capture field: native input on top (owns editing + caret), ghost behind
+     it shows the same text with money tokens colored — input text is
+     transparent so only the ghost is seen. */
+  .capture-field { position: relative; width: 100%; }
+  #input, .ghost {
+    width: 100%; box-sizing: border-box;
+    font-family: var(--serif); font-size: 22px; line-height: 1.4; font-weight: 400;
+    padding: 0 0 12px; text-align: center; white-space: pre; letter-spacing: 0;
+    border: 0; border-bottom: 1px solid transparent;
   }
-  #input::placeholder { color: var(--soft); font-style: italic; }
+  #input {
+    position: relative; z-index: 1; background: transparent; color: transparent;
+    outline: none; caret-color: transparent; border-bottom-color: var(--faint);
+    transition: border-color .2s ease;
+  }
   #input:focus { border-bottom-color: var(--ink); }
+  .ghost {
+    position: absolute; left: 0; top: 0; z-index: 0; pointer-events: none;
+    color: var(--ink); overflow: hidden;
+  }
+  .ghost .amt { color: var(--clear); }
+  .ghost .ph { color: var(--soft); font-style: italic; }
 
   /* recents strip — confirm what you dumped, tap to see the picture */
   .recents {
@@ -93,7 +105,7 @@
     font-style: italic; opacity: 0.7; animation: recentIn .25s ease;
     display: flex; gap: 10px; align-items: baseline; justify-content: center;
   }
-  .recents .recent .ramt { font-variant-numeric: tabular-nums; font-style: normal; }
+  .recents .recent .ramt { font-variant-numeric: tabular-nums; font-style: normal; color: var(--clear); }
   .recents .recent:nth-child(1) { opacity: 0.9; font-size: 16px; color: var(--ink); font-style: normal; }
   .recents .recent:nth-child(2) { opacity: 0.55; }
   .recents .recent:nth-child(3) { opacity: 0.35; }
@@ -124,7 +136,7 @@
   .figures { text-align: center; margin: 12px 0 36px; }
   .onhand { font-size: 15px; color: var(--soft); font-style: italic; margin-bottom: 14px; }
   .onhand .num {
-    font-style: normal; color: var(--ink); font-variant-numeric: tabular-nums;
+    font-style: normal; color: var(--clear); font-variant-numeric: tabular-nums;
     outline: none; border-bottom: 1px dashed var(--faint); padding: 0 2px 1px;
     caret-color: transparent;
   }
@@ -165,7 +177,7 @@
   }
   .right { flex-shrink: 0; text-align: right; padding-top: 4px; min-width: 90px; }
   .amount {
-    font-size: 19px; font-variant-numeric: tabular-nums; color: var(--ink);
+    font-size: 19px; font-variant-numeric: tabular-nums; color: var(--clear);
     outline: none; caret-color: transparent; padding: 0 1px 1px;
     border-bottom: 1px dashed transparent;
   }
@@ -226,7 +238,10 @@
   <section class="surface" id="captureSurface">
     <div class="capture-inner">
       <h1 id="title">billy</h1>
-      <input id="input" type="text" placeholder="what do you owe?" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="text" />
+      <div class="capture-field">
+        <div class="ghost" id="ghost" aria-hidden="true"></div>
+        <input id="input" type="text" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="text" aria-label="what do you owe?" />
+      </div>
       <div class="recents" id="recents"></div>
     </div>
   </section>
@@ -270,6 +285,7 @@ let state = { onHand: 0, items: [] };
 const $ = s => document.querySelector(s);
 const uid = () => Math.random().toString(36).slice(2, 9);
 const input = $('#input');
+const ghost = $('#ghost');
 
 const money = new Intl.NumberFormat('en-US', {
   style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 2
@@ -301,19 +317,47 @@ load();
 
 // ---------- capture: one line in, split off the amount ----------
 function parseLine(raw) {
-  const re = /\$?\s*(\d[\d,]*(?:\.\d{1,2})?)/g;
+  // a $-tagged number wins (that's the money); otherwise fall back to any
+  // trailing number — deleting the auto-$ opts a number out of being money.
+  const dollar = /\$\s*(\d[\d,]*(?:\.\d{1,2})?)/g;
+  const any = /\$?\s*(\d[\d,]*(?:\.\d{1,2})?)/g;
   let m, last = null;
-  while ((m = re.exec(raw)) !== null) last = m;
+  while ((m = dollar.exec(raw)) !== null) last = m;
+  if (!last) { while ((m = any.exec(raw)) !== null) last = m; }
   let amount = 0, name = raw.trim();
   if (last) {
     amount = parseFloat(last[1].replace(/,/g, ''));
     name = (raw.slice(0, last.index) + raw.slice(last.index + last[0].length))
       .replace(/\s+/g, ' ').trim();
   }
-  name = name.replace(/^[\s,;:–—-]+|[\s,;:–—-]+$/g, '');
+  name = name.replace(/^[\s,;:$–—-]+|[\s,;:$–—-]+$/g, '');
   if (!name) name = 'bill';
   return { name, amount: isFinite(amount) ? amount : 0 };
 }
+
+// ---------- ghost: mirror the input, color money tokens green ----------
+function escHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function renderGhost() {
+  const v = input.value;
+  if (!v) { ghost.innerHTML = '<span class="ph">what do you owe?</span>'; ghost.scrollLeft = 0; return; }
+  ghost.innerHTML = escHtml(v).replace(/(\$\d[\d,]*(?:\.\d{1,2})?)/g, '<span class="amt">$1</span>');
+  ghost.scrollLeft = input.scrollLeft;
+}
+// when a digit starts a fresh number, assume it's money and prepend a $
+input.addEventListener('beforeinput', e => {
+  if (e.inputType !== 'insertText' || !e.data || !/^\d$/.test(e.data)) return;
+  const v = input.value, s = input.selectionStart, en = input.selectionEnd;
+  const prev = s > 0 ? v[s - 1] : '';
+  if (/[\d.,$]/.test(prev)) return;
+  e.preventDefault();
+  const ins = '$' + e.data;
+  input.value = v.slice(0, s) + ins + v.slice(en);
+  const pos = s + ins.length;
+  input.setSelectionRange(pos, pos);
+  renderGhost();
+});
+input.addEventListener('input', renderGhost);
+input.addEventListener('scroll', () => { ghost.scrollLeft = input.scrollLeft; });
 
 function commit() {
   const text = input.value.trim();
@@ -321,6 +365,7 @@ function commit() {
   const { name, amount } = parseLine(text);
   state.items.unshift({ id: uid(), name, amount, paid: false });
   input.value = '';
+  renderGhost();
   save();
   updateRecents();
   return true;
@@ -586,6 +631,7 @@ function toast(msg) {
 }
 
 // ---------- init ----------
+renderGhost();
 updateRecents();
 </script>
 
