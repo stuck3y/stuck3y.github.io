@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<meta name="theme-color" content="#f6f3ec" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>sam</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<script src="../lib/pwa.js" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f3ec;
+    --ink: #1a1a1c;
+    --soft: #6e6e74;
+    --faint: #d4d1c8;
+    --accent: #c8451d;
+    --t-bottle: #f0e4cd;
+    --t-wet: #d9e8f3;
+    --t-poo: #e7dcc9;
+    --t-sleep: #dcdcef;
+    --serif: 'Fraunces', ui-serif, Georgia, serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #2a2825;
+      --ink: #f2efe8;
+      --soft: #a6a39b;
+      --faint: #44413c;
+      --accent: #f0805a;
+      --t-bottle: #3a3322;
+      --t-wet: #1f2f3a;
+      --t-poo: #322a1f;
+      --t-sleep: #262636;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: var(--serif);
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none; user-select: none;
+    touch-action: manipulation;
+    overflow: hidden;
+  }
+  ::selection { background: var(--accent); color: #fff; }
+
+  .stage { position: relative; width: 100%; height: 100dvh; overflow: hidden; }
+  .surface {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    transition: opacity .3s ease, transform .3s cubic-bezier(.2,.8,.2,1);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  body[data-mode="main"]   #mainSurface,
+  body[data-mode="bottle"] #bottleSurface,
+  body[data-mode="log"]    #logSurface { opacity: 1; transform: none; pointer-events: auto; }
+  #mainSurface, #bottleSurface, #logSurface { opacity: 0; transform: translateY(12px); pointer-events: none; }
+
+  /* ============ MAIN — four big buttons ============ */
+  .grid {
+    flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+    gap: 10px; padding: 10px;
+  }
+  .tile {
+    border: 0; border-radius: 22px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    font-family: var(--serif); color: var(--ink);
+    transition: transform .1s ease, filter .1s ease;
+  }
+  .tile:active { transform: scale(0.97); filter: brightness(0.96); }
+  .tile .word { font-size: clamp(30px, 9vw, 48px); font-weight: 400; letter-spacing: -0.01em; }
+  .tile .since { font-size: 14px; font-style: italic; color: var(--soft); }
+  .tile.bottle { background: var(--t-bottle); }
+  .tile.wet    { background: var(--t-wet); }
+  .tile.poo    { background: var(--t-poo); }
+  .tile.sleep  { background: var(--t-sleep); }
+
+  .recents {
+    flex-shrink: 0; padding: 14px 18px calc(env(safe-area-inset-bottom) + 14px);
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    color: var(--soft); font-size: 14px; cursor: pointer; min-height: 52px;
+    flex-wrap: wrap;
+  }
+  .recents.empty { pointer-events: none; }
+  .recents .ev { font-style: italic; }
+  .recents .ev b { font-style: normal; color: var(--ink); font-weight: 500; }
+
+  /* ============ BOTTLE — preset ml, two taps total ============ */
+  #bottleSurface { align-items: center; }
+  .sheet-head { width: 100%; text-align: center; padding: 18px; }
+  .back-title {
+    background: transparent; border: 0; color: var(--accent);
+    font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 34px;
+    letter-spacing: -0.02em; cursor: pointer; padding: 0; margin: 0;
+  }
+  .back-title:hover { opacity: .75; }
+  .amounts {
+    flex: 1; width: 100%; max-width: 560px;
+    display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+    gap: 12px; padding: 0 16px 8px;
+  }
+  .amounts button {
+    border: 0; border-radius: 22px; background: var(--t-bottle); color: var(--ink);
+    font-family: var(--serif); font-size: clamp(40px, 12vw, 72px); font-weight: 400;
+    cursor: pointer; transition: transform .1s ease, filter .1s ease;
+    font-variant-numeric: tabular-nums;
+  }
+  .amounts button:active { transform: scale(0.97); filter: brightness(0.96); }
+  .unit { padding: 8px 0 calc(env(safe-area-inset-bottom) + 18px); color: var(--soft); font-style: italic; font-size: 18px; }
+
+  /* ============ LOG ============ */
+  #logSurface { }
+  .log-head { text-align: center; padding: 18px; }
+  .log-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 22px calc(env(safe-area-inset-bottom) + 24px); max-width: 600px; width: 100%; margin: 0 auto; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li {
+    display: flex; align-items: baseline; gap: 14px; padding: 14px 2px;
+    border-bottom: 1px solid var(--faint); overflow: hidden; max-height: 120px;
+    transition: opacity .2s ease, max-height .25s ease, padding .25s ease, border-color .25s ease, transform .18s ease;
+  }
+  li.removing { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; border-color: transparent; }
+  .log-what { flex: 1; font-size: 18px; }
+  .log-what b { font-weight: 500; }
+  .log-when { color: var(--soft); font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .log-empty { text-align: center; color: var(--soft); font-style: italic; padding: 40px; }
+
+  /* ============ VOID — the sleep takeover ============ */
+  .void {
+    position: fixed; inset: 0; z-index: 80;
+    background: #07070a; color: #5a5a6a;
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    padding: env(safe-area-inset-top) 24px env(safe-area-inset-bottom);
+    cursor: pointer;
+  }
+  body[data-mode="void"] .void { display: flex; }
+  body[data-mode="void"] .stage { opacity: 0; pointer-events: none; }
+  .void-dur {
+    font-size: clamp(56px, 19vw, 132px); font-weight: 300; letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums; line-height: 1;
+    animation: breathe 5.5s ease-in-out infinite;
+    text-shadow: 0 0 38px rgba(120,120,160,0.18);
+  }
+  .void-secs { margin-top: 10px; font-size: 18px; color: #3c3c4a; font-variant-numeric: tabular-nums; }
+  .void-hint { margin-top: 44px; font-size: 15px; font-style: italic; color: #34343f; }
+  @keyframes breathe { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .void-dur { animation: none; opacity: .85; } }
+
+  /* feedback */
+  .check-flash {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(.85);
+    width: 96px; height: 96px; border-radius: 50%; background: var(--ink); color: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; z-index: 90;
+    transition: opacity .15s ease, transform .25s cubic-bezier(.2,.9,.3,1.3);
+  }
+  .check-flash .label { font-size: 22px; font-variant-numeric: tabular-nums; }
+  .check-flash.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  .toast {
+    position: fixed; bottom: calc(env(safe-area-inset-bottom) + 24px); left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 999px;
+    font-size: 14px; font-style: italic; opacity: 0; transition: all .2s ease; z-index: 70; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body data-mode="main">
+
+<div class="stage">
+
+  <!-- ============ MAIN ============ -->
+  <section class="surface" id="mainSurface">
+    <div class="grid">
+      <button class="tile bottle" data-act="bottle"><span class="word">bottle</span><span class="since" id="since-bottle"></span></button>
+      <button class="tile wet"    data-act="wet"><span class="word">wet</span><span class="since" id="since-wet"></span></button>
+      <button class="tile poo"    data-act="poo"><span class="word">poo</span><span class="since" id="since-poo"></span></button>
+      <button class="tile sleep"  data-act="sleep"><span class="word">sleep</span><span class="since" id="since-sleep"></span></button>
+    </div>
+    <div class="recents" id="recents"></div>
+  </section>
+
+  <!-- ============ BOTTLE ============ -->
+  <section class="surface" id="bottleSurface">
+    <div class="sheet-head"><button class="back-title" data-back>sam</button></div>
+    <div class="amounts" id="amounts">
+      <button data-ml="30">30</button>
+      <button data-ml="60">60</button>
+      <button data-ml="120">120</button>
+      <button data-ml="150">150</button>
+    </div>
+    <div class="unit">ml</div>
+  </section>
+
+  <!-- ============ LOG ============ -->
+  <section class="surface" id="logSurface">
+    <div class="log-head"><button class="back-title" data-back>sam</button></div>
+    <div class="log-scroll"><ul id="log"></ul></div>
+  </section>
+
+</div>
+
+<!-- ============ VOID ============ -->
+<div class="void" id="void">
+  <div class="void-dur" id="voidDur">0m</div>
+  <div class="void-secs" id="voidSecs">0s</div>
+  <div class="void-hint">tap to wake</div>
+</div>
+
+<div class="check-flash" id="check" aria-hidden="true"><span class="label" id="checkLabel">✓</span></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = 'sam.v1';
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 9);
+const themeMeta = document.querySelector('meta[name="theme-color"]');
+
+let events = [];
+function load() { try { const r = JSON.parse(localStorage.getItem(KEY)); if (Array.isArray(r)) events = r; } catch {} }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(events)); } catch {} }
+load();
+
+// ---------- time helpers ----------
+function rel(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 45) return 'just now';
+  const m = Math.floor(s / 60);
+  if (m < 60) return m + 'm ago';
+  const h = Math.floor(m / 60), mm = m % 60;
+  return (mm ? `${h}h ${mm}m` : `${h}h`) + ' ago';
+}
+function dur(ms) {
+  const s = Math.floor(ms / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60);
+  if (h > 0) return `${h}h ${m % 60}m`;
+  if (m > 0) return `${m}m`;
+  return `${s}s`;
+}
+function clock(ts) {
+  return new Date(ts).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }).toLowerCase();
+}
+function label(e) {
+  if (e.type === 'bottle') return `bottle <b>${e.ml}ml</b>`;
+  if (e.type === 'wet') return 'wet';
+  if (e.type === 'poo') return 'poo';
+  if (e.type === 'sleep') return e.end ? `slept <b>${dur(e.end - e.ts)}</b>` : 'sleeping';
+  return e.type;
+}
+
+// ---------- open sleep ----------
+function openSleep() { return events.find(e => e.type === 'sleep' && !e.end); }
+function lastOf(type) {
+  for (const e of events) if (e.type === type && (type !== 'sleep' || e.end)) return e;
+  return null;
+}
+
+// ---------- logging ----------
+function logEvent(ev) { events.unshift(ev); save(); }
+
+function tapAction(act) {
+  if (act === 'bottle') { setMode('bottle'); return; }
+  if (act === 'sleep') { startSleep(); return; }
+  logEvent({ id: uid(), type: act, ts: Date.now() });
+  flash(act);
+  refreshMain();
+}
+$('.grid').addEventListener('click', e => {
+  const t = e.target.closest('.tile'); if (t) tapAction(t.dataset.act);
+});
+$('#amounts').addEventListener('click', e => {
+  const b = e.target.closest('button[data-ml]'); if (!b) return;
+  const ml = Number(b.dataset.ml);
+  logEvent({ id: uid(), type: 'bottle', ts: Date.now(), ml });
+  flash(ml + 'ml');
+  setMode('main');
+});
+
+// ---------- sleep / void ----------
+let voidTimer = null;
+function startSleep() {
+  logEvent({ id: uid(), type: 'sleep', ts: Date.now(), end: null });
+  enterVoid();
+}
+function enterVoid() {
+  setMode('void');
+  themeMeta.content = '#07070a';
+  tickVoid();
+  clearInterval(voidTimer);
+  voidTimer = setInterval(tickVoid, 1000);
+}
+function tickVoid() {
+  const open = openSleep();
+  if (!open) { exitVoid(); return; }
+  const ms = Date.now() - open.ts;
+  $('#voidDur').textContent = dur(ms);
+  $('#voidSecs').textContent = (Math.floor(ms / 1000) % 60) + 's';
+}
+function wake() {
+  const open = openSleep();
+  if (open) { open.end = Date.now(); save(); }
+  exitVoid();
+  if (open) flash('slept ' + dur(open.end - open.ts));
+}
+function exitVoid() {
+  clearInterval(voidTimer); voidTimer = null;
+  themeMeta.content = '#f6f3ec';
+  setMode('main');
+}
+$('#void').addEventListener('click', wake);
+
+// ---------- modes ----------
+function setMode(m) {
+  document.body.dataset.mode = m;
+  if (m === 'main') refreshMain();
+  if (m === 'log') renderLog();
+}
+document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => setMode('main')));
+$('#recents').addEventListener('click', () => { if (!$('#recents').classList.contains('empty')) setMode('log'); });
+
+// ---------- main render ----------
+function sinceText(type) {
+  const e = lastOf(type);
+  if (!e) return '';
+  if (type === 'sleep') return 'up ' + dur(Date.now() - e.end);
+  return rel(e.ts);
+}
+function refreshMain() {
+  $('#since-bottle').textContent = sinceText('bottle');
+  $('#since-wet').textContent = sinceText('wet');
+  $('#since-poo').textContent = sinceText('poo');
+  $('#since-sleep').textContent = sinceText('sleep');
+
+  const el = $('#recents');
+  el.innerHTML = '';
+  if (!events.length) { el.classList.add('empty'); el.innerHTML = '<span class="ev">tap a button to log</span>'; return; }
+  el.classList.remove('empty');
+  for (const e of events.slice(0, 3)) {
+    const span = document.createElement('span');
+    span.className = 'ev';
+    span.innerHTML = `${label(e)} · ${rel(e.end || e.ts)}`;
+    el.appendChild(span);
+  }
+}
+
+// ---------- log render ----------
+function renderLog() {
+  const list = $('#log');
+  list.innerHTML = '';
+  if (!events.length) { list.innerHTML = '<div class="log-empty">nothing logged yet</div>'; return; }
+  for (const e of events) list.appendChild(buildRow(e));
+}
+function buildRow(e) {
+  const li = document.createElement('li');
+  li.dataset.id = e.id;
+  const what = document.createElement('div');
+  what.className = 'log-what';
+  what.innerHTML = label(e);
+  const when = document.createElement('div');
+  when.className = 'log-when';
+  when.textContent = e.type === 'sleep' && e.end
+    ? `${clock(e.ts)}–${clock(e.end)}`
+    : clock(e.ts);
+  li.append(what, when);
+  attachSwipe(li, e);
+  return li;
+}
+function removeEvent(e, li) {
+  events = events.filter(x => x.id !== e.id);
+  save();
+  li.classList.add('removing');
+  li.addEventListener('transitionend', () => { li.remove(); if (!events.length) renderLog(); }, { once: true });
+  setTimeout(() => { if (li.isConnected) { li.remove(); if (!events.length) renderLog(); } }, 400);
+}
+
+// ---------- swipe to delete (damped peek) ----------
+function attachSwipe(li, e) {
+  let startX = 0, startY = 0, dx = 0, dy = 0, active = false, decided = false, horiz = false;
+  const THRESHOLD = 56, LOCK = 8, MAX = 28;
+  const start = (x, y) => { startX = x; startY = y; dx = dy = 0; active = true; decided = false; horiz = false; li.style.transition = 'none'; };
+  const move = (x, y, ev) => {
+    if (!active) return;
+    dx = x - startX; dy = y - startY;
+    if (!decided) {
+      if (Math.abs(dx) > LOCK || Math.abs(dy) > LOCK) { horiz = Math.abs(dx) > Math.abs(dy); decided = true; if (!horiz) { active = false; return; } }
+      else return;
+    }
+    if (horiz) { if (ev && ev.cancelable) ev.preventDefault(); li.style.transform = `translateX(${Math.sign(dx) * Math.min(MAX, Math.abs(dx) * 0.35)}px)`; }
+  };
+  const end = () => {
+    if (!active && !decided) { reset(); return; }
+    li.style.transition = 'transform .18s ease';
+    li.style.transform = '';
+    if (horiz && Math.abs(dx) > THRESHOLD) removeEvent(e, li);
+    active = false;
+  };
+  const reset = () => { li.style.transition = ''; li.style.transform = ''; active = false; decided = false; };
+  li.addEventListener('touchstart', ev => { const t = ev.changedTouches[0]; start(t.clientX, t.clientY); }, { passive: true });
+  li.addEventListener('touchmove', ev => { const t = ev.changedTouches[0]; move(t.clientX, t.clientY, ev); }, { passive: false });
+  li.addEventListener('touchend', end, { passive: true });
+  li.addEventListener('touchcancel', reset, { passive: true });
+  li.addEventListener('mousedown', ev => {
+    start(ev.clientX, ev.clientY);
+    const mv = e2 => move(e2.clientX, e2.clientY, e2);
+    const up = () => { end(); window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); };
+    window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+  });
+}
+
+// ---------- feedback ----------
+function flash(text) {
+  const el = $('#check');
+  $('#checkLabel').textContent = typeof text === 'string' ? (text.length > 4 ? '✓' : text) : '✓';
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 650);
+  if (typeof text === 'string' && text.length > 4) toast(text);
+}
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 1300);
+}
+
+// ---------- init ----------
+if (openSleep()) enterVoid();
+else refreshMain();
+
+// keep "since" / void fresh when returning to the app
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (openSleep()) enterVoid();
+  else if (document.body.dataset.mode === 'main') refreshMain();
+});
+setInterval(() => { if (document.body.dataset.mode === 'main') refreshMain(); }, 60000);
+</script>
+
+</body>
+</html>
