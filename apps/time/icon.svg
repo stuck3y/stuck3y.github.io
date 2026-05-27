@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="you have time">
+  <rect width="512" height="512" rx="112" ry="112" fill="#3f7d4f"/>
+  <g fill="none" stroke="#f6f3ec" stroke-width="26" stroke-linecap="round">
+    <circle cx="256" cy="262" r="142"/>
+    <path d="M256 262V168"/>
+    <path d="M256 262l78 46"/>
+  </g>
+</svg>

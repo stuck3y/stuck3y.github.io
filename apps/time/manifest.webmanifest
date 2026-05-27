@@ -1,0 +1,20 @@
+{
+  "name": "you have time",
+  "short_name": "you have time",
+  "description": "Proof you have the time: bedtime countdown minus a 3×-real inventory, plus the stack of what you've already done.",
+  "scope": "/apps/time/",
+  "start_url": "/apps/time/?source=pwa",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#f6f3ec",
+  "background_color": "#f6f3ec",
+  "categories": ["productivity", "lifestyle", "utilities"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
