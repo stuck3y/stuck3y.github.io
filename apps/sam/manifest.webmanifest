@@ -1,0 +1,20 @@
+{
+  "name": "sam",
+  "short_name": "sam",
+  "description": "Dumb baby tracker. Bottle, wet, poo, sleep — two taps, in the moment.",
+  "scope": "/apps/sam/",
+  "start_url": "/apps/sam/?source=pwa",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#f6f3ec",
+  "background_color": "#f6f3ec",
+  "categories": ["lifestyle", "utilities"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

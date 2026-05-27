@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="sam">
+  <rect width="512" height="512" rx="112" ry="112" fill="#5b7aa6"/>
+  <text x="256" y="366" text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', ui-serif, serif"
+        font-style="italic" font-weight="400" font-size="320" fill="#f6f3ec">s</text>
+</svg>
