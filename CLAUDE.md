@@ -56,6 +56,7 @@ Changes are automatically deployed via GitHub Pages when pushed to the main bran
 
   Copy `/apps/lib/sw-app.js` to `./sw.js` and edit `CACHE` (e.g. `app-<slug>-v1`) and `SHELL` (the precache list — `['./', './index.html', './manifest.webmanifest']` plus any app-specific files). Add a `manifest.webmanifest` modeled on `/apps/ketchapp/manifest.webmanifest`; reference `../icon.svg` for the icon unless the app ships its own (`./icon.svg`).
 - **Branch off `main` by default.** When starting new work, branch off the latest `main` rather than stacking on top of an unmerged feature branch. After a branch merges, return to `main`, pull, then cut a fresh branch for the next change.
+- **PR + auto-merge is the default flow.** Always open a PR (the trail is useful for retroactively reviewing what shipped), then merge it straight into `main` without pausing to confirm — for the personal apps in this repo, that's pre-authorized. Skip this only if the change is risky or destructive, in which case open the PR and wait.
 
 ## Application-Specific Notes
 
