@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#f6f3ec" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>you have time</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<script src="../lib/pwa.js" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f3ec;
+    --ink: #1a1a1c;
+    --soft: #6e6e74;
+    --faint: #d4d1c8;
+    --accent: #c8451d;
+    --clear: #3f7d4f;
+    --serif: 'Fraunces', ui-serif, Georgia, serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #2a2825; --ink: #f2efe8; --soft: #a6a39b; --faint: #44413c;
+      --accent: #f0805a; --clear: #7fb98c;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: var(--serif); background: var(--bg); color: var(--ink);
+    -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+    font-size: 19px; line-height: 1.5;
+  }
+  ::selection { background: var(--accent); color: #fff; }
+
+  .app { min-height: 100dvh; display: flex; flex-direction: column; }
+
+  /* ============ VERDICT (sticky, front and center) ============ */
+  .verdict {
+    position: sticky; top: 0; z-index: 10; text-align: center;
+    background: var(--bg); border-bottom: 1px solid var(--faint);
+    padding: calc(env(safe-area-inset-top) + 28px) 24px 22px;
+    transition: transform .25s cubic-bezier(.2,.9,.3,1.3);
+  }
+  .verdict.bump { transform: scale(1.025); }
+  .say {
+    font-size: clamp(34px, 9vw, 52px); font-weight: 400; font-style: italic;
+    letter-spacing: -0.02em; line-height: 1; margin: 0;
+  }
+  .say.have { color: var(--clear); }
+  .say.tight { color: var(--accent); }
+  .spare { margin-top: 10px; font-size: 22px; font-variant-numeric: tabular-nums; }
+  .spare b { font-weight: 500; }
+  .spare.have b { color: var(--clear); }
+  .spare.tight b { color: var(--accent); }
+  .operands {
+    margin-top: 14px; font-size: 14px; color: var(--soft); font-style: italic;
+    display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;
+  }
+  .operands b { font-style: normal; color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+  #bedtime {
+    font-family: var(--serif); font-size: 14px; color: var(--accent); background: transparent;
+    border: 0; border-bottom: 1px dashed var(--faint); padding: 0 2px; cursor: pointer;
+    font-style: normal;
+  }
+  #bedtime::-webkit-calendar-picker-indicator { opacity: .5; }
+
+  /* ============ SECTIONS ============ */
+  main { flex: 1; width: 100%; max-width: 600px; margin: 0 auto; padding: 8px 22px calc(env(safe-area-inset-bottom) + 48px); }
+  section { margin-top: 30px; }
+  h2 {
+    font-weight: 400; font-size: 16px; letter-spacing: 0.04em; text-transform: lowercase;
+    color: var(--ink); margin: 0 0 12px; display: flex; align-items: baseline; gap: 10px;
+  }
+  h2 .note { font-size: 12px; letter-spacing: 0; text-transform: none; color: var(--soft); font-style: italic; }
+
+  .cap {
+    width: 100%; border: 0; background: transparent; color: var(--ink);
+    font-family: var(--serif); font-size: 20px; line-height: 1.4; padding: 4px 0 12px;
+    outline: none; border-bottom: 1px solid var(--faint); caret-color: transparent;
+  }
+  .cap::placeholder { color: var(--soft); font-style: italic; }
+  .cap:focus { border-bottom-color: var(--ink); }
+
+  ul { list-style: none; margin: 12px 0 0; padding: 0; }
+  li {
+    display: flex; align-items: flex-start; gap: 12px; padding: 12px 0;
+    border-bottom: 1px solid var(--faint); overflow: hidden; max-height: 160px;
+    animation: in .2s ease;
+    transition: opacity .2s ease, max-height .25s ease, padding .25s ease, border-color .25s ease;
+  }
+  @keyframes in { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: none; } }
+  li.removing { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; border-color: transparent; }
+  li.done-flash { animation: doneFlash .5s ease; }
+  @keyframes doneFlash { 0% { background: rgba(63,125,79,.18); } 100% { background: transparent; } }
+
+  .check {
+    flex-shrink: 0; width: 22px; height: 22px; border: 1.5px solid var(--soft);
+    border-radius: 50%; margin-top: 6px; cursor: pointer; background: transparent; padding: 0;
+    transition: all .15s ease;
+  }
+  .check:hover { border-color: var(--clear); }
+  .check:active { background: var(--clear); border-color: var(--clear); }
+
+  .name {
+    flex: 1; border: 0; background: transparent; color: var(--ink); font-family: var(--serif);
+    font-size: 19px; line-height: 1.5; outline: none; padding: 4px 0; resize: none; overflow: hidden;
+    word-break: break-word; caret-color: transparent;
+  }
+  .min {
+    flex-shrink: 0; font-variant-numeric: tabular-nums; color: var(--clear); font-size: 18px;
+    padding: 4px 1px 0; outline: none; caret-color: transparent; min-width: 44px; text-align: right;
+    border-bottom: 1px dashed transparent;
+  }
+  .min:focus { border-bottom-color: var(--ink); border-bottom-style: solid; }
+  .when { flex-shrink: 0; color: var(--soft); font-size: 13px; padding-top: 6px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .empty { color: var(--soft); font-style: italic; font-size: 15px; padding: 16px 0; }
+
+  body.editing .verdict { opacity: .25; pointer-events: none; transition: opacity .3s ease; }
+
+  .check-flash {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(.85);
+    width: 92px; height: 92px; border-radius: 50%; background: var(--clear); color: #fff;
+    display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; z-index: 90;
+    transition: opacity .15s ease, transform .25s cubic-bezier(.2,.9,.3,1.3);
+  }
+  .check-flash svg { width: 38px; height: 38px; }
+  .check-flash.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  .toast {
+    position: fixed; bottom: calc(env(safe-area-inset-bottom) + 24px); left: 50%;
+    transform: translateX(-50%) translateY(8px); background: var(--ink); color: var(--bg);
+    padding: 8px 16px; border-radius: 999px; font-size: 14px; font-style: italic; opacity: 0;
+    transition: all .2s ease; z-index: 70; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="verdict" id="verdict">
+    <div class="say have" id="say">you have time</div>
+    <div class="spare have" id="spare"></div>
+    <div class="operands">
+      <span><b id="remaining">—</b> til</span>
+      <input type="time" id="bedtime" value="22:00" aria-label="bedtime" />
+      <span>·&nbsp; <b id="needed">0 min</b> to do</span>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>to do <span class="note">padded 3&times; for real life</span></h2>
+      <input class="cap" id="todoCap" type="text" placeholder="what's left? — e.g. dishes 15" autocomplete="off" autocorrect="off" spellcheck="false" />
+      <ul id="todoList"></ul>
+    </section>
+
+    <section>
+      <h2>did <span class="note" id="didTotal"></span></h2>
+      <input class="cap" id="didCap" type="text" placeholder="what'd you do? — e.g. emails 20" autocomplete="off" autocorrect="off" spellcheck="false" />
+      <ul id="didList"></ul>
+    </section>
+  </main>
+
+</div>
+
+<div class="check-flash" id="check" aria-hidden="true">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = 'youhavetime.v1';
+const PAD = 3; // planning-fallacy multiplier — estimates are tripled behind the scenes
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+let state = { bedtime: '22:00', todo: [], did: [] };
+function load() {
+  try {
+    const r = JSON.parse(localStorage.getItem(KEY));
+    if (r && typeof r === 'object') {
+      state.bedtime = /^\d{1,2}:\d{2}$/.test(r.bedtime) ? r.bedtime : '22:00';
+      state.todo = Array.isArray(r.todo) ? r.todo.map(t => ({ id: String(t.id || uid()), name: String(t.name || 'thing'), est: Math.max(0, Number(t.est) || 0) })) : [];
+      state.did = Array.isArray(r.did) ? r.did.map(d => ({ id: String(d.id || uid()), name: String(d.name || 'thing'), min: Math.max(0, Number(d.min) || 0), ts: Number(d.ts) || Date.now() })) : [];
+    }
+  } catch {}
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
+load();
+
+// ---------- helpers ----------
+function parseItem(raw) {
+  const nums = raw.match(/\d+/g);
+  let min = 0, name = raw.trim();
+  if (nums) {
+    const last = nums[nums.length - 1];
+    const i = raw.lastIndexOf(last);
+    min = parseInt(last, 10);
+    name = (raw.slice(0, i) + raw.slice(i + last.length)).replace(/\s+/g, ' ').trim();
+  }
+  name = name.replace(/^[\s,;:–—-]+|[\s,;:–—-]+$/g, '');
+  if (!name) name = 'thing';
+  if (!min) min = 15;
+  return { name, min };
+}
+function hm(min) {
+  min = Math.round(min);
+  const h = Math.floor(min / 60), m = min % 60;
+  if (h > 0) return m ? `${h}h ${m}m` : `${h}h`;
+  return `${m}m`;
+}
+function clock(ts) { return new Date(ts).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }).toLowerCase(); }
+function remainingMs() {
+  const [h, m] = state.bedtime.split(':').map(Number);
+  const bt = new Date(); bt.setHours(h, m, 0, 0);
+  return bt - Date.now();
+}
+
+// ---------- verdict ----------
+function neededMin() { return state.todo.reduce((s, t) => s + t.est, 0) * PAD; }
+function renderVerdict() {
+  const ms = remainingMs();
+  const past = ms <= 0;
+  const remMin = Math.max(0, Math.ceil(ms / 60000));
+  const need = neededMin();
+  const slack = remMin - need;
+
+  const say = $('#say'), spare = $('#spare');
+  const have = slack >= 0;
+  say.textContent = have ? 'you have time' : 'it’s tight';
+  say.className = 'say ' + (have ? 'have' : 'tight');
+  spare.className = 'spare ' + (have ? 'have' : 'tight');
+  spare.innerHTML = have
+    ? `<b>+${slack} min</b> to spare`
+    : `<b>${slack} min</b> over — cut or push bedtime`;
+
+  $('#remaining').textContent = past ? 'bedtime passed' : `${remMin} min`;
+  $('#needed').textContent = need ? hm(need) : '0 min';
+}
+
+// ---------- lists ----------
+function autoSize(ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
+function enterEdit() { document.body.classList.add('editing'); }
+function exitEdit() { document.body.classList.remove('editing'); }
+
+function renderTodo() {
+  const ul = $('#todoList'); ul.innerHTML = '';
+  if (!state.todo.length) { ul.innerHTML = '<div class="empty">nothing left — that’s the proof</div>'; return; }
+  for (const t of state.todo) ul.appendChild(todoRow(t));
+}
+function todoRow(t) {
+  const li = document.createElement('li'); li.dataset.id = t.id;
+
+  const check = document.createElement('button');
+  check.className = 'check'; check.setAttribute('aria-label', 'done');
+  check.addEventListener('click', () => complete(t, li));
+
+  const name = document.createElement('textarea');
+  name.className = 'name'; name.rows = 1; name.value = t.name;
+  name.addEventListener('focus', enterEdit);
+  name.addEventListener('input', e => { t.name = e.target.value; autoSize(e.target); save(); });
+  name.addEventListener('blur', () => { exitEdit(); if (!t.name.trim()) removeTodo(t, li); });
+
+  const min = document.createElement('span');
+  min.className = 'min'; min.contentEditable = 'true'; min.setAttribute('inputmode', 'numeric');
+  min.textContent = t.est + 'm';
+  min.addEventListener('focus', () => { enterEdit(); requestAnimationFrame(() => selectAll(min)); });
+  min.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); min.blur(); } });
+  min.addEventListener('blur', () => {
+    t.est = Math.max(0, parseInt((min.textContent.match(/\d+/) || [0])[0], 10) || 0);
+    exitEdit(); save(); renderTodo(); renderVerdict();
+  });
+
+  li.append(check, name, min);
+  requestAnimationFrame(() => autoSize(name));
+  return li;
+}
+function removeTodo(t, li) {
+  state.todo = state.todo.filter(x => x.id !== t.id); save();
+  collapse(li, () => { renderTodo(); renderVerdict(); });
+}
+function complete(t, li) {
+  state.todo = state.todo.filter(x => x.id !== t.id);
+  state.did.unshift({ id: uid(), name: t.name, min: t.est, ts: Date.now() });
+  save();
+  flashCheck(); bump();
+  li.classList.add('done-flash');
+  renderTodo(); renderDid(); renderVerdict();
+}
+
+function renderDid() {
+  const ul = $('#didList'); ul.innerHTML = '';
+  const total = state.did.reduce((s, d) => s + d.min, 0);
+  $('#didTotal').textContent = state.did.length ? `${state.did.length} done · ${hm(total)}` : '';
+  if (!state.did.length) { ul.innerHTML = '<div class="empty">log a win — even a small one</div>'; return; }
+  for (const d of state.did) ul.appendChild(didRow(d));
+}
+function didRow(d) {
+  const li = document.createElement('li'); li.dataset.id = d.id;
+
+  const name = document.createElement('textarea');
+  name.className = 'name'; name.rows = 1; name.value = d.name;
+  name.addEventListener('focus', enterEdit);
+  name.addEventListener('input', e => { d.name = e.target.value; autoSize(e.target); save(); });
+  name.addEventListener('blur', () => { exitEdit(); if (!d.name.trim()) removeDid(d, li); });
+
+  const min = document.createElement('span');
+  min.className = 'min'; min.contentEditable = 'true'; min.setAttribute('inputmode', 'numeric');
+  min.textContent = d.min + 'm';
+  min.addEventListener('focus', () => { enterEdit(); requestAnimationFrame(() => selectAll(min)); });
+  min.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); min.blur(); } });
+  min.addEventListener('blur', () => {
+    d.min = Math.max(0, parseInt((min.textContent.match(/\d+/) || [0])[0], 10) || 0);
+    exitEdit(); save(); renderDid();
+  });
+
+  const when = document.createElement('span');
+  when.className = 'when'; when.textContent = clock(d.ts);
+
+  li.append(name, min, when);
+  requestAnimationFrame(() => autoSize(name));
+  return li;
+}
+function removeDid(d, li) {
+  state.did = state.did.filter(x => x.id !== d.id); save();
+  collapse(li, renderDid);
+}
+
+function collapse(li, after) {
+  li.classList.add('removing');
+  li.addEventListener('transitionend', () => { li.remove(); after && after(); }, { once: true });
+  setTimeout(() => { if (li.isConnected) { li.remove(); after && after(); } }, 400);
+}
+function selectAll(el) {
+  const r = document.createRange(); r.selectNodeContents(el);
+  const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+}
+
+// ---------- capture ----------
+$('#todoCap').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return; e.preventDefault();
+  const v = e.target.value.trim(); if (!v) return;
+  const { name, min } = parseItem(v);
+  state.todo.unshift({ id: uid(), name, est: min });
+  e.target.value = ''; save(); renderTodo(); renderVerdict();
+});
+$('#didCap').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return; e.preventDefault();
+  const v = e.target.value.trim(); if (!v) return;
+  const { name, min } = parseItem(v);
+  state.did.unshift({ id: uid(), name, min, ts: Date.now() });
+  e.target.value = ''; save(); renderDid(); flashCheck(); bump();
+});
+
+// ---------- bedtime ----------
+$('#bedtime').value = state.bedtime;
+$('#bedtime').addEventListener('change', e => {
+  if (/^\d{1,2}:\d{2}$/.test(e.target.value)) { state.bedtime = e.target.value; save(); renderVerdict(); }
+});
+
+// ---------- feedback ----------
+function flashCheck() {
+  const el = $('#check'); el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 650);
+}
+function bump() {
+  const v = $('#verdict'); v.classList.add('bump');
+  clearTimeout(v._t); v._t = setTimeout(() => v.classList.remove('bump'), 260);
+}
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 1300);
+}
+
+// ---------- init + tick ----------
+renderTodo(); renderDid(); renderVerdict();
+setInterval(renderVerdict, 1000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') renderVerdict(); });
+</script>
+
+</body>
+</html>
