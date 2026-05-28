@@ -757,3 +757,175 @@ input, textarea, select {
 .dot-lbl { font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; }
 
 .text-btn + .week-dots { margin-top: 14px; }
+
+/* ============ VIEW SEGMENT (Day / Week / Month) ============ */
+.view-seg {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin: 4px 16px 10px;
+  background: var(--bg-elevated);
+  border-radius: 10px;
+}
+.vs-btn {
+  flex: 1;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  border-radius: 7px;
+  transition: color 0.15s, background 0.15s;
+}
+.vs-btn.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
+/* ============ CAL WRAP (week + month containers) ============ */
+.cal-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 16px calc(var(--tabbar-h) + 28px + var(--safe-bottom));
+  scrollbar-width: none;
+}
+.cal-wrap::-webkit-scrollbar { display: none; }
+
+/* ============ WEEK ============ */
+.wk-row {
+  display: grid;
+  grid-template-columns: 44px 36px 1fr 22px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  border-radius: 8px;
+  transition: background 0.12s;
+}
+.wk-row:active { background: var(--bg-elevated); }
+.wk-row.today {
+  background: var(--accent-soft);
+  border-bottom-color: transparent;
+}
+.wk-day {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.wk-row.today .wk-day { color: var(--accent); }
+.wk-date {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.wk-row.today .wk-date { color: var(--accent); }
+.wk-bar {
+  position: relative;
+  height: 22px;
+  background: var(--bg-input);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.wk-seg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 2px;
+  opacity: 0.92;
+}
+.wk-seg.cat-soul   { background: var(--cat-soul); }
+.wk-seg.cat-body   { background: var(--cat-body); }
+.wk-seg.cat-mind   { background: var(--cat-mind); }
+.wk-seg.cat-family { background: var(--cat-family); }
+.wk-seg.cat-work   { background: var(--cat-work); }
+.wk-seg.cat-rest   { background: var(--cat-rest); }
+.wk-empty {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+.wk-count {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+  text-align: right;
+}
+
+/* ============ MONTH ============ */
+.mo-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+.mo-head {
+  padding: 6px 0 8px;
+}
+.mo-head > div {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+}
+.mo-cell {
+  position: relative;
+  aspect-ratio: 1 / 1.05;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  text-align: left;
+  transition: transform 0.08s;
+}
+.mo-cell:active { transform: scale(0.96); }
+.mo-cell.off { opacity: 0.32; }
+.mo-cell.today {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.mo-cell.viewed:not(.today) {
+  border-color: var(--border-strong);
+}
+.mo-num {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+.mo-cell.today .mo-num {
+  color: var(--accent);
+  font-weight: 700;
+}
+.mo-dots {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  align-self: flex-start;
+}
+.mo-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+.mo-dot.cat-soul   { background: var(--cat-soul); }
+.mo-dot.cat-body   { background: var(--cat-body); }
+.mo-dot.cat-mind   { background: var(--cat-mind); }
+.mo-dot.cat-family { background: var(--cat-family); }
+.mo-dot.cat-work   { background: var(--cat-work); }
+.mo-dot.cat-rest   { background: var(--cat-rest); }
