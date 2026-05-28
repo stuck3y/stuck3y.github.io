@@ -30,10 +30,16 @@
     <button id="next-day" class="nav-btn" aria-label="Next day">&rsaquo;</button>
   </header>
 
-  <div class="summary-bar">
+  <div class="summary-bar" id="summary-bar">
     <span id="summary-text">&nbsp;</span>
     <button id="today-btn" class="today-btn" hidden>Today</button>
   </div>
+
+  <nav class="view-seg" id="view-seg" role="tablist">
+    <button class="vs-btn active" data-view="day" role="tab">Day</button>
+    <button class="vs-btn" data-view="week" role="tab">Week</button>
+    <button class="vs-btn" data-view="month" role="tab">Month</button>
+  </nav>
 
   <main class="timeline-wrap" id="timeline-wrap">
     <div class="timeline" id="timeline" aria-label="Daily timeline"></div>
@@ -50,6 +56,9 @@
       <p class="empty-sub">Tap + to add a block, or tap an empty hour on the timeline.</p>
     </div>
   </main>
+
+  <main class="cal-wrap" id="week-wrap" hidden></main>
+  <main class="cal-wrap" id="month-wrap" hidden></main>
 
   <button id="fab" class="fab" aria-label="Add block">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

@@ -24,7 +24,7 @@
     return {
       version: 2,
       blocks: {},
-      prefs: { lastCategory: 'soul' },
+      prefs: { lastCategory: 'soul', viewMode: 'day' },
       prayers: [],
       blessings: [],
       bible: {},   // { "YYYY-MM-DD": { passage, note } }
@@ -66,6 +66,7 @@
   let state = loadState();
   let viewDate = todayISO();
   let activeTab = 'day';
+  let viewMode = (state.prefs && state.prefs.viewMode) || 'day';
   let editingId = null;
   let selectedCategory = state.prefs.lastCategory || 'soul';
   let selectedStatus = 'planned';
@@ -119,6 +120,25 @@
     return shortDate(iso);
   }
 
+  function weekStart(iso) {
+    const d = parseISO(iso);
+    d.setDate(d.getDate() - d.getDay()); // Sunday
+    return todayISO(d);
+  }
+  function weekDays(iso) {
+    const start = weekStart(iso);
+    return [0, 1, 2, 3, 4, 5, 6].map(i => shiftDay(start, i));
+  }
+  function shiftMonth(iso, delta) {
+    const d = parseISO(iso);
+    const day = d.getDate();
+    d.setDate(1);
+    d.setMonth(d.getMonth() + delta);
+    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    d.setDate(Math.min(day, lastDay));
+    return todayISO(d);
+  }
+
   function formatDateHeader(iso) {
     const d = parseISO(iso);
     const today = todayISO();
@@ -148,8 +168,9 @@
 
   const $ = (id) => document.getElementById(id);
   const els = {
-    weekday: $('weekday'), date: $('date'), summaryText: $('summary-text'), todayBtn: $('today-btn'),
+    weekday: $('weekday'), date: $('date'), summaryBar: $('summary-bar'), summaryText: $('summary-text'), todayBtn: $('today-btn'),
     timeline: $('timeline'), timelineWrap: $('timeline-wrap'), emptyState: $('empty-state'), fab: $('fab'),
+    viewSeg: $('view-seg'), weekWrap: $('week-wrap'), monthWrap: $('month-wrap'),
     sheet: $('sheet'), backdrop: $('sheet-backdrop'), sheetTitle: $('sheet-title'), form: $('sheet-form'),
     fTitle: $('f-title'), fStart: $('f-start'), fEnd: $('f-end'), fNotes: $('f-notes'),
     catGrid: $('cat-grid'), statusField: $('status-field'), statusSeg: $('status-seg'),
@@ -233,26 +254,157 @@
 
   function renderDay() {
     renderDayHeader();
-    renderTimeline();
+    syncViewSeg();
+    if (viewMode === 'day') {
+      els.summaryBar.style.display = '';
+      els.timelineWrap.hidden = false;
+      els.weekWrap.hidden = true;
+      els.monthWrap.hidden = true;
+      els.fab.style.display = '';
+      renderTimeline();
+    } else if (viewMode === 'week') {
+      els.summaryBar.style.display = 'none';
+      els.timelineWrap.hidden = true;
+      els.weekWrap.hidden = false;
+      els.monthWrap.hidden = true;
+      els.fab.style.display = 'none';
+      renderWeek();
+    } else {
+      els.summaryBar.style.display = 'none';
+      els.timelineWrap.hidden = true;
+      els.weekWrap.hidden = true;
+      els.monthWrap.hidden = false;
+      els.fab.style.display = 'none';
+      renderMonth();
+    }
+  }
+
+  function syncViewSeg() {
+    for (const b of els.viewSeg.querySelectorAll('.vs-btn')) {
+      b.classList.toggle('active', b.dataset.view === viewMode);
+    }
+  }
+
+  function setViewMode(m) {
+    if (m === viewMode) return;
+    viewMode = m;
+    state.prefs.viewMode = m;
+    saveState();
+    renderDay();
+    if (m === 'day') scrollToNowOrStart();
   }
 
   function renderDayHeader() {
-    const { label, date } = formatDateHeader(viewDate);
-    els.weekday.textContent = label;
-    els.date.textContent = date;
-    els.todayBtn.hidden = viewDate === todayISO();
+    const today = todayISO();
+    if (viewMode === 'day') {
+      const { label, date } = formatDateHeader(viewDate);
+      els.weekday.textContent = label;
+      els.date.textContent = date;
+      els.todayBtn.hidden = viewDate === today;
 
-    const blocks = getBlocks(viewDate);
-    if (blocks.length === 0) {
-      els.summaryText.textContent = 'No blocks yet';
+      const blocks = getBlocks(viewDate);
+      if (blocks.length === 0) {
+        els.summaryText.textContent = 'No blocks yet';
+      } else {
+        const totalMin = blocks.reduce((s, b) => s + (toMin(b.end) - toMin(b.start)), 0);
+        const doneMin = blocks.filter(b => b.status === 'done').reduce((s, b) => s + (toMin(b.end) - toMin(b.start)), 0);
+        const h = Math.floor(totalMin / 60), m = totalMin % 60;
+        const dur = h > 0 ? `${h}h${m ? ' ' + m + 'm' : ''}` : `${m}m`;
+        const donePart = doneMin > 0 ? ` · ${Math.round(100 * doneMin / totalMin)}% done` : '';
+        els.summaryText.textContent = `${blocks.length} block${blocks.length === 1 ? '' : 's'} · ${dur} planned${donePart}`;
+      }
+    } else if (viewMode === 'week') {
+      const days = weekDays(viewDate);
+      const a = parseISO(days[0]), b = parseISO(days[6]);
+      const sameMonth = a.getMonth() === b.getMonth();
+      const sameYear = a.getFullYear() === b.getFullYear();
+      els.weekday.textContent = 'WEEK';
+      els.date.textContent = sameMonth
+        ? `${a.toLocaleDateString(undefined, { month: 'short' })} ${a.getDate()} – ${b.getDate()}`
+        : sameYear
+          ? `${a.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${b.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
+          : `${a.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' })} – ${b.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' })}`;
+      els.todayBtn.hidden = weekStart(viewDate) === weekStart(today);
     } else {
-      const totalMin = blocks.reduce((s, b) => s + (toMin(b.end) - toMin(b.start)), 0);
-      const doneMin = blocks.filter(b => b.status === 'done').reduce((s, b) => s + (toMin(b.end) - toMin(b.start)), 0);
-      const h = Math.floor(totalMin / 60), m = totalMin % 60;
-      const dur = h > 0 ? `${h}h${m ? ' ' + m + 'm' : ''}` : `${m}m`;
-      const donePart = doneMin > 0 ? ` · ${Math.round(100 * doneMin / totalMin)}% done` : '';
-      els.summaryText.textContent = `${blocks.length} block${blocks.length === 1 ? '' : 's'} · ${dur} planned${donePart}`;
+      const d = parseISO(viewDate);
+      els.weekday.textContent = 'MONTH';
+      els.date.textContent = d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+      els.todayBtn.hidden = viewDate.slice(0, 7) === today.slice(0, 7);
     }
+  }
+
+  function renderWeek() {
+    const days = weekDays(viewDate);
+    const today = todayISO();
+    let html = '';
+    for (const iso of days) {
+      const d = parseISO(iso);
+      const isToday = iso === today;
+      const blocks = getBlocks(iso);
+      const total = DAY_END_MIN - DAY_START_MIN;
+      const segs = blocks.map(b => {
+        const s = Math.max(toMin(b.start), DAY_START_MIN);
+        const e = Math.min(toMin(b.end), DAY_END_MIN);
+        if (e <= s) return '';
+        const left = ((s - DAY_START_MIN) / total) * 100;
+        const width = Math.max(0.6, ((e - s) / total) * 100);
+        return `<span class="wk-seg cat-${b.category}" style="left:${left.toFixed(2)}%;width:${width.toFixed(2)}%" title="${esc(b.title)}"></span>`;
+      }).join('');
+      html += `
+        <button class="wk-row${isToday ? ' today' : ''}" data-date="${iso}">
+          <div class="wk-day">${esc(d.toLocaleDateString(undefined, { weekday: 'short' }))}</div>
+          <div class="wk-date">${d.getDate()}</div>
+          <div class="wk-bar">${segs || '<span class="wk-empty">—</span>'}</div>
+          <div class="wk-count">${blocks.length || ''}</div>
+        </button>`;
+    }
+    els.weekWrap.innerHTML = html;
+    els.weekWrap.querySelectorAll('.wk-row').forEach(r => {
+      r.addEventListener('click', () => { viewDate = r.dataset.date; setViewMode('day'); });
+    });
+  }
+
+  function renderMonth() {
+    const today = todayISO();
+    const d = parseISO(viewDate);
+    const year = d.getFullYear(), month = d.getMonth();
+    const startDow = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < startDow; i++) {
+      const pd = new Date(year, month, -(startDow - 1 - i));
+      cells.push({ iso: todayISO(pd), inMonth: false });
+    }
+    for (let i = 1; i <= daysInMonth; i++) {
+      cells.push({ iso: todayISO(new Date(year, month, i)), inMonth: true });
+    }
+    while (cells.length < 42) {
+      const last = parseISO(cells[cells.length - 1].iso);
+      last.setDate(last.getDate() + 1);
+      cells.push({ iso: todayISO(last), inMonth: false });
+    }
+
+    const head = '<div class="mo-grid mo-head">' +
+      ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(x => `<div>${x}</div>`).join('') + '</div>';
+
+    const body = '<div class="mo-grid mo-body">' + cells.map(c => {
+      const blocks = getBlocks(c.iso);
+      const cats = [...new Set(blocks.map(x => x.category))].slice(0, 4);
+      const dots = cats.map(cat => `<span class="mo-dot cat-${cat}"></span>`).join('');
+      const cls = ['mo-cell'];
+      if (!c.inMonth) cls.push('off');
+      if (c.iso === today) cls.push('today');
+      if (c.iso === viewDate && c.inMonth) cls.push('viewed');
+      return `<button class="${cls.join(' ')}" data-date="${c.iso}">
+        <span class="mo-num">${parseISO(c.iso).getDate()}</span>
+        <span class="mo-dots">${dots}</span>
+      </button>`;
+    }).join('') + '</div>';
+
+    els.monthWrap.innerHTML = head + body;
+    els.monthWrap.querySelectorAll('.mo-cell').forEach(c => {
+      c.addEventListener('click', () => { viewDate = c.dataset.date; setViewMode('day'); });
+    });
   }
 
   function renderTimeline() {
@@ -425,8 +577,14 @@
     openBlockSheet({ start: toHHMM(snap(hour * 60 + minInHour, SNAP_MIN)) });
   }
 
-  function changeDay(delta) { viewDate = shiftDay(viewDate, delta); renderDay(); scrollToNowOrStart(); }
-  function goToday() { viewDate = todayISO(); renderDay(); scrollToNowOrStart(); }
+  function changeDay(delta) {
+    if (viewMode === 'day') viewDate = shiftDay(viewDate, delta);
+    else if (viewMode === 'week') viewDate = shiftDay(viewDate, delta * 7);
+    else viewDate = shiftMonth(viewDate, delta);
+    renderDay();
+    if (viewMode === 'day') scrollToNowOrStart();
+  }
+  function goToday() { viewDate = todayISO(); renderDay(); if (viewMode === 'day') scrollToNowOrStart(); }
 
   // ============================================================
   //  SOUL
@@ -962,6 +1120,10 @@
     els.tabBar.addEventListener('click', (e) => {
       const b = e.target.closest('.tab-btn'); if (!b) return;
       setTab(b.dataset.tab);
+    });
+    els.viewSeg.addEventListener('click', (e) => {
+      const b = e.target.closest('.vs-btn'); if (!b) return;
+      setViewMode(b.dataset.view);
     });
 
     document.addEventListener('keydown', (e) => {
