@@ -1,0 +1,20 @@
+{
+  "name": "rest.",
+  "short_name": "rest.",
+  "description": "A counterfeit doomscroller — scroll till one true thing fits, then go do it.",
+  "scope": "/apps/rest/",
+  "start_url": "/apps/rest/?source=pwa",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#141210",
+  "background_color": "#141210",
+  "categories": ["lifestyle", "health", "productivity"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

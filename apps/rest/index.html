@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<meta name="theme-color" content="#141210" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>rest.</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<script src="../lib/pwa.js" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #141210;
+    --fg: #ffffff;
+    --gold: #caa86a;
+    --serif: 'Fraunces', ui-serif, Georgia, serif;
+    --ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--ui);
+    -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none; user-select: none;
+    overflow: hidden;
+  }
+  #app { height: 100vh; height: 100dvh; width: 100%; position: relative; overflow: hidden; }
+
+  .rest-scroll { height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
+  .rest-scroll::-webkit-scrollbar { display: none; }
+  .rest-scroll { scrollbar-width: none; }
+
+  .header {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+    padding: calc(env(safe-area-inset-top) + 14px) 20px 18px;
+    display: flex; justify-content: space-between; align-items: center;
+    pointer-events: none;
+    background: linear-gradient(#141210cc, transparent);
+  }
+  .wordmark { font-family: var(--serif); font-size: 22px; font-weight: 500; letter-spacing: -0.02em; }
+  .wordmark .dot { color: var(--gold); }
+  .tagline { font-size: 12.5px; opacity: .55; }
+
+  .card {
+    scroll-snap-align: start;
+    height: 100%; min-height: 100%; box-sizing: border-box;
+    padding: 0 22px env(safe-area-inset-bottom);
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative;
+  }
+  .card-inner { max-width: 520px; animation: riseIn .5s ease both; }
+  .cat-strip {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    opacity: .82; margin-bottom: 18px;
+  }
+  .cat-strip .dot { width: 7px; height: 7px; border-radius: 99px; background: #fff; opacity: .8; }
+  .cat-strip .min { opacity: .55; letter-spacing: 0; text-transform: none; }
+  .card h1 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(30px, 7vw, 44px); line-height: 1.08;
+    letter-spacing: -0.02em; margin: 0;
+  }
+  .card p {
+    margin-top: 18px; font-size: 16.5px; line-height: 1.55; opacity: .82; max-width: 460px;
+  }
+  .pill-solid {
+    margin-top: 30px; border: 0; cursor: pointer; background: #fff; color: #1a1a1a;
+    font-family: var(--ui); font-weight: 600; font-size: 16px;
+    padding: 15px 26px; border-radius: 99px; box-shadow: 0 10px 30px #0006;
+  }
+  .pill-ghost {
+    cursor: pointer; background: transparent; color: #fff;
+    font-family: var(--ui); font-weight: 500; font-size: 16px;
+    padding: 15px 24px; border-radius: 99px; border: 1px solid #ffffff55;
+  }
+  .scroll-hint {
+    position: absolute; bottom: calc(env(safe-area-inset-bottom) + 22px);
+    left: 0; right: 0; text-align: center; font-size: 13px; opacity: .6;
+  }
+  .scroll-hint.first { animation: glow 2.4s ease-in-out infinite; }
+
+  /* COMMIT */
+  .commit-screen {
+    height: 100%; padding: 0 26px env(safe-area-inset-bottom);
+    display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+  }
+  .commit-inner { max-width: 480px; animation: riseIn .5s ease both; }
+  .commit-cat { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; opacity: .7; }
+  .commit-screen h1 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(26px, 6.5vw, 38px); line-height: 1.12;
+    letter-spacing: -0.02em; margin: 16px 0 0;
+  }
+  .dot-wrap { margin: 40px auto 8px; height: 130px; display: grid; place-items: center; }
+  .dot {
+    width: 110px; height: 110px; border-radius: 99px;
+    display: grid; place-items: center;
+    animation: breathe 5s ease-in-out infinite;
+    box-shadow: 0 0 60px #0007;
+  }
+  .dot.running { animation: none; }
+  .dot-text { font-family: var(--serif); font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .commit-body { font-size: 16px; line-height: 1.55; opacity: .8; margin-top: 18px; }
+  .commit-actions { display: flex; gap: 12px; justify-content: center; margin-top: 30px; flex-wrap: wrap; }
+  .commit-actions .pill-solid { margin-top: 0; padding: 15px 28px; }
+  .back-link { margin-top: 22px; background: none; border: 0; color: #fff; opacity: .5; font-size: 14px; cursor: pointer; font-family: var(--ui); }
+
+  /* RESTED */
+  .rested-screen {
+    height: 100%; padding: 0 28px env(safe-area-inset-bottom);
+    display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+    background: radial-gradient(130% 80% at 50% 18%, #2a3d34 0%, #141210 58%);
+  }
+  .rested-inner { max-width: 460px; animation: riseIn .55s ease both; }
+  .rested-icon { font-size: 46px; margin-bottom: 6px; }
+  .rested-screen h1 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(28px, 7vw, 40px); letter-spacing: -0.02em; margin: 0;
+  }
+  .rested-msg { font-size: 16.5px; line-height: 1.55; opacity: .82; margin-top: 16px; }
+  .stats { display: flex; gap: 26px; justify-content: center; margin-top: 30px; align-items: stretch; }
+  .stat .n { font-family: var(--serif); font-size: 40px; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; }
+  .stat .label { font-size: 12.5px; opacity: .6; margin-top: 6px; }
+  .stat-divider { width: 1px; background: #ffffff22; }
+  .leave-alone { font-size: 13.5px; opacity: .5; margin-top: 34px; line-height: 1.5; }
+  .again-link { margin-top: 16px; background: none; border: 0; color: var(--gold); opacity: .7; font-size: 13.5px; cursor: pointer; font-family: var(--ui); }
+
+  .tap { transition: transform .12s ease, opacity .2s ease; }
+  .tap:active { transform: scale(.97); opacity: .9; }
+
+  @keyframes riseIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes breathe { 0%,100% { transform: scale(1); opacity: .55; } 50% { transform: scale(1.18); opacity: .9; } }
+  @keyframes glow    { 0%,100% { opacity: .5; } 50% { opacity: .85; } }
+  @media (prefers-reduced-motion: reduce) {
+    .dot { animation: none; }
+    .scroll-hint.first { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+'use strict';
+
+// ─── PALETTE ────────────────────────────────────────────────────────────────
+const PALETTE = {
+  outside:   { label: "Outside",   from: "#3a6b5a", to: "#1f3d34" },
+  sleep:     { label: "Stillrest", from: "#3f3f70", to: "#22223d" },
+  move:      { label: "Move",      from: "#7a3f2e", to: "#46201a" },
+  connect:   { label: "Connect",   from: "#7a3f57", to: "#451f33" },
+  make:      { label: "Make",      from: "#7a5a2e", to: "#46331a" },
+  read:      { label: "Read",      from: "#2e4f7a", to: "#1a2e46" },
+  stillness: { label: "Be Still",  from: "#5a3f7a", to: "#312245" },
+  hands:     { label: "Hands",     from: "#5a5247", to: "#322f29" },
+  learn:     { label: "Learn",     from: "#2e6b6b", to: "#1a3e3e" },
+  serve:     { label: "Serve",     from: "#7a6a2e", to: "#463d1a" },
+};
+
+// ─── THE BANK ───────────────────────────────────────────────────────────────
+const ACTIVITIES = [
+  { cat: "outside", min: 15, title: "Walk one block with your face to the sky.", line: "Phone in your pocket, not your hand. Let the world be bigger than the screen." },
+  { cat: "outside", min: 5,  title: "Stand barefoot on grass until you stop counting.", line: "The oldest reset there is. Skin, ground, breath." },
+  { cat: "outside", min: 30, title: "Walk to nowhere and let your feet pick.", line: "No destination, no podcast. Wandering is a forgotten skill." },
+  { cat: "outside", min: 10, title: "Sit outside and find five things you can hear.", line: "Soft fascination is what actually refills attention. The feed can't." },
+  { cat: "outside", min: 25, title: "Take the long way to get a coffee.", line: "Same coffee. Slower you. No audio in your ears for the walk." },
+  { cat: "outside", min: 8,  title: "Watch the sky change for one song's length.", line: "No music. Just the sky doing what it's done since day four." },
+  { cat: "outside", min: 20, title: "Find a tree and just look at it.", line: "Really look. Bark, light, motion. It's been waiting." },
+
+  { cat: "sleep", min: 20, title: "Lie down and do nothing for twenty minutes.", line: "Not sleep — just still. The one that pays for everything else." },
+  { cat: "sleep", min: 25, title: "Take an actual nap. Set one alarm. Surrender.", line: "If you're tired under the scrolling, nothing here competes with this." },
+  { cat: "sleep", min: 12, title: "Body-scan slowly from scalp to toes.", line: "Notice each part. Unclench what you've been gripping all day." },
+  { cat: "sleep", min: 15, title: "Put on a Yoga Nidra track and follow the voice.", line: "Non-sleep deep rest. Twenty minutes can feel like two hours." },
+  { cat: "sleep", min: 10, title: "Lie on the floor and let it hold all your weight.", line: "Give the whole thing over. You don't have to hold yourself up." },
+
+  { cat: "move", min: 10, title: "Push-ups until you can't, rest, again.", line: "Doomscrolling sedates. Movement metabolizes the thing driving it." },
+  { cat: "move", min: 4,  title: "One loud song. Move however your body wants.", line: "No one is watching. That's the whole point." },
+  { cat: "move", min: 20, title: "Walk fast uphill until your lungs notice.", line: "Zone-two does quietly what nothing on a screen can." },
+  { cat: "move", min: 12, title: "Stretch every part that's been clenched today.", line: "Your body has been bracing for hours. Let it down." },
+  { cat: "move", min: 15, title: "Carry something heavy, back and forth, on purpose.", line: "Honest effort. A clear start and a clear stop." },
+  { cat: "move", min: 10, title: "Fifty squats across one phone call.", line: "Talk to someone real and move at the same time." },
+
+  { cat: "connect", min: 15, title: "Call the person you keep meaning to call.", line: "“As iron sharpens iron, so one person sharpens another.” — Proverbs 27:17" },
+  { cat: "connect", min: 40, title: "Eat one meal across a table, phones away.", line: "The loneliest part of the scroll is that it counterfeits this." },
+  { cat: "connect", min: 5,  title: "Text someone only to ask how they actually are.", line: "Not a meme. Not a link. A real question, and then listen." },
+  { cat: "connect", min: 20, title: "Sit with someone and say nothing in particular.", line: "Presence without agenda. It's rarer than it sounds." },
+  { cat: "connect", min: 10, title: "Write a thank-you to someone who won't expect it.", line: "Name the specific thing. Watch what it does to both of you." },
+  { cat: "connect", min: 15, title: "Ask an older person to tell you one story.", line: "Then don't interrupt. There's rest in receiving someone." },
+
+  { cat: "make", min: 45, title: "Cook something from scratch that needs both hands.", line: "Flow is the real version of the absorption the feed fakes." },
+  { cat: "make", min: 15, title: "Draw the thing in front of you, badly, on purpose.", line: "Bad on purpose removes the pressure. Just look and mark." },
+  { cat: "make", min: 30, title: "Fix the one thing that's been broken.", line: "A clear before and after. The feed never lets you finish." },
+  { cat: "make", min: 20, title: "Play three chords until they stop sounding wrong.", line: "Repetition you chose. The opposite of the infinite swipe." },
+  { cat: "make", min: 15, title: "Write one page no one will ever read.", line: "Empty the head onto paper. Don't edit. Just pour." },
+  { cat: "make", min: 25, title: "Bake something and let the house smell like it.", line: "Slow, warm, sensory. Recovery you can share." },
+
+  { cat: "read", min: 20, title: "Read ten pages of a real book.", line: "Paper if you have it. This rebuilds the muscle the feed wastes." },
+  { cat: "read", min: 25, title: "Re-read a chapter you loved and forgot.", line: "No need to be new. Return to something good." },
+  { cat: "read", min: 8,  title: "Read a psalm slowly, twice.", line: "Once to read it, once to mean it. Try Psalm 23." },
+  { cat: "read", min: 5,  title: "Read one poem out loud to the room.", line: "Out loud changes everything. Let the words have a body." },
+  { cat: "read", min: 30, title: "Read in a chair you don't usually sit in.", line: "New light, new posture, one long thread of attention." },
+
+  { cat: "stillness", min: 10, title: "Sit in silence for ten minutes. Let it be awkward.", line: "“Be still, and know that I am God.” — Psalm 46:10" },
+  { cat: "stillness", min: 12, title: "Pray about the thing you've been scrolling to avoid.", line: "The restlessness is real. The feed just points it nowhere." },
+  { cat: "stillness", min: 8,  title: "Write three things you didn't earn today.", line: "Gratitude reorders the whole day. Name them slowly." },
+  { cat: "stillness", min: 6,  title: "Breathe: in four, hold four, out four. Ten rounds.", line: "Your body learns calm from your breath, not the other way." },
+  { cat: "stillness", min: 10, title: "Sit with one verse and don't move on.", line: "“Come to me, all who are weary, and I will give you rest.” — Matt 11:28" },
+  { cat: "stillness", min: 15, title: "Take a shower with no phone and no rush.", line: "Let the water do the thinking for a while." },
+
+  { cat: "hands", min: 12, title: "Clear one surface completely and wipe it down.", line: "Visible order, quiet mind. Start with the worst one." },
+  { cat: "hands", min: 15, title: "Wash the dishes by hand like it's the only task.", line: "Warm water, one bowl at a time. A small monastery." },
+  { cat: "hands", min: 10, title: "Make your bed and the room around it.", line: "End the day's chaos in one corner of the house." },
+  { cat: "hands", min: 20, title: "Repot a plant or pull some weeds.", line: "Dirt under the nails. Tending is its own kind of prayer." },
+  { cat: "hands", min: 15, title: "Organize the one drawer that's been bothering you.", line: "Finish it. The completion signal is the medicine." },
+
+  { cat: "learn", min: 12, title: "Learn ten words of a language you'll never master.", line: "Real progress, real novelty — the loop the feed only imitates." },
+  { cat: "learn", min: 20, title: "Watch one thing that teaches you to do something.", line: "Then actually try the first step before you scroll on." },
+  { cat: "learn", min: 15, title: "Practice one skill for fifteen honest minutes.", line: "Not browsing about it. Doing it, badly, on the way to better." },
+
+  { cat: "serve", min: 20, title: "Do the chore someone else has been dreading.", line: "Attention turned outward is the strongest cure for the inward spiral." },
+  { cat: "serve", min: 15, title: "Carry something for a neighbor, unasked.", line: "“It is more blessed to give than to receive.” — Acts 20:35" },
+  { cat: "serve", min: 10, title: "Give something away today. Today.", line: "Open the hand. Notice how it loosens the chest too." },
+  { cat: "serve", min: 8,  title: "Write the encouragement you'd want to receive.", line: "Specific, sincere, sent. Make someone's whole week." },
+];
+
+// ─── STATE ──────────────────────────────────────────────────────────────────
+const KEY = 'rest.v1';
+let state = { last: null, streak: 0, total: 0 };
+let deck = [];
+let chosen = null;
+let phase = 'feed';
+let grace = false;
+let timerId = null;
+
+function load() {
+  try {
+    const r = JSON.parse(localStorage.getItem(KEY));
+    if (r && typeof r === 'object') {
+      state = {
+        last: r.last || null,
+        streak: Number(r.streak) || 0,
+        total: Number(r.total) || 0,
+      };
+    }
+  } catch {}
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
+
+// ─── DATES ──────────────────────────────────────────────────────────────────
+function dayKey(d = new Date()) { return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; }
+function wasYesterday(key) { const y = new Date(); y.setDate(y.getDate() - 1); return key === dayKey(y); }
+
+// ─── DECK ───────────────────────────────────────────────────────────────────
+function shuffledDeck() {
+  const a = ACTIVITIES.map((act, i) => Object.assign({}, act, { _id: i }));
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  for (let i = 1; i < a.length; i++) {
+    if (a[i].cat === a[i - 1].cat) {
+      const k = a.findIndex((x, idx) => idx > i && x.cat !== a[i - 1].cat);
+      if (k !== -1) [a[i], a[k]] = [a[k], a[i]];
+    }
+  }
+  return a;
+}
+
+const fmtTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+// ─── RENDER ─────────────────────────────────────────────────────────────────
+const app = document.getElementById('app');
+
+function clearTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
+function setPhase(p) { phase = p; render(); }
+
+function render() {
+  clearTimer();
+  app.innerHTML = '';
+  if (phase === 'feed') renderFeed();
+  else if (phase === 'commit') renderCommit();
+  else renderRested(); // 'done' or 'rested'
+}
+
+function headerEl() {
+  const h = document.createElement('div');
+  h.className = 'header';
+  h.innerHTML = `
+    <div class="wordmark">rest<span class="dot">.</span></div>
+    <div class="tagline">scroll till one fits</div>
+  `;
+  return h;
+}
+
+function cardEl(act, first) {
+  const c = PALETTE[act.cat];
+  const sec = document.createElement('section');
+  sec.className = 'card';
+  sec.style.background = `radial-gradient(120% 90% at 25% 18%, ${c.from} 0%, ${c.to} 58%, #141210 130%)`;
+
+  const inner = document.createElement('div');
+  inner.className = 'card-inner';
+
+  const strip = document.createElement('div');
+  strip.className = 'cat-strip';
+  strip.innerHTML = `<span class="dot"></span>`;
+  strip.append(document.createTextNode(c.label + ' '));
+  const minSpan = document.createElement('span');
+  minSpan.className = 'min';
+  minSpan.textContent = '· ' + act.min + ' min';
+  strip.appendChild(minSpan);
+  inner.appendChild(strip);
+
+  const h1 = document.createElement('h1');
+  h1.textContent = act.title;
+  inner.appendChild(h1);
+
+  const p = document.createElement('p');
+  p.textContent = act.line;
+  inner.appendChild(p);
+
+  const btn = document.createElement('button');
+  btn.className = 'pill-solid tap';
+  btn.textContent = 'Do this now';
+  btn.addEventListener('click', () => { chosen = act; setPhase('commit'); });
+  inner.appendChild(btn);
+
+  sec.appendChild(inner);
+
+  const hint = document.createElement('div');
+  hint.className = 'scroll-hint' + (first ? ' first' : '');
+  hint.textContent = first ? '↑ not it? keep scrolling' : '↑ keep scrolling';
+  sec.appendChild(hint);
+
+  return sec;
+}
+
+function renderFeed() {
+  if (!deck.length) deck = shuffledDeck();
+
+  app.appendChild(headerEl());
+
+  const scroller = document.createElement('div');
+  scroller.className = 'rest-scroll';
+  for (let i = 0; i < deck.length; i++) scroller.appendChild(cardEl(deck[i], i === 0));
+
+  scroller.addEventListener('scroll', () => {
+    if (scroller.scrollTop + scroller.clientHeight > scroller.scrollHeight - scroller.clientHeight * 1.5) {
+      const more = shuffledDeck();
+      for (const a of more) scroller.appendChild(cardEl(a, false));
+      deck = deck.concat(more);
+    }
+  });
+
+  app.appendChild(scroller);
+}
+
+function renderCommit() {
+  const c = PALETTE[chosen.cat];
+  const wrap = document.createElement('div');
+  wrap.className = 'commit-screen';
+  wrap.style.background = `radial-gradient(120% 80% at 50% 20%, ${c.from}66 0%, #141210 60%)`;
+
+  const inner = document.createElement('div');
+  inner.className = 'commit-inner';
+
+  const cat = document.createElement('div');
+  cat.className = 'commit-cat';
+  cat.textContent = `${c.label} · ${chosen.min} min`;
+  inner.appendChild(cat);
+
+  const h1 = document.createElement('h1');
+  h1.textContent = chosen.title;
+  inner.appendChild(h1);
+
+  const dotWrap = document.createElement('div');
+  dotWrap.className = 'dot-wrap';
+  const dot = document.createElement('div');
+  dot.className = 'dot';
+  dot.style.background = `radial-gradient(circle, ${c.from} 0%, ${c.to} 90%)`;
+  const dotText = document.createElement('span');
+  dotText.className = 'dot-text';
+  dotText.textContent = 'go';
+  dot.appendChild(dotText);
+  dotWrap.appendChild(dot);
+  inner.appendChild(dotWrap);
+
+  const body = document.createElement('p');
+  body.className = 'commit-body';
+  body.innerHTML = 'Put the phone down and go do it.<br>Come back only to mark it done.';
+  inner.appendChild(body);
+
+  const actions = document.createElement('div');
+  actions.className = 'commit-actions';
+
+  const startBtn = document.createElement('button');
+  startBtn.className = 'pill-ghost tap';
+  startBtn.textContent = 'Start a timer';
+  let running = false;
+  let left = chosen.min * 60;
+  startBtn.addEventListener('click', () => {
+    if (running) return;
+    running = true;
+    dot.classList.add('running');
+    startBtn.style.display = 'none';
+    dotText.textContent = fmtTime(left);
+    timerId = setInterval(() => {
+      left = Math.max(0, left - 1);
+      dotText.textContent = fmtTime(left);
+      if (left <= 0) { clearTimer(); }
+    }, 1000);
+  });
+  actions.appendChild(startBtn);
+
+  const doneBtn = document.createElement('button');
+  doneBtn.className = 'pill-solid tap';
+  doneBtn.textContent = 'I did it ✓';
+  doneBtn.addEventListener('click', complete);
+  actions.appendChild(doneBtn);
+
+  inner.appendChild(actions);
+
+  const back = document.createElement('button');
+  back.className = 'back-link tap';
+  back.textContent = 'not yet — back to scrolling';
+  back.addEventListener('click', () => setPhase('feed'));
+  inner.appendChild(back);
+
+  wrap.appendChild(inner);
+  app.appendChild(wrap);
+}
+
+function complete() {
+  const today = dayKey();
+  const isToday = state.last === today;
+  const continuing = state.last && !isToday && wasYesterday(state.last);
+  const reset = state.last && !isToday && !continuing;
+  grace = !!reset;
+  state = {
+    last: today,
+    streak: isToday ? state.streak : (continuing ? state.streak + 1 : 1),
+    total: state.total + 1,
+  };
+  save();
+  setPhase('done');
+}
+
+function renderRested() {
+  const celebratory = (phase === 'done');
+  const wrap = document.createElement('div');
+  wrap.className = 'rested-screen';
+
+  const inner = document.createElement('div');
+  inner.className = 'rested-inner';
+
+  const icon = document.createElement('div');
+  icon.className = 'rested-icon';
+  icon.textContent = celebratory ? '🌿' : '☑️';
+  inner.appendChild(icon);
+
+  const h1 = document.createElement('h1');
+  h1.textContent = celebratory ? 'You rested.' : 'Already rested today.';
+  inner.appendChild(h1);
+
+  const msg = document.createElement('p');
+  msg.className = 'rested-msg';
+  msg.textContent = grace
+    ? "The streak broke — and that's alright. His mercies are new every morning. Begin again. (Lamentations 3:22–23)"
+    : "One true thing is the whole assignment. The feed is closed now — that's the part a doomscroller never lets you have.";
+  inner.appendChild(msg);
+
+  const stats = document.createElement('div');
+  stats.className = 'stats';
+  stats.appendChild(statEl(state.streak, 'day streak'));
+  const div = document.createElement('div'); div.className = 'stat-divider'; stats.appendChild(div);
+  stats.appendChild(statEl(state.total, 'days rested'));
+  inner.appendChild(stats);
+
+  const leave = document.createElement('p');
+  leave.className = 'leave-alone';
+  leave.textContent = 'rest. is done for today. The best thing it can do now is leave you alone.';
+  inner.appendChild(leave);
+
+  const again = document.createElement('button');
+  again.className = 'again-link tap';
+  again.textContent = 'I genuinely want to rest again →';
+  again.addEventListener('click', () => { grace = false; deck = shuffledDeck(); setPhase('feed'); });
+  inner.appendChild(again);
+
+  wrap.appendChild(inner);
+  app.appendChild(wrap);
+}
+
+function statEl(n, label) {
+  const s = document.createElement('div');
+  s.className = 'stat';
+  const nEl = document.createElement('div'); nEl.className = 'n'; nEl.textContent = String(n);
+  const lEl = document.createElement('div'); lEl.className = 'label'; lEl.textContent = label;
+  s.append(nEl, lEl);
+  return s;
+}
+
+// ─── INIT ───────────────────────────────────────────────────────────────────
+load();
+phase = (state.last === dayKey()) ? 'rested' : 'feed';
+if (phase === 'feed') deck = shuffledDeck();
+render();
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  // if the day rolled while away, return to the feed
+  if (phase === 'rested' && state.last !== dayKey()) {
+    deck = shuffledDeck(); setPhase('feed');
+  }
+});
+</script>
+</body>
+</html>
