@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#f5efe6" />
 <link rel="manifest" href="./manifest.webmanifest" />
 <script src="../lib/pwa.js" defer></script>
+<script src="../lib/river.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,400&family=JetBrains+Mono:wght@200;300;400&display=swap" rel="stylesheet">
@@ -286,10 +287,31 @@
   let direction = null;    // 'up' | 'down'
   let targetMs  = 0;
   let elapsedMs = 0;
-  let startedAt = 0;       // ms-epoch; 0 when not running
+  let startedAt = 0;       // ms-epoch; 0 when not running (this run-leg)
+  let sessionStartedAt = 0;// ms-epoch; original start of the whole session
   let tickHandle = null;
   let taskIndex = 0;
   let copyShown = null;    // { text, until } | null
+
+  function currentTaskLabel () {
+    try {
+      const tasks = taEl.value.split('\n').map(s => s.trim()).filter(Boolean);
+      if (!tasks.length) return null;
+      return tasks[taskIndex % tasks.length] || null;
+    } catch (_) { return null; }
+  }
+  function emitSession (durationMs) {
+    if (!sessionStartedAt || !durationMs || durationMs <= 0) return;
+    if (!(window.river && window.river.emit)) return;
+    window.river.emit({
+      app: 'big',
+      kind: direction === 'down' ? 'timer.down' : 'timer.up',
+      startedAt: sessionStartedAt,
+      endedAt: Date.now(),
+      durationMs: durationMs,
+      label: currentTaskLabel(),
+    });
+  }
 
   // ── clock face decorations ───────────────────────────────
 
@@ -417,6 +439,8 @@
     mode = 'done';
     stopTicking();
     saveState();
+    emitSession(elapsedMs);
+    sessionStartedAt = 0;
     render();
   }
 
@@ -428,6 +452,7 @@
       targetMs = 0;
       elapsedMs = 0;
       startedAt = Date.now();
+      sessionStartedAt = startedAt;
       mode = 'running';
       startTicking();
       saveState();
@@ -438,6 +463,7 @@
       direction = 'up';
       elapsedMs = 0;
       startedAt = Date.now();
+      sessionStartedAt = startedAt;
       mode = 'running';
       startTicking();
       saveState();
@@ -447,6 +473,7 @@
     if (mode === 'armed') {                   // begin countdown
       elapsedMs = 0;
       startedAt = Date.now();
+      sessionStartedAt = startedAt;
       mode = 'running';
       startTicking();
       saveState();
@@ -487,6 +514,13 @@
   }
 
   function resetTimer () {
+    // Honest accounting: if there was anything actually running, tell river
+    // before we tear down. ('done' already emitted at enterDone.)
+    if (sessionStartedAt && (mode === 'running' || mode === 'paused')) {
+      const dur = (mode === 'running') ? liveElapsed() : elapsedMs;
+      emitSession(dur);
+    }
+    sessionStartedAt = 0;
     mode = 'idle';
     direction = null;
     targetMs = 0;
@@ -738,7 +772,7 @@
   function saveState () {
     try {
       localStorage.setItem(STATE_KEY, JSON.stringify({
-        mode, direction, targetMs, elapsedMs, startedAt
+        mode, direction, targetMs, elapsedMs, startedAt, sessionStartedAt
       }));
     } catch {}
   }
@@ -754,18 +788,41 @@
       targetMs = Number(s.targetMs) || 0;
       elapsedMs = Number(s.elapsedMs) || 0;
       startedAt = Number(s.startedAt) || 0;
+      sessionStartedAt = Number(s.sessionStartedAt) || 0;
       // honest reconciliation with wall-clock time
+      let crossedToDone = false;
       if (mode === 'running' && startedAt > 0) {
         const live = elapsedMs + (Date.now() - startedAt);
         if (direction === 'down' && live >= targetMs) {
           elapsedMs = targetMs;
           startedAt = 0;
           mode = 'done';
+          crossedToDone = true;
         } else if (direction === 'up' && live >= MAX_MS) {
           elapsedMs = MAX_MS;
           startedAt = 0;
           mode = 'done';
+          crossedToDone = true;
         }
+      }
+      // If we crossed the finish line while the page was closed, the session
+      // is complete — emit it now. Defer so river.js (defer-loaded) is ready.
+      if (crossedToDone && sessionStartedAt) {
+        const dur = elapsedMs;
+        const dir = direction;
+        const startMs = sessionStartedAt;
+        sessionStartedAt = 0;
+        setTimeout(function () {
+          if (!(window.river && window.river.emit)) return;
+          window.river.emit({
+            app: 'big',
+            kind: dir === 'down' ? 'timer.down' : 'timer.up',
+            startedAt: startMs,
+            endedAt: Date.now(),
+            durationMs: dur,
+            label: currentTaskLabel(),
+          });
+        }, 0);
       }
       return true;
     } catch { return false; }

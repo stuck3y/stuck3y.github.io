@@ -1,5 +1,5 @@
 // big — per-app service worker. Scope: /apps/big/
-const CACHE = 'app-big-v1';
+const CACHE = 'app-big-v2';
 const SHELL = ['./', './index.html'];
 
 self.addEventListener('install', (event) => {
