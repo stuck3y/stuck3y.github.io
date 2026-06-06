@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <link rel="manifest" href="./manifest.webmanifest" />
 <script src="../lib/pwa.js" defer></script>
+<script src="../lib/river.js" defer></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; }
   html, body {
@@ -76,6 +77,8 @@
   let running = true;
   let endTime = Date.now() + WORK * 1000;
   let pausedRemaining = WORK;
+  let workStartedAt = Date.now();   // start of the in-flight work pom
+  let workEmitted = false;          // guard so we emit once per pom
 
   function durationFor(m) { return m === 'work' ? WORK : BREAK; }
 
@@ -95,6 +98,21 @@
     if (running && r === 0) cls.push('done');
     document.body.className = cls.join(' ');
     themeMeta.content = mode === 'work' ? '#c92a2a' : '#2a8a3e';
+    // fire-and-forget: tell river when a work pom completes
+    if (mode === 'work' && running && r === 0 && !workEmitted && workStartedAt) {
+      workEmitted = true;
+      const endedAt = Date.now();
+      if (window.river && window.river.emit) {
+        window.river.emit({
+          app: 'ketchapp',
+          kind: 'pom.work',
+          startedAt: workStartedAt,
+          endedAt: endedAt,
+          durationMs: WORK * 1000,
+          label: null,
+        });
+      }
+    }
   }
 
   function startMode(m) {
@@ -102,6 +120,7 @@
     pausedRemaining = durationFor(m);
     endTime = Date.now() + pausedRemaining * 1000;
     running = true;
+    if (m === 'work') { workStartedAt = Date.now(); workEmitted = false; }
     render();
   }
 

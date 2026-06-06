@@ -1,5 +1,5 @@
 // river — per-app service worker. Scope: /apps/river/
-const CACHE = 'app-river-v1';
+const CACHE = 'app-river-v2';
 const SHELL = ['./', './index.html', './manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {

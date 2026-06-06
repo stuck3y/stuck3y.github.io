@@ -1,5 +1,5 @@
 // Ketchapp — per-app service worker. Scope: /apps/ketchapp/
-const CACHE = 'app-ketchapp-v1';
+const CACHE = 'app-ketchapp-v2';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {

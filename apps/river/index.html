@@ -152,6 +152,119 @@
     text-align: center;
     text-transform: lowercase;
   }
+
+  /* ── clocked: sessions streamed in from other apps ────────── */
+  .section { margin-bottom: 2.5rem; }
+  .section-h {
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: lowercase;
+    color: var(--muted);
+    margin: 0 0 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  .section-h .total { color: var(--fg); font-variant-numeric: tabular-nums; letter-spacing: 0.05em; }
+  .day-group { margin-bottom: 1.25rem; }
+  .day-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--rule);
+  }
+  .day-head .date { color: var(--fg); }
+  .day-head .day-meta { font-variant-numeric: tabular-nums; }
+  .ses-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .ses-time {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    min-width: 4.25rem;
+  }
+  .ses-meta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem;
+    font-size: 0.95rem;
+  }
+  .ses-app {
+    color: var(--fg);
+    letter-spacing: 0.02em;
+  }
+  .ses-label {
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .ses-label:hover, .ses-label.active {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .ses-label.untagged {
+    color: var(--muted);
+    border-style: dashed;
+    cursor: default;
+    opacity: 0.7;
+  }
+  .ses-dur {
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.95rem;
+    color: var(--fg);
+    letter-spacing: 0.02em;
+  }
+  .filter-bar {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.6rem 0.85rem;
+    margin-bottom: 1rem;
+    background: var(--rule);
+    border-radius: 6px;
+    font-size: 0.85rem;
+  }
+  .filter-bar .clear {
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    text-transform: lowercase;
+  }
+  .ses-empty {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 0.9rem;
+    padding: 0.75rem 0;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
@@ -161,11 +274,16 @@
     <nav class="nav"><a href="../zen/">zen reader &rsaquo;</a></nav>
   </header>
   <div id="content"></div>
-  <p class="footnote">reads drift away after 30 days.</p>
+  <p class="footnote">reads drift after 30 days · sessions after 90.</p>
 </main>
 <script>
   const KEY = "river-reads";
   const TTL_MS = 30 * 24 * 60 * 60 * 1000;
+  const SES_KEY = "river:sessions:v1";
+  const SES_TTL_MS = 90 * 24 * 60 * 60 * 1000;
+
+  // active filter for the clocked section — null or a label string
+  let activeLabel = null;
 
   function loadReads() {
     try {
@@ -202,34 +320,136 @@
     }[c]));
   }
 
-  function openRead(read) {
-    try {
-      sessionStorage.setItem("zen-reader-incoming", read.text);
-      sessionStorage.setItem("zen-reader-river-id", read.id);
-    } catch {}
-    window.location.href = "../zen/";
-  }
+  // ── sessions (the "clocked" stream from ketchapp / big / future apps) ──
 
-  function removeRead(id) {
-    const reads = loadReads().filter(r => r.id !== id);
-    saveReads(reads);
+  function loadSessions() {
+    try {
+      const raw = localStorage.getItem(SES_KEY);
+      const data = raw ? JSON.parse(raw) : null;
+      return Array.isArray(data) ? data : [];
+    } catch { return []; }
+  }
+  function saveSessions(arr) {
+    try { localStorage.setItem(SES_KEY, JSON.stringify(arr)); } catch {}
+  }
+  function pruneSessions(arr) {
+    const cutoff = Date.now() - SES_TTL_MS;
+    return arr.filter(s => (s.endedAt || s.startedAt || 0) >= cutoff);
+  }
+  function removeSession(id) {
+    saveSessions(loadSessions().filter(s => s.id !== id));
     render();
   }
 
-  function render() {
+  function formatDur(ms) {
+    const total = Math.max(0, Math.round(ms / 1000));
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    if (h > 0) return m ? `${h}h ${m}m` : `${h}h`;
+    if (m > 0) return s && m < 5 ? `${m}m ${s}s` : `${m}m`;
+    return `${s}s`;
+  }
+  function formatClock(ts) {
+    try {
+      return new Date(ts).toLocaleTimeString(undefined, {
+        hour: "numeric", minute: "2-digit"
+      }).toLowerCase().replace(/\s/g, "");
+    } catch { return ""; }
+  }
+  function dayKey(ts) {
+    const d = new Date(ts);
+    return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  }
+  function formatDayHead(ts) {
+    const d = new Date(ts);
+    const today = new Date();
+    const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
+    if (dayKey(ts) === dayKey(today.getTime())) return "today";
+    if (dayKey(ts) === dayKey(yesterday.getTime())) return "yesterday";
+    return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  }
+  function groupByDay(sessions) {
+    const groups = new Map();
+    for (const s of sessions) {
+      const k = dayKey(s.endedAt || s.startedAt || 0);
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k).push(s);
+    }
+    // ordered newest day first; sessions newest first inside each day
+    return Array.from(groups.entries())
+      .map(([k, items]) => {
+        items.sort((a, b) => (b.endedAt || b.startedAt) - (a.endedAt || a.startedAt));
+        const repTs = items[0].endedAt || items[0].startedAt;
+        const totalMs = items.reduce((sum, x) => sum + (x.durationMs || 0), 0);
+        return { key: k, repTs, items, totalMs };
+      })
+      .sort((a, b) => b.repTs - a.repTs);
+  }
+
+  function renderClocked() {
+    let sessions = pruneSessions(loadSessions());
+    saveSessions(sessions);
+    if (!sessions.length) return ""; // section omitted entirely when empty
+
+    const filtered = activeLabel
+      ? sessions.filter(s => s.label === activeLabel)
+      : sessions;
+
+    const grandTotal = filtered.reduce((sum, s) => sum + (s.durationMs || 0), 0);
+    const groups = groupByDay(filtered);
+
+    const filterBar = activeLabel
+      ? `<div class="filter-bar">
+           <span>filtering · <strong>${escapeHtml(activeLabel)}</strong> · ${escapeHtml(formatDur(grandTotal))} across ${filtered.length} ${filtered.length === 1 ? "session" : "sessions"}</span>
+           <button class="clear" data-clear-filter type="button">clear</button>
+         </div>`
+      : "";
+
+    const totalLabel = activeLabel
+      ? "" // already shown in the filter bar
+      : `<span class="total">${escapeHtml(formatDur(grandTotal))} · ${sessions.length}</span>`;
+
+    const body = groups.length
+      ? groups.map(g => {
+          const rows = g.items.map(s => {
+            const labelChip = s.label
+              ? `<button class="ses-label${s.label === activeLabel ? " active" : ""}" data-filter-label="${escapeHtml(s.label)}" type="button" title="filter by label">${escapeHtml(s.label)}</button>`
+              : `<span class="ses-label untagged">untagged</span>`;
+            return `<div class="ses-row">
+              <span class="ses-time">${escapeHtml(formatClock(s.startedAt))}</span>
+              <span class="ses-meta">
+                <span class="ses-app">${escapeHtml(s.app)}</span>
+                ${labelChip}
+              </span>
+              <span class="ses-dur">${escapeHtml(formatDur(s.durationMs))}</span>
+              <button class="del" data-del-ses="${escapeHtml(s.id)}" type="button" aria-label="remove" title="remove">&times;</button>
+            </div>`;
+          }).join("");
+          return `<div class="day-group">
+            <div class="day-head">
+              <span class="date">${escapeHtml(formatDayHead(g.repTs))}</span>
+              <span class="day-meta">${escapeHtml(formatDur(g.totalMs))} · ${g.items.length}</span>
+            </div>
+            ${rows}
+          </div>`;
+        }).join("")
+      : `<p class="ses-empty">no sessions match this filter.</p>`;
+
+    return `<section class="section">
+      <div class="section-h"><span>clocked</span>${totalLabel}</div>
+      ${filterBar}
+      ${body}
+    </section>`;
+  }
+
+  function renderReads() {
     const reads = prune(loadReads());
     saveReads(reads);
+    if (!reads.length) return "";
     reads.sort((a, b) =>
       (b.lastReadAt || b.addedAt || 0) - (a.lastReadAt || a.addedAt || 0)
     );
-
-    const content = document.getElementById("content");
-
-    if (!reads.length) {
-      content.innerHTML = `<p class="empty">your river is empty.<br><a href="../zen/">paste something into zen reader</a> and it will drift in here.</p>`;
-      return;
-    }
-
     const items = reads.map(r => {
       const total = r.total || 0;
       const i = (r.i || 0);
@@ -249,9 +469,39 @@
         </div>
       </li>`;
     }).join("");
+    return `<section class="section">
+      <div class="section-h"><span>reads</span></div>
+      <ul>${items}</ul>
+    </section>`;
+  }
 
-    content.innerHTML = `<ul>${items}</ul>`;
+  function openRead(read) {
+    try {
+      sessionStorage.setItem("zen-reader-incoming", read.text);
+      sessionStorage.setItem("zen-reader-river-id", read.id);
+    } catch {}
+    window.location.href = "../zen/";
+  }
 
+  function removeRead(id) {
+    const reads = loadReads().filter(r => r.id !== id);
+    saveReads(reads);
+    render();
+  }
+
+  function render() {
+    const content = document.getElementById("content");
+    const clockedHtml = renderClocked();
+    const readsHtml = renderReads();
+
+    if (!clockedHtml && !readsHtml) {
+      content.innerHTML = `<p class="empty">your river is empty.<br><a href="../zen/">paste something into zen reader</a> and it will drift in here. or run a timer in <a href="../big/">big</a> or <a href="../ketchapp/">ketchapp</a> — completed sessions stream here too.</p>`;
+      return;
+    }
+
+    content.innerHTML = clockedHtml + readsHtml;
+
+    // reads
     content.querySelectorAll("[data-open]").forEach(b => {
       b.addEventListener("click", () => {
         const r = loadReads().find(x => x.id === b.dataset.open);
@@ -263,6 +513,27 @@
         e.stopPropagation();
         removeRead(b.dataset.del);
       });
+    });
+
+    // sessions
+    content.querySelectorAll("[data-del-ses]").forEach(b => {
+      b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        removeSession(b.dataset.delSes);
+      });
+    });
+    content.querySelectorAll("[data-filter-label]").forEach(b => {
+      b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const lbl = b.dataset.filterLabel;
+        activeLabel = (activeLabel === lbl) ? null : lbl;
+        render();
+      });
+    });
+    const clearBtn = content.querySelector("[data-clear-filter]");
+    if (clearBtn) clearBtn.addEventListener("click", () => {
+      activeLabel = null;
+      render();
     });
   }
 
