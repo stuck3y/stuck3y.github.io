@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<meta name="theme-color" content="#1a1715" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>floor</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<script src="../lib/pwa.js" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1a1715;
+    --panel: #211d1a;
+    --fg: #f0ebe0;
+    --muted: #8a8275;
+    --faint: rgba(240,235,224,0.08);
+    --rule: rgba(240,235,224,0.14);
+    --accent: #e08055;
+    --go: #3ddc84;
+    --serif: 'Fraunces', ui-serif, Georgia, serif;
+    --ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--fg);
+    font-family: var(--serif); font-size: 19px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none; user-select: none;
+    touch-action: manipulation;
+    overflow: hidden;
+  }
+
+  #app {
+    width: 100%; height: 100vh; height: 100dvh; position: relative; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+
+  .surface {
+    position: absolute; inset: 0; display: none; flex-direction: column;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) calc(env(safe-area-inset-bottom) + 84px) env(safe-area-inset-left);
+  }
+  body[data-mode="today"]    #todaySurface,
+  body[data-mode="workout"]  #workoutSurface,
+  body[data-mode="done"]     #doneSurface { display: flex; }
+
+  .scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 28px 24px 8px; }
+
+  /* ── TODAY ───────────────────────────────────────────── */
+  .eye { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  h1 {
+    font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 8vw, 44px);
+    line-height: 1.08; letter-spacing: -0.02em; margin: 0 0 14px;
+  }
+  .rule { font-style: italic; color: var(--muted); margin: 0 0 28px; font-size: 15px; }
+  .actions { padding: 8px 24px calc(env(safe-area-inset-bottom) + 24px); display: flex; flex-direction: column; gap: 10px; }
+
+  .primary {
+    width: 100%; min-height: 64px; padding: 18px;
+    border: 0; border-radius: 18px; cursor: pointer;
+    background: var(--accent); color: #1a1212;
+    font-family: var(--ui); font-weight: 600; font-size: 19px; letter-spacing: 0.01em;
+    transition: transform .1s ease, filter .1s ease;
+  }
+  .primary:active { transform: scale(0.98); filter: brightness(0.94); }
+  .primary.go { background: var(--go); color: #0a1410; }
+  .primary.big { min-height: 96px; font-size: 26px; letter-spacing: 0.02em; font-weight: 700; }
+  .secondary {
+    width: 100%; min-height: 52px; padding: 14px;
+    border: 1px solid var(--rule); border-radius: 14px; cursor: pointer;
+    background: transparent; color: var(--fg);
+    font-family: var(--ui); font-weight: 500; font-size: 16px;
+  }
+  .secondary:active { filter: brightness(0.85); }
+  .link {
+    background: none; border: 0; color: var(--muted);
+    font-family: var(--ui); font-size: 13px; padding: 6px 12px; cursor: pointer;
+    align-self: center;
+  }
+  .link:hover { color: var(--accent); }
+
+  .preview { margin-top: 4px; }
+  .preview summary {
+    list-style: none; cursor: pointer; color: var(--muted);
+    font-size: 13px; letter-spacing: 0.04em; padding: 6px 0;
+  }
+  .preview summary::-webkit-details-marker { display: none; }
+  .preview ol { margin: 10px 0 0; padding: 0; list-style: none; }
+  .preview li { padding: 10px 0; border-top: 1px solid var(--faint); font-size: 16px; display: flex; justify-content: space-between; gap: 12px; }
+  .preview li .prep { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .preview li.opt .prep::after { content: " · optional"; }
+
+  /* ── WORKOUT ─────────────────────────────────────────── */
+  .bar {
+    flex-shrink: 0; padding: calc(env(safe-area-inset-top) + 14px) 24px 4px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    color: var(--muted); font-size: 13px; letter-spacing: 0.04em;
+  }
+  .bar .progress { font-variant-numeric: tabular-nums; }
+
+  .card { padding: 18px 24px 0; }
+  h2 {
+    font-family: var(--serif); font-weight: 400; font-size: clamp(28px, 7vw, 38px);
+    letter-spacing: -0.015em; line-height: 1.1; margin: 6px 0 8px;
+  }
+  .rx { color: var(--muted); font-size: 14px; letter-spacing: 0.03em; margin-bottom: 18px; }
+  .rx.opt::after { content: " · optional"; opacity: 0.75; }
+  .cues { list-style: none; margin: 0 0 22px; padding: 0; }
+  .cues li {
+    padding: 9px 0 9px 22px; position: relative; font-size: 18px; line-height: 1.4;
+    border-bottom: 1px solid var(--faint);
+  }
+  .cues li:last-child { border-bottom: 0; }
+  .cues li::before {
+    content: ""; position: absolute; left: 4px; top: 18px; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--accent); opacity: 0.6;
+  }
+  .set-tracker {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .set-tracker .label {
+    font-family: var(--serif); font-size: 20px; font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .pips { display: flex; gap: 8px; }
+  .pips span {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: transparent; border: 2px solid var(--muted);
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .pips span.done { background: var(--go); border-color: var(--go); }
+
+  /* ── DONE ────────────────────────────────────────────── */
+  .done-icon { font-size: 40px; margin-bottom: 10px; opacity: 0.85; }
+  .next { color: var(--accent); margin: 16px 0 22px; font-size: 16px; font-style: italic; }
+  .recap { list-style: none; padding: 0; margin: 0 0 28px; }
+  .recap li {
+    padding: 10px 0; border-top: 1px solid var(--faint);
+    font-size: 16px; display: flex; justify-content: space-between; gap: 12px;
+  }
+  .recap li .prep { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .recap li:last-child { border-bottom: 1px solid var(--faint); }
+
+  /* ── REST TIMER (sticky bottom) ──────────────────────── */
+  .rest-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    padding: 12px 18px calc(env(safe-area-inset-bottom) + 12px);
+    background: var(--panel); border-top: 1px solid var(--rule);
+    display: none; align-items: center; gap: 14px;
+  }
+  body[data-rest="on"] .rest-bar { display: flex; }
+  .rest-time {
+    font-family: var(--serif); font-size: 36px; font-weight: 500;
+    font-variant-numeric: tabular-nums; line-height: 1; min-width: 100px;
+  }
+  .rest-bar.ready .rest-time { color: var(--go); }
+  .rest-actions { margin-left: auto; display: flex; gap: 8px; }
+  .rest-actions button {
+    min-width: 56px; min-height: 44px; padding: 8px 12px;
+    border: 1px solid var(--rule); border-radius: 12px; background: transparent;
+    color: var(--fg); font-family: var(--ui); font-size: 14px; cursor: pointer;
+    font-variant-numeric: tabular-nums;
+  }
+  .rest-actions button:active { background: var(--faint); }
+  .rest-bar.ready { animation: pulse 1.3s ease-in-out infinite; }
+  @keyframes pulse {
+    0%,100% { background: var(--panel); }
+    50% { background: rgba(61,220,132,0.10); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rest-bar.ready { animation: none; }
+  }
+</style>
+</head>
+<body data-mode="today">
+
+<div id="app">
+
+  <!-- ── TODAY ── -->
+  <section class="surface" id="todaySurface">
+    <div class="scroll">
+      <div class="eye">today</div>
+      <h1 id="todayTitle">—</h1>
+      <p class="rule">RPE 5–6 · Pain ≤ 3/10 · Finish fresh</p>
+      <details class="preview" id="preview">
+        <summary>view full workout &rsaquo;</summary>
+        <ol id="previewList"></ol>
+      </details>
+    </div>
+    <div class="actions">
+      <button class="primary go" id="startBtn">Start workout</button>
+      <button class="link" id="resetTodayBtn" hidden>reset today's progress</button>
+    </div>
+  </section>
+
+  <!-- ── WORKOUT ── -->
+  <section class="surface" id="workoutSurface">
+    <div class="bar">
+      <span id="workoutEye">—</span>
+      <span class="progress" id="exProgress">— / —</span>
+    </div>
+    <div class="scroll">
+      <div class="card">
+        <h2 id="exName">—</h2>
+        <div class="rx" id="exRx">—</div>
+        <ul class="cues" id="exCues"></ul>
+        <div class="set-tracker">
+          <div class="label" id="setLabel">Set 1 of 3</div>
+          <div class="pips" id="setPips"></div>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="primary go big" id="setDoneBtn">SET DONE</button>
+      <button class="link" id="resetMidBtn">reset today</button>
+    </div>
+  </section>
+
+  <!-- ── DONE ── -->
+  <section class="surface" id="doneSurface">
+    <div class="scroll">
+      <div class="done-icon">✓</div>
+      <h1>Workout complete.</h1>
+      <p class="rule">Keep the streak boring.</p>
+      <div class="next" id="nextLine">—</div>
+      <ul class="recap" id="recap"></ul>
+    </div>
+    <div class="actions">
+      <button class="secondary" id="redoBtn">Run it again</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- sticky rest timer -->
+<div class="rest-bar" id="restBar" aria-live="polite">
+  <div class="rest-time" id="restTime">0:00</div>
+  <div class="rest-actions">
+    <button data-rest="add30" type="button">+30</button>
+    <button data-rest="reset" type="button">reset</button>
+    <button data-rest="skip"  type="button">skip</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ── workout data ────────────────────────────────────────────
+const WORKOUTS = {
+  push: {
+    key: 'push',
+    title: 'Monday — Push',
+    eye: 'monday · push',
+    exercises: [
+      { name: 'DB Bench Press', sets: 3, reps: '8–12', restSeconds: 90,
+        cues: ['Shoulder blades back', 'Elbows forty-five', 'Press smooth'] },
+      { name: 'Incline DB Press', sets: 2, reps: '8–12', restSeconds: 90,
+        cues: ['Chest stays tall', 'Control the bottom', 'Drive up/back'] },
+      { name: 'Seated DB Shoulder Press', sets: 2, reps: '8–10', restSeconds: 90,
+        cues: ['Ribs stay down', 'Wrists over elbows', 'Press straight up'] },
+      { name: 'DB Lateral Raise', sets: 2, reps: '12–20', restSeconds: 60,
+        cues: ['Lead with elbows', 'Soft bent arms', 'Stop shoulder height'] },
+      { name: 'DB Triceps Extension', sets: 2, reps: '10–15', restSeconds: 60,
+        cues: ['Elbows stay fixed', 'Stretch then extend', 'No shoulder swing'] },
+    ],
+  },
+  pull: {
+    key: 'pull',
+    title: 'Wednesday — Pull',
+    eye: 'wednesday · pull',
+    exercises: [
+      { name: 'One-Arm DB Row', sets: 3, reps: '8–12/side', restSeconds: 90,
+        cues: ['Pull elbow back', 'Chest stays square', 'Squeeze lower lat'] },
+      { name: 'Chest-Supported DB Row', sets: 2, reps: '10–15', restSeconds: 90,
+        cues: ['Bench supports chest', 'Pull to ribs', 'Pause and squeeze'] },
+      { name: 'Rear Delt Raise', sets: 2, reps: '12–20', restSeconds: 60,
+        cues: ['Reach wide', 'Pinkies slightly up', 'Move shoulder blades'] },
+      { name: 'DB Curl', sets: 2, reps: '8–12', restSeconds: 60,
+        cues: ['Elbows stay down', 'Squeeze the biceps', 'Lower with control'] },
+      { name: 'Hammer Curl', sets: 2, reps: '10–15', restSeconds: 60,
+        cues: ['Thumbs stay up', 'Wrists stay neutral', 'Don’t swing'] },
+      { name: 'Farmer Carry', sets: 3, reps: 'short carry', restSeconds: 60, optional: true,
+        cues: ['Tall quiet posture', 'Ribs stacked down', 'Foot feels calm'] },
+    ],
+  },
+  legs: {
+    key: 'legs',
+    title: 'Friday — Legs/Rebuild',
+    eye: 'friday · legs/rebuild',
+    exercises: [
+      { name: 'Wall Sit or Spanish Squat Hold', sets: 3, reps: '30–45 sec', restSeconds: 60,
+        cues: ['Knees track toes', 'Pressure through midfoot', 'Pain under three'] },
+      { name: 'DB Romanian Deadlift', sets: 3, reps: '8–12', restSeconds: 90,
+        cues: ['Hips back first', 'Lats stay tight', 'Feel hamstrings stretch'] },
+      { name: 'Glute Bridge / Hip Thrust', sets: 3, reps: '10–15', restSeconds: 75,
+        cues: ['Ribs stay down', 'Drive through heels', 'Squeeze glutes hard'] },
+      { name: 'Goblet Squat to Bench', sets: 2, reps: '8–10', restSeconds: 90,
+        cues: ['Sit to target', 'Knees track toes', 'Smooth no bounce'] },
+      { name: 'Slant Board Calf Stretch', sets: 2, reps: '30 sec', restSeconds: 30,
+        cues: ['Gentle stretch only', 'Heel stays heavy', 'No nerve zing'] },
+      { name: 'Tibialis Raise', sets: 2, reps: '12–20', restSeconds: 45,
+        cues: ['Back on wall', 'Toes lift high', 'Slow lower down'] },
+    ],
+  },
+};
+const CYCLE = ['push', 'pull', 'legs'];
+// rounding (the spec): Mon→push, Tue→pull, Wed→pull, Thu→legs, Fri→legs, Sat→push, Sun→push
+// JS Date.getDay(): 0=Sun..6=Sat; remap to Mon-based (Mon=0..Sun=6) then index.
+const ROUTING_MON_BASED = ['push','pull','pull','legs','legs','push','push'];
+
+function todayKey() {
+  const dow = new Date().getDay();           // 0=Sun..6=Sat
+  const monBased = (dow + 6) % 7;            // Sun→6, Mon→0
+  return ROUTING_MON_BASED[monBased];
+}
+function nextAfter(key) {
+  return CYCLE[(CYCLE.indexOf(key) + 1) % CYCLE.length];
+}
+function dayDateKey(d) {
+  d = d || new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+// ── state ────────────────────────────────────────────────────
+const STORE_KEY = 'floor.v1';
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+let state = {
+  activeWorkoutKey: null,
+  activeDate: null,
+  currentExerciseIndex: 0,
+  completedSetsByExercise: {},
+  completedDates: [],
+  timerEndsAt: 0,
+  timerBaseSeconds: 0,
+};
+function loadState() {
+  try {
+    const r = JSON.parse(localStorage.getItem(STORE_KEY));
+    if (r && typeof r === 'object') {
+      state.activeWorkoutKey = r.activeWorkoutKey || null;
+      state.activeDate = r.activeDate || null;
+      state.currentExerciseIndex = Number(r.currentExerciseIndex) || 0;
+      state.completedSetsByExercise = (r.completedSetsByExercise && typeof r.completedSetsByExercise === 'object') ? r.completedSetsByExercise : {};
+      state.completedDates = Array.isArray(r.completedDates) ? r.completedDates.slice(-90) : [];
+      state.timerEndsAt = Number(r.timerEndsAt) || 0;
+      state.timerBaseSeconds = Number(r.timerBaseSeconds) || 0;
+    }
+  } catch {}
+}
+function saveState() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch {}
+}
+
+// ── beep + vibrate (gentle, no permission needed) ────────────
+let audioCtx = null;
+function beep() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = audioCtx;
+    const t0 = ctx.currentTime;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sine'; o.frequency.value = 660;
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(0.18, t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.45);
+    o.start(t0); o.stop(t0 + 0.5);
+  } catch {}
+  try { if (navigator.vibrate) navigator.vibrate([180, 90, 180]); } catch {}
+}
+
+// ── wake lock (keep screen on while working out) ─────────────
+let wakeLock = null;
+async function requestWakeLock() {
+  try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch {}
+}
+function releaseWakeLock() {
+  try { if (wakeLock) { wakeLock.release(); wakeLock = null; } } catch {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && document.body.dataset.mode === 'workout') requestWakeLock();
+});
+
+// ── mode + render ────────────────────────────────────────────
+function setMode(m) {
+  document.body.dataset.mode = m;
+  if (m === 'workout') requestWakeLock(); else releaseWakeLock();
+  if (m === 'today') renderToday();
+  else if (m === 'workout') renderWorkout();
+  else if (m === 'done') renderDone();
+}
+
+function activeWorkout() {
+  return state.activeWorkoutKey ? WORKOUTS[state.activeWorkoutKey] : null;
+}
+
+function renderToday() {
+  const w = WORKOUTS[todayKey()];
+  $('#todayTitle').textContent = w.title;
+  const list = $('#previewList');
+  list.innerHTML = '';
+  w.exercises.forEach((e, i) => {
+    const li = document.createElement('li');
+    if (e.optional) li.classList.add('opt');
+    const name = document.createElement('span');
+    name.textContent = `${i + 1}. ${e.name}`;
+    const prep = document.createElement('span');
+    prep.className = 'prep';
+    prep.textContent = `${e.sets}×${e.reps}`;
+    li.append(name, prep);
+    list.appendChild(li);
+  });
+
+  // reset link only if there's mid-session progress for today
+  const hasProgress = state.activeDate === dayDateKey() &&
+    state.activeWorkoutKey === w.key &&
+    (state.currentExerciseIndex > 0 ||
+     Object.values(state.completedSetsByExercise).some(n => n > 0));
+  $('#resetTodayBtn').hidden = !hasProgress;
+}
+
+function renderWorkout() {
+  const w = activeWorkout();
+  if (!w) { setMode('today'); return; }
+  const idx = state.currentExerciseIndex;
+  const ex = w.exercises[idx];
+  if (!ex) { finishWorkout(); return; }
+  $('#workoutEye').textContent = w.eye;
+  $('#exProgress').textContent = `${idx + 1} / ${w.exercises.length}`;
+  $('#exName').textContent = ex.name;
+  const rx = $('#exRx');
+  rx.textContent = `${ex.sets} sets · ${ex.reps} · rest ${ex.restSeconds}s`;
+  rx.classList.toggle('opt', !!ex.optional);
+  const cues = $('#exCues'); cues.innerHTML = '';
+  ex.cues.forEach(c => { const li = document.createElement('li'); li.textContent = c; cues.appendChild(li); });
+
+  const done = state.completedSetsByExercise[idx] || 0;
+  $('#setLabel').textContent = `Set ${Math.min(done + 1, ex.sets)} of ${ex.sets}`;
+  const pips = $('#setPips'); pips.innerHTML = '';
+  for (let i = 0; i < ex.sets; i++) {
+    const s = document.createElement('span');
+    if (i < done) s.classList.add('done');
+    pips.appendChild(s);
+  }
+}
+
+function renderDone() {
+  const w = activeWorkout() || WORKOUTS[todayKey()];
+  const next = nextAfter(w.key);
+  $('#nextLine').textContent = `Next up: ${WORKOUTS[next].title}`;
+  const recap = $('#recap'); recap.innerHTML = '';
+  w.exercises.forEach((e, i) => {
+    const li = document.createElement('li');
+    const n = document.createElement('span');
+    n.textContent = `${i + 1}. ${e.name}`;
+    const p = document.createElement('span');
+    p.className = 'prep';
+    const sets = state.completedSetsByExercise[i] || 0;
+    p.textContent = `${sets}×${e.reps}`;
+    li.append(n, p);
+    recap.appendChild(li);
+  });
+}
+
+// ── set/exercise progression ────────────────────────────────
+function startWorkout() {
+  const key = todayKey();
+  state.activeWorkoutKey = key;
+  state.activeDate = dayDateKey();
+  state.currentExerciseIndex = 0;
+  state.completedSetsByExercise = {};
+  clearTimer(false);
+  saveState();
+  setMode('workout');
+}
+
+function setDone() {
+  const w = activeWorkout();
+  if (!w) return;
+  const idx = state.currentExerciseIndex;
+  const ex = w.exercises[idx];
+  if (!ex) return;
+  const done = (state.completedSetsByExercise[idx] || 0) + 1;
+  state.completedSetsByExercise[idx] = done;
+
+  const isLastSet = done >= ex.sets;
+  const isLastExercise = idx >= w.exercises.length - 1;
+
+  if (isLastSet && isLastExercise) {
+    clearTimer(false);
+    saveState();
+    finishWorkout();
+    return;
+  }
+  if (isLastSet) state.currentExerciseIndex = idx + 1;
+
+  startRestTimer(ex.restSeconds);
+  saveState();
+  renderWorkout();
+}
+
+function finishWorkout() {
+  const today = dayDateKey();
+  if (!state.completedDates.includes(today)) state.completedDates.push(today);
+  saveState();
+  setMode('done');
+}
+
+function resetToday() {
+  state.activeWorkoutKey = null;
+  state.activeDate = null;
+  state.currentExerciseIndex = 0;
+  state.completedSetsByExercise = {};
+  clearTimer(false);
+  saveState();
+  setMode('today');
+}
+
+// ── rest timer ───────────────────────────────────────────────
+let tickHandle = null;
+let lastBeepAt = 0;
+function startRestTimer(seconds) {
+  state.timerBaseSeconds = seconds;
+  state.timerEndsAt = Date.now() + seconds * 1000;
+  lastBeepAt = 0;
+  saveState();
+  showRestBar();
+  ensureTicking();
+}
+function clearTimer(persist) {
+  state.timerEndsAt = 0; state.timerBaseSeconds = 0;
+  if (persist) saveState();
+  hideRestBar();
+  stopTicking();
+}
+function showRestBar() { document.body.dataset.rest = 'on'; renderTimer(); }
+function hideRestBar() { delete document.body.dataset.rest; }
+function renderTimer() {
+  const bar = $('#restBar');
+  const timeEl = $('#restTime');
+  if (!state.timerEndsAt) { hideRestBar(); return; }
+  const remMs = state.timerEndsAt - Date.now();
+  const remSec = Math.max(0, Math.ceil(remMs / 1000));
+  const m = Math.floor(remSec / 60);
+  const s = remSec % 60;
+  timeEl.textContent = `${m}:${String(s).padStart(2, '0')}`;
+  if (remMs <= 0) {
+    bar.classList.add('ready');
+    if (!lastBeepAt) { beep(); lastBeepAt = Date.now(); }
+  } else {
+    bar.classList.remove('ready');
+  }
+}
+function ensureTicking() {
+  if (tickHandle) return;
+  tickHandle = setInterval(() => {
+    if (!state.timerEndsAt) { stopTicking(); return; }
+    renderTimer();
+  }, 250);
+}
+function stopTicking() { if (tickHandle) { clearInterval(tickHandle); tickHandle = null; } }
+
+$('#restBar').addEventListener('click', e => {
+  const b = e.target.closest('button[data-rest]');
+  if (!b) return;
+  const act = b.dataset.rest;
+  if (act === 'add30') state.timerEndsAt += 30000;
+  else if (act === 'reset') state.timerEndsAt = Date.now() + state.timerBaseSeconds * 1000;
+  else if (act === 'skip') { clearTimer(true); return; }
+  lastBeepAt = 0;
+  $('#restBar').classList.remove('ready');
+  saveState(); renderTimer();
+});
+
+// ── wiring ──────────────────────────────────────────────────
+$('#startBtn').addEventListener('click', startWorkout);
+$('#setDoneBtn').addEventListener('click', setDone);
+$('#resetTodayBtn').addEventListener('click', resetToday);
+$('#resetMidBtn').addEventListener('click', resetToday);
+$('#redoBtn').addEventListener('click', () => { resetToday(); });
+
+// ── init / reconcile ────────────────────────────────────────
+function init() {
+  loadState();
+  const today = dayDateKey();
+  const todaysKey = todayKey();
+
+  // already done today → done screen
+  if (state.completedDates.includes(today)) {
+    state.activeWorkoutKey = state.activeWorkoutKey || todaysKey;
+    state.activeDate = state.activeDate || today;
+    setMode('done');
+    return;
+  }
+
+  // resume mid-workout
+  if (state.activeDate === today && state.activeWorkoutKey === todaysKey && state.activeWorkoutKey) {
+    setMode('workout');
+    // restore live timer if still in the future or just expired
+    if (state.timerEndsAt && Date.now() < state.timerEndsAt + 60_000) {
+      showRestBar(); ensureTicking(); renderTimer();
+    } else {
+      clearTimer(true);
+    }
+    return;
+  }
+
+  // stale state from earlier day or different workout → fresh today
+  state.activeWorkoutKey = null;
+  state.activeDate = null;
+  state.currentExerciseIndex = 0;
+  state.completedSetsByExercise = {};
+  clearTimer(true);
+  setMode('today');
+}
+init();
+</script>
+</body>
+</html>
