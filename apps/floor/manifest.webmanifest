@@ -1,0 +1,20 @@
+{
+  "name": "floor",
+  "short_name": "floor",
+  "description": "Floor-mode workout. Open phone, see today's session, tap SET DONE, rest, repeat.",
+  "scope": "/apps/floor/",
+  "start_url": "/apps/floor/?source=pwa",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1a1715",
+  "background_color": "#1a1715",
+  "categories": ["health", "fitness", "lifestyle"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
