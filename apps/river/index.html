@@ -7,6 +7,8 @@
 <meta name="theme-color" content="#f5efe6" />
 <link rel="manifest" href="./manifest.webmanifest" />
 <script src="../lib/pwa.js" defer></script>
+<script src="../lib/sys.js" defer></script>
+<script>addEventListener('DOMContentLoaded', function () { if (window.sys) sys.theme.init(); });</script>
 <style>
   :root {
     --bg: #f5efe6;
@@ -16,13 +18,20 @@
     --rule: rgba(74, 67, 56, 0.18);
   }
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       --bg: #1a1715;
       --fg: #d8cfc2;
       --muted: #6b6357;
       --accent: #b8ad9c;
       --rule: rgba(184, 173, 156, 0.18);
     }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1a1715;
+    --fg: #d8cfc2;
+    --muted: #6b6357;
+    --accent: #b8ad9c;
+    --rule: rgba(184, 173, 156, 0.18);
   }
 
   * { box-sizing: border-box; }

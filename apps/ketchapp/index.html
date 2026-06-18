@@ -10,6 +10,7 @@
 <link rel="manifest" href="./manifest.webmanifest" />
 <script src="../lib/pwa.js" defer></script>
 <script src="../lib/river.js" defer></script>
+<script src="../lib/sys.js" defer></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; }
   html, body {
@@ -112,6 +113,7 @@
           label: null,
         });
       }
+      if (window.sys) sys.bus.emit('session.end', { app: 'ketchapp', kind: 'pom.work', label: null });
     }
   }
 
@@ -121,6 +123,8 @@
     endTime = Date.now() + pausedRemaining * 1000;
     running = true;
     if (m === 'work') { workStartedAt = Date.now(); workEmitted = false; }
+    // tell every open app a focus session just began
+    if (window.sys) sys.bus.emit('session.start', { app: 'ketchapp', kind: 'pom.' + m, label: null });
     render();
   }
 
@@ -165,6 +169,18 @@
 
   setInterval(render, 250);
   render();
+
+  // system bus: reflect this app's activity on the shell launcher. The initial
+  // pom auto-starts before the deferred sys.js loads, so announce it on ready;
+  // and signal end when the app is closed or backgrounded mid-session.
+  addEventListener('DOMContentLoaded', () => {
+    if (window.sys && running && mode === 'work') {
+      sys.bus.emit('session.start', { app: 'ketchapp', kind: 'pom.work', label: null });
+    }
+  });
+  addEventListener('pagehide', () => {
+    if (window.sys) sys.bus.emit('session.end', { app: 'ketchapp', kind: 'pom.' + mode, label: null });
+  });
 
   let wakeLock = null;
   async function tryWakeLock() {
