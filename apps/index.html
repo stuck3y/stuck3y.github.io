@@ -56,6 +56,7 @@
     transition: border-color var(--fast) var(--ease);
   }
   .search-hint:hover { border-color: var(--accent); }
+  .actions { display: flex; align-items: center; gap: var(--space-2); }
   kbd {
     font-family: var(--font);
     font-size: 12px;
@@ -98,6 +99,27 @@
     transition: transform var(--fast) var(--ease);
   }
   .tile:active .icon { transform: scale(0.92); }
+  .tile .icon { position: relative; }
+  /* live activity: a pulsing dot when the app emits session.start on the bus */
+  .tile.active .icon::after {
+    content: "";
+    position: absolute;
+    top: -3px; right: -3px;
+    width: 14px; height: 14px;
+    border-radius: var(--radius-full);
+    background: var(--success);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.6);
+    animation: pulse 1.8s var(--ease) infinite;
+  }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.5); }
+    70%  { box-shadow: 0 0 0 8px rgba(52, 199, 89, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tile.active .icon::after { animation: none; }
+  }
   .tile .label {
     font-size: 12px;
     font-weight: 500;
@@ -182,9 +204,12 @@
 <body>
   <header>
     <h1>Apps</h1>
-    <button class="search-hint" id="open-palette" aria-label="Search apps">
-      <span>Search</span><kbd id="hint-key">⌘K</kbd>
-    </button>
+    <div class="actions">
+      <button class="search-hint" id="theme-toggle" aria-label="Theme"></button>
+      <button class="search-hint" id="open-palette" aria-label="Search apps">
+        <span>Search</span><kbd id="hint-key">⌘K</kbd>
+      </button>
+    </div>
   </header>
 
   <main class="grid" id="grid" aria-label="All apps"></main>
@@ -199,6 +224,19 @@
   <script>
   window.addEventListener('DOMContentLoaded', function () {
     sys.theme.init();
+
+    // Theme toggle: cycles auto -> light -> dark, propagates to every open app.
+    var LABELS = { auto: 'Auto', light: 'Light', dark: 'Dark' };
+    var themeBtn = document.getElementById('theme-toggle');
+    function paintTheme() { themeBtn.textContent = LABELS[sys.theme.get()]; }
+    themeBtn.addEventListener('click', function () {
+      var order = sys.theme.THEMES;
+      var next = order[(order.indexOf(sys.theme.get()) + 1) % order.length];
+      sys.theme.set(next);
+      paintTheme();
+    });
+    sys.bus.on('theme', paintTheme); // stay in sync if another app changes it
+    paintTheme();
 
     // Light text on dark tiles, dark text on light tiles.
     function luminance(hex) {
@@ -221,6 +259,7 @@
     sys.apps.forEach(function (app) {
       var a = document.createElement('a');
       a.className = 'tile';
+      a.dataset.id = app.id;
       a.href = app.path;
       a.innerHTML =
         '<span class="icon" style="background:' + app.color + ';color:' + ink(app.color) + '">' +
@@ -229,6 +268,15 @@
         '<span class="label">' + app.name + '</span>';
       grid.appendChild(a);
     });
+
+    // --- Live activity (bus consumer) ---
+    // When any app emits session.start/session.end, light up its tile.
+    function setActive(id, on) {
+      var tile = grid.querySelector('.tile[data-id="' + id + '"]');
+      if (tile) tile.classList.toggle('active', on);
+    }
+    sys.bus.on('session.start', function (d) { if (d && d.app) setActive(d.app, true); });
+    sys.bus.on('session.end',   function (d) { if (d && d.app) setActive(d.app, false); });
 
     // --- Command palette ---
     var backdrop = document.getElementById('backdrop');

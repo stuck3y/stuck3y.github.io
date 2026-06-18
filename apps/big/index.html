@@ -8,6 +8,8 @@
 <link rel="manifest" href="./manifest.webmanifest" />
 <script src="../lib/pwa.js" defer></script>
 <script src="../lib/river.js" defer></script>
+<script src="../lib/sys.js" defer></script>
+<script>addEventListener('DOMContentLoaded', function () { if (window.sys) sys.theme.init(); });</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,400&family=JetBrains+Mono:wght@200;300;400&display=swap" rel="stylesheet">
@@ -22,7 +24,7 @@
     --accent: #b85d3c;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       --bg: #1a1715;
       --fg: #d8cfc2;
       --muted: #6b6357;
@@ -31,6 +33,15 @@
       --label: rgba(216, 207, 194, 0.48);
       --accent: #d97a4f;
     }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1a1715;
+    --fg: #d8cfc2;
+    --muted: #6b6357;
+    --rim: rgba(216, 207, 194, 0.12);
+    --tick: rgba(216, 207, 194, 0.28);
+    --label: rgba(216, 207, 194, 0.48);
+    --accent: #d97a4f;
   }
 
   * { box-sizing: border-box; }
