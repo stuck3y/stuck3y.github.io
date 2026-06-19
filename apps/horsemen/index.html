@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>The Four Horsemen</title>
+<meta name="description" content="Turn a task you're avoiding into a ready-to-paste de-avoidance prompt." />
+<meta name="theme-color" content="#f6f0e6" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Horsemen" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<script src="../lib/pwa.js" defer></script>
+<script src="../lib/sys.js" defer></script>
+<script src="../lib/river.js" defer></script>
+<script>addEventListener('DOMContentLoaded', function () { if (window.sys) sys.theme.init(); });</script>
+<style>
+  :root {
+    --bg: #f6f0e6;
+    --card: #fffdf9;
+    --fg: #2a2520;
+    --muted: #8a8275;
+    --rule: rgba(42, 37, 32, 0.10);
+    --accent: #b85d3c;
+    --accent-fg: #fffaf4;
+    --shadow: 0 12px 40px rgba(42, 37, 32, 0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17140f;
+      --card: #211d17;
+      --fg: #ece3d4;
+      --muted: #9a9080;
+      --rule: rgba(236, 227, 212, 0.12);
+      --accent: #d97a4f;
+      --accent-fg: #1a130d;
+      --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17140f;
+    --card: #211d17;
+    --fg: #ece3d4;
+    --muted: #9a9080;
+    --rule: rgba(236, 227, 212, 0.12);
+    --accent: #d97a4f;
+    --accent-fg: #1a130d;
+    --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body {
+    min-height: 100dvh;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+  }
+
+  .card {
+    width: 100%;
+    max-width: 560px;
+    background: var(--card);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    padding: clamp(24px, 6vw, 40px);
+  }
+
+  header { text-align: center; margin-bottom: 28px; }
+  h1 {
+    margin: 0;
+    font-size: clamp(26px, 6vw, 32px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .sub {
+    margin: 8px 0 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.01em;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 96px;
+    resize: none;
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+    background: transparent;
+    color: var(--fg);
+    font: inherit;
+    font-size: 17px;
+    line-height: 1.5;
+    padding: 16px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  textarea::placeholder { color: var(--muted); }
+  textarea:focus { border-color: var(--accent); }
+
+  .nudge {
+    margin: 10px 2px 0;
+    font-size: 14px;
+    color: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .nudge.show { opacity: 1; }
+
+  .btn {
+    -webkit-appearance: none;
+    appearance: none;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    font-size: 17px;
+    font-weight: 600;
+    border-radius: 14px;
+    padding: 15px 20px;
+    transition: transform 0.12s ease, opacity 0.2s ease, background 0.2s ease;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn.primary {
+    width: 100%;
+    margin-top: 16px;
+    background: var(--accent);
+    color: var(--accent-fg);
+  }
+  .btn.ghost {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--rule);
+    padding: 11px 18px;
+    font-size: 15px;
+  }
+
+  .output {
+    margin-top: 28px;
+    border-top: 1px solid var(--rule);
+    padding-top: 24px;
+  }
+  .output[hidden] { display: none; }
+  .prompt {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--fg);
+    background: var(--bg);
+    border-radius: 14px;
+    padding: 18px;
+    max-height: 46vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .output-foot {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .copied {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  .copied.show { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+  <main class="card">
+    <header>
+      <h1>The Four Horsemen</h1>
+      <p class="sub">Challenge · Novelty · Interest · Urgency</p>
+    </header>
+
+    <textarea id="task" rows="3" placeholder="What are you avoiding? Say it plainly…" autocomplete="off" spellcheck="true"></textarea>
+    <p class="nudge" id="nudge">Type the task first — even messy is fine.</p>
+
+    <button class="btn primary" id="gen">Generate</button>
+
+    <section class="output" id="output" hidden aria-live="polite">
+      <div class="prompt" id="promptText"></div>
+      <div class="output-foot">
+        <button class="btn ghost" id="copy">Copy</button>
+        <span class="copied" id="copied">Copied ✓</span>
+      </div>
+    </section>
+  </main>
+
+<script>
+(() => {
+  'use strict';
+
+  // The entire app: one template with a {{TASK}} placeholder. Edit it here.
+  const PROMPT_TEMPLATE = `You are my ADHD sensei.
+
+ADHD brains don't run on importance — they run on four things I call the horsemen: Challenge, Novelty, Interest, Urgency. My pattern: I avoid important tasks until a crisis forces me, because only crisis creates enough activation to start. Your job is to manufacture those four markers on purpose, earlier.
+
+The task I'm avoiding:
+"{{TASK}}"
+
+Give me creative, concrete, do-it-now ways to hit all four markers for THIS exact task. Use this format, tight and practical, no preamble:
+
+**Challenge —** a reframe with a specific mechanic (e.g. a short timer or a game) that makes starting a contest, not a chore.
+**Novelty —** make it physical, unusual, or done somewhere I never do this kind of thing, so dread becomes something I can win.
+**Interest —** reframe it as a hunt or discovery, not a verdict; kill the shame with curiosity; add a bonus quest.
+**Urgency —** borrow a deadline, tell one person right now, set a reward for finishing, and name the real cost of waiting one more day.
+
+**If you do nothing else:** the single smallest first move that banks momentum before the scary part.
+
+Then, in 3-5 sentences, sensei to student: tell me honestly WHY this specific task gets avoided — is it boring, or is it threatening? Reframe it from a sincere, gracious Christian perspective with one apt scripture woven in naturally, framing the task as something to steward with courage, not a verdict on my worth.
+
+End with: Next input.
+
+Keep the whole thing short and direct.`;
+
+  const LAST_KEY = 'horsemen.lastTask';
+
+  const task = document.getElementById('task');
+  const nudge = document.getElementById('nudge');
+  const gen = document.getElementById('gen');
+  const output = document.getElementById('output');
+  const promptText = document.getElementById('promptText');
+  const copyBtn = document.getElementById('copy');
+  const copied = document.getElementById('copied');
+
+  // Auto-grow the textarea.
+  function grow() {
+    task.style.height = 'auto';
+    task.style.height = task.scrollHeight + 'px';
+  }
+  task.addEventListener('input', () => {
+    grow();
+    nudge.classList.remove('show');
+  });
+
+  // Restore the last task, if the SDK is present (namespaced, shared storage).
+  function restore() {
+    if (!window.sys) return;
+    const last = sys.storage.get(LAST_KEY, '');
+    if (last) { task.value = last; grow(); }
+  }
+
+  // Keep the browser/standalone chrome color matched to the resolved theme.
+  function syncThemeColor() {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = getComputedStyle(document.body).backgroundColor;
+  }
+
+  function generate() {
+    const value = task.value.trim();
+    if (!value) {
+      nudge.classList.add('show');
+      task.focus();
+      return;
+    }
+
+    const prompt = PROMPT_TEMPLATE.replace('{{TASK}}', value);
+    promptText.textContent = prompt;
+    output.hidden = false;
+
+    if (window.sys) sys.storage.set(LAST_KEY, value);
+
+    // Push the built prompt to the river — the shared stream of activity.
+    if (window.river && window.river.emit) {
+      const now = Date.now();
+      window.river.emit({
+        app: 'horsemen',
+        kind: 'prompt.built',
+        startedAt: now,
+        endedAt: now,
+        durationMs: 0,
+        label: value.length > 100 ? value.slice(0, 99) + '…' : value,
+      });
+    }
+
+    output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  async function copy() {
+    const text = promptText.textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (_) {
+      // Fallback for older Safari / non-secure contexts.
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (_) {}
+      document.body.removeChild(ta);
+    }
+    copied.classList.add('show');
+    setTimeout(() => copied.classList.remove('show'), 1400);
+  }
+
+  gen.addEventListener('click', generate);
+  copyBtn.addEventListener('click', copy);
+  // ⌘/Ctrl+Enter to generate from the textarea.
+  task.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); generate(); }
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    restore();
+    syncThemeColor();
+    if (window.sys) sys.bus.on('theme', () => setTimeout(syncThemeColor, 0));
+  });
+  grow();
+})();
+</script>
+</body>
+</html>
