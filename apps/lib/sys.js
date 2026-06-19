@@ -40,6 +40,7 @@
     { id: 'foundation', name: 'Foundation 12',       color: '#0b1020', desc: 'Foundation timer.' },
     { id: 'hn',         name: 'Hacker News Plus',    color: '#f7f7f7' },
     { id: 'hn-feed',    name: 'HN Feed Builder',     color: '#0e0e0e' },
+    { id: 'horsemen',   name: 'Four Horsemen',       color: '#f6f0e6', desc: 'Reframe a task you’re avoiding into a do-it-now prompt.' },
     { id: 'ketchapp',   name: 'Ketchapp',            color: '#c92a2a', desc: 'The dumbest pomodoro. 25/5.' },
     { id: 'not-to-do',  name: 'Not-Todo List',       color: '#f5f5f5', desc: 'What not to do.' },
     { id: 'rest',       name: 'rest.',               color: '#141210', desc: 'Rest timer.' },
