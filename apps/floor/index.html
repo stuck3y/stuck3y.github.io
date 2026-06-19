@@ -9,6 +9,7 @@
 <title>floor</title>
 <link rel="manifest" href="./manifest.webmanifest" />
 <script src="../lib/pwa.js" defer></script>
+<script src="../lib/river.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
@@ -156,6 +157,17 @@
     display: none; align-items: center; gap: 14px;
   }
   body[data-rest="on"] .rest-bar { display: flex; }
+  /* depleting meter along the top edge — shows how much rest is left */
+  .rest-progress {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--faint); overflow: hidden; pointer-events: none;
+  }
+  .rest-progress .fill {
+    height: 100%; width: 100%;
+    background: var(--accent);
+    transition: width .25s linear;
+  }
+  .rest-bar.ready .rest-progress .fill { background: var(--go); }
   .rest-time {
     font-family: var(--serif); font-size: 36px; font-weight: 500;
     font-variant-numeric: tabular-nums; line-height: 1; min-width: 100px;
@@ -176,6 +188,7 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .rest-bar.ready { animation: none; }
+    .rest-progress .fill { transition: none; }
   }
 </style>
 </head>
@@ -241,6 +254,7 @@
 
 <!-- sticky rest timer -->
 <div class="rest-bar" id="restBar" aria-live="polite">
+  <div class="rest-progress"><div class="fill" id="restFill"></div></div>
   <div class="rest-time" id="restTime">0:00</div>
   <div class="rest-actions">
     <button data-rest="add30" type="button">+30</button>
@@ -336,6 +350,7 @@ const $$ = s => document.querySelectorAll(s);
 let state = {
   activeWorkoutKey: null,
   activeDate: null,
+  activeStartedAt: 0,
   currentExerciseIndex: 0,
   completedSetsByExercise: {},
   completedDates: [],
@@ -348,6 +363,7 @@ function loadState() {
     if (r && typeof r === 'object') {
       state.activeWorkoutKey = r.activeWorkoutKey || null;
       state.activeDate = r.activeDate || null;
+      state.activeStartedAt = Number(r.activeStartedAt) || 0;
       state.currentExerciseIndex = Number(r.currentExerciseIndex) || 0;
       state.completedSetsByExercise = (r.completedSetsByExercise && typeof r.completedSetsByExercise === 'object') ? r.completedSetsByExercise : {};
       state.completedDates = Array.isArray(r.completedDates) ? r.completedDates.slice(-90) : [];
@@ -477,6 +493,7 @@ function startWorkout() {
   const key = todayKey();
   state.activeWorkoutKey = key;
   state.activeDate = dayDateKey();
+  state.activeStartedAt = Date.now();
   state.currentExerciseIndex = 0;
   state.completedSetsByExercise = {};
   clearTimer(false);
@@ -509,9 +526,33 @@ function setDone() {
   renderWorkout();
 }
 
+// label shown on the river chip — what I did, at a glance + filterable
+const SPLIT_LABEL = { push: 'Push', pull: 'Pull', legs: 'Legs' };
+let emittedStartedAt = 0; // guard against a double-emit within one finish
+
+function emitToRiver() {
+  const w = activeWorkout();
+  if (!w) return;
+  const startedAt = state.activeStartedAt || Date.now();
+  if (emittedStartedAt === startedAt) return;
+  emittedStartedAt = startedAt;
+  const endedAt = Date.now();
+  if (window.river && window.river.emit) {
+    window.river.emit({
+      app: 'floor',
+      kind: 'workout.' + w.key,
+      startedAt,
+      endedAt,
+      durationMs: Math.max(0, endedAt - startedAt),
+      label: SPLIT_LABEL[w.key] || w.title,
+    });
+  }
+}
+
 function finishWorkout() {
   const today = dayDateKey();
   if (!state.completedDates.includes(today)) state.completedDates.push(today);
+  emitToRiver();
   saveState();
   setMode('done');
 }
@@ -554,6 +595,12 @@ function renderTimer() {
   const m = Math.floor(remSec / 60);
   const s = remSec % 60;
   timeEl.textContent = `${m}:${String(s).padStart(2, '0')}`;
+  const fill = $('#restFill');
+  if (fill) {
+    const baseMs = state.timerBaseSeconds * 1000;
+    const frac = baseMs > 0 ? Math.max(0, Math.min(1, remMs / baseMs)) : 0;
+    fill.style.width = (frac * 100) + '%';
+  }
   if (remMs <= 0) {
     bar.classList.add('ready');
     if (!lastBeepAt) { beep(); lastBeepAt = Date.now(); }
