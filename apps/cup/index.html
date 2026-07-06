@@ -28,42 +28,27 @@
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #0c110e;
-      --card: #151b17;
-      --fg: #e8efe9;
-      --muted: #8a968f;
-      --line: rgba(232, 239, 233, 0.12);
-      --line-strong: rgba(232, 239, 233, 0.22);
-      --accent: #30d158;
-      --accent-fg: #0c110e;
-      --live: #ff5a5f;
+      --bg: #0c110e; --card: #151b17; --fg: #e8efe9; --muted: #8a968f;
+      --line: rgba(232, 239, 233, 0.12); --line-strong: rgba(232, 239, 233, 0.22);
+      --accent: #30d158; --accent-fg: #0c110e; --live: #ff5a5f;
       --shadow: 0 6px 22px rgba(0, 0, 0, 0.4);
     }
   }
   :root[data-theme="dark"] {
-    --bg: #0c110e;
-    --card: #151b17;
-    --fg: #e8efe9;
-    --muted: #8a968f;
-    --line: rgba(232, 239, 233, 0.12);
-    --line-strong: rgba(232, 239, 233, 0.22);
-    --accent: #30d158;
-    --accent-fg: #0c110e;
-    --live: #ff5a5f;
+    --bg: #0c110e; --card: #151b17; --fg: #e8efe9; --muted: #8a968f;
+    --line: rgba(232, 239, 233, 0.12); --line-strong: rgba(232, 239, 233, 0.22);
+    --accent: #30d158; --accent-fg: #0c110e; --live: #ff5a5f;
     --shadow: 0 6px 22px rgba(0, 0, 0, 0.4);
   }
 
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    background: var(--bg);
-    color: var(--fg);
+    background: var(--bg); color: var(--fg);
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
     min-height: 100dvh;
   }
-
   .wrap { max-width: 680px; margin: 0 auto; padding: 0 16px 40px; }
 
   header {
@@ -73,77 +58,56 @@
     padding: max(12px, env(safe-area-inset-top)) 16px 10px;
     border-bottom: 1px solid var(--line);
   }
-  .header-row {
-    max-width: 680px; margin: 0 auto;
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  }
+  .header-row { max-width: 680px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
   h1 .edition { display: block; font-size: 11px; font-weight: 500; color: var(--muted); letter-spacing: 0.02em; margin-top: 2px; }
 
-  .reveal {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; user-select: none;
-    border: 0; background: transparent; font-family: inherit;
-  }
-  .reveal .switch {
-    width: 42px; height: 26px; border-radius: 999px; background: var(--line-strong);
-    position: relative; transition: background 0.2s ease; flex: none;
-  }
-  .reveal .switch::after {
-    content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
-    border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    transition: transform 0.2s ease;
-  }
+  .reveal { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; user-select: none; border: 0; background: transparent; font-family: inherit; }
+  .reveal .switch { width: 42px; height: 26px; border-radius: 999px; background: var(--line-strong); position: relative; transition: background 0.2s ease; flex: none; }
+  .reveal .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.3); transition: transform 0.2s ease; }
   .reveal.on .switch { background: var(--accent); }
   .reveal.on .switch::after { transform: translateX(16px); }
   .reveal.on { color: var(--accent); }
 
   .tabs { max-width: 680px; margin: 10px auto 0; display: flex; gap: 6px; }
-  .tab {
-    flex: 1; border: 0; background: transparent; color: var(--muted);
-    font: inherit; font-size: 15px; font-weight: 600; padding: 8px; border-radius: 10px; cursor: pointer;
-  }
+  .tab { flex: 1; border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 15px; font-weight: 600; padding: 8px; border-radius: 10px; cursor: pointer; }
   .tab[aria-selected="true"] { background: var(--card); color: var(--fg); box-shadow: var(--shadow); }
 
-  .status {
-    max-width: 680px; margin: 8px auto 0; text-align: center;
-    font-size: 11px; font-weight: 600; letter-spacing: 0.02em; color: var(--muted);
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
+  .status { max-width: 680px; margin: 8px auto 0; text-align: center; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 6px; }
   .status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex: none; }
   .status.live .dot { background: var(--accent); }
   .status.live { color: var(--accent); }
   .status .refresh { border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; opacity: 0.8; }
 
-  .stage-h {
-    font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--muted); margin: 24px 4px 10px;
-  }
+  .stage-h { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 24px 4px 10px; display: flex; align-items: center; gap: 8px; }
+  .stage-h.live-h { color: var(--live); }
+  .stage-h .count { color: var(--muted); font-weight: 600; letter-spacing: 0; text-transform: none; }
+  .bucket-empty { color: var(--muted); font-size: 14px; padding: 6px 4px 4px; }
 
   .match { background: var(--card); border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 10px; overflow: hidden; }
+  .match-date { padding: 11px 14px 0; font-size: 12px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .match-date .chip { background: var(--line); color: var(--fg); padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+  .match-date .lv { color: var(--live); font-weight: 700; }
   .match-main { display: flex; align-items: stretch; }
-  .teams { flex: 1; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; padding: 14px 14px; min-width: 0; }
+  .teams { flex: 1; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; padding: 12px 14px; min-width: 0; }
   .side { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
   .side .flag { font-size: 22px; line-height: 1; flex: none; }
   .side .name { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .side .name.tbd { color: var(--muted); font-weight: 500; }
   .side.win .name { color: var(--accent); }
 
-  .score-col {
-    flex: none; min-width: 74px; border-left: 1px solid var(--line);
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-    padding: 10px; background: transparent; color: inherit; font: inherit; cursor: pointer;
-  }
+  .score-col { flex: none; min-width: 78px; border-left: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 10px; background: transparent; color: inherit; font: inherit; cursor: default; }
+  button.score-col { cursor: pointer; }
   .score-col .sc { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
   .score-col .hidden-dot { color: var(--muted); letter-spacing: 0.15em; }
-  .score-col .when { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; text-align: center; line-height: 1.25; }
+  .score-col .when { font-size: 14px; font-weight: 600; color: var(--fg); font-variant-numeric: tabular-nums; text-align: center; line-height: 1.2; }
   .score-col .tag { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
   .score-col .tag.live { color: var(--live); display: inline-flex; align-items: center; gap: 4px; }
   .score-col .tag.live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--live); animation: blink 1.2s ease-in-out infinite; }
   .score-col .peek { font-size: 10px; font-weight: 600; color: var(--accent); }
   @keyframes blink { 50% { opacity: 0.3; } }
 
-  .venue { padding: 0 14px 12px; font-size: 12px; color: var(--muted); margin-top: -2px; }
+  .venue { padding: 0 14px 12px; font-size: 12px; color: var(--muted); }
 
   .players { display: none; border-top: 1px solid var(--line); padding: 12px 14px 14px; gap: 16px; }
   .match.open .players { display: flex; }
@@ -167,7 +131,7 @@
   .bx .brow.win .code { color: var(--accent); }
   .bx .brow.win .bs { color: var(--accent); }
   .bx.final { outline: 1px solid var(--accent); }
-  .bracket-empty { color: var(--muted); font-size: 14px; text-align: center; padding: 40px 0; }
+  .bracket-empty { color: var(--muted); font-size: 14px; text-align: center; padding: 40px 16px; line-height: 1.6; }
 
   .note { margin-top: 22px; font-size: 12px; line-height: 1.6; color: var(--muted); text-align: center; }
   .note code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
@@ -204,16 +168,17 @@
 
 /* ══════════════════════════════════════════════════════════════════════════
  * LIVE SOURCE — TheSportsDB free tier. No API key, CORS-friendly, works from a
- * static page in the browser. The app renders the baked data instantly (so it
- * works offline / on first paint), then hydrates from the network if reachable.
- * The World Cup league id is DISCOVERED at runtime (so no fragile hardcoded id);
- * fallbackLeagueId is only used if discovery fails.
+ * static page in the browser. The app renders baked data instantly (offline /
+ * first paint), then hydrates from the network. The World Cup league id is
+ * DISCOVERED at runtime; fallbackLeagueId is only used if discovery fails.
+ * The free feed returns a rolling window — we merge upcoming + recent + season
+ * so games COMING UP always show, not just finished ones.
  * ════════════════════════════════════════════════════════════════════════ */
 const SOURCE = {
   base: 'https://www.thesportsdb.com/api/v1/json/3/',
   season: '2026',
-  leagueMatch: /fifa world cup/i,          // pick this league…
-  leagueReject: /women|qualif|u-?\d|youth|beach|futsal/i, // …but not these
+  leagueMatch: /fifa world cup/i,
+  leagueReject: /women|qualif|u-?\d|youth|beach|futsal/i,
   fallbackLeagueId: '4429',
 };
 
@@ -238,27 +203,13 @@ const DATA = {
     JPN: { name: 'Japan',       flag: '🇯🇵', players: [{name:'Takefusa Kubo',pos:'FW'},{name:'Kaoru Mitoma',pos:'FW'},{name:'Wataru Endo',pos:'MF'}] },
     SEN: { name: 'Senegal',     flag: '🇸🇳', players: [{name:'Sadio Mané',pos:'FW'},{name:'Nicolas Jackson',pos:'FW'},{name:'Kalidou Koulibaly',pos:'DF'}] },
   },
-  stages: ['Round of 16', 'Quarter-final', 'Semi-final', 'Final'],
+  // offline sample so the app is never blank; live data replaces this when online
   matches: [
-    { id: 'r16-1', stage: 'Round of 16', home: 'ARG', away: 'NED', home_score: 2, away_score: 1, venue: 'MetLife Stadium, NJ' },
-    { id: 'r16-2', stage: 'Round of 16', home: 'FRA', away: 'ENG', home_score: 1, away_score: 3, venue: 'AT&T Stadium, Dallas' },
-    { id: 'r16-3', stage: 'Round of 16', home: 'BRA', away: 'CRO', home_score: 2, away_score: 0, venue: 'SoFi Stadium, LA' },
-    { id: 'r16-4', stage: 'Round of 16', home: 'ESP', away: 'MAR', home_score: 1, away_score: 1, live: true, venue: 'Estadio Azteca, Mexico City' },
-    { id: 'r16-5', stage: 'Round of 16', home: 'POR', away: 'GER', home_score: null, away_score: null, kickoff: 'Sun 3:00pm', venue: 'Lincoln Financial, Philly' },
-    { id: 'r16-6', stage: 'Round of 16', home: 'USA', away: 'MEX', home_score: null, away_score: null, kickoff: 'Sun 6:00pm', venue: 'Levi’s Stadium, Bay Area' },
-    { id: 'r16-7', stage: 'Round of 16', home: 'BEL', away: 'URU', home_score: null, away_score: null, kickoff: 'Mon 3:00pm', venue: 'BC Place, Vancouver' },
-    { id: 'r16-8', stage: 'Round of 16', home: 'JPN', away: 'SEN', home_score: null, away_score: null, kickoff: 'Mon 6:00pm', venue: 'BMO Field, Toronto' },
-    { id: 'qf-1', stage: 'Quarter-final', home: 'ARG', away: 'ENG', home_score: null, away_score: null, kickoff: 'Thu 4:00pm', venue: 'MetLife Stadium, NJ' },
-    { id: 'qf-2', stage: 'Quarter-final', home: 'BRA', away: null,  home_score: null, away_score: null, kickoff: 'Thu 8:00pm', venue: 'AT&T Stadium, Dallas' },
-    { id: 'qf-3', stage: 'Quarter-final', home: null,  away: null,  home_score: null, away_score: null, kickoff: 'Fri 4:00pm', venue: 'SoFi Stadium, LA' },
-    { id: 'qf-4', stage: 'Quarter-final', home: null,  away: null,  home_score: null, away_score: null, kickoff: 'Fri 8:00pm', venue: 'Arrowhead, Kansas City' },
-    { id: 'sf-1', stage: 'Semi-final', home: null, away: null, home_score: null, away_score: null, kickoff: 'Tue Jul 14', venue: 'AT&T Stadium, Dallas' },
-    { id: 'sf-2', stage: 'Semi-final', home: null, away: null, home_score: null, away_score: null, kickoff: 'Wed Jul 15', venue: 'Mercedes-Benz, Atlanta' },
-    { id: 'final', stage: 'Final', home: null, away: null, home_score: null, away_score: null, kickoff: 'Sun Jul 19', venue: 'MetLife Stadium, NJ' },
+    { id: 's1', stage: 'Group stage', home: 'USA', away: 'MEX', home_score: null, away_score: null, kickoff: 'sample', venue: 'Sample data — go online for live fixtures' },
+    { id: 's2', stage: 'Group stage', home: 'ARG', away: 'BRA', home_score: null, away_score: null, kickoff: 'sample', venue: 'Sample data — go online for live fixtures' },
   ],
 };
 
-/* names the live feed uses -> curated code (so key players attach) */
 const NAME_TO_CODE = {
   'argentina':'ARG','france':'FRA','brazil':'BRA','england':'ENG','spain':'ESP',
   'portugal':'POR','netherlands':'NED','holland':'NED','germany':'GER',
@@ -266,8 +217,6 @@ const NAME_TO_CODE = {
   'mexico':'MEX','croatia':'CRO','morocco':'MAR','belgium':'BEL','uruguay':'URU',
   'japan':'JPN','senegal':'SEN',
 };
-
-/* flags for teams that appear live but aren't curated */
 const COUNTRY_FLAG = {
   'Canada':'🇨🇦','Italy':'🇮🇹','Colombia':'🇨🇴','Ecuador':'🇪🇨','Ghana':'🇬🇭','Nigeria':'🇳🇬',
   'Ivory Coast':'🇨🇮','Cameroon':'🇨🇲','Tunisia':'🇹🇳','Algeria':'🇩🇿','Egypt':'🇪🇬',
@@ -278,20 +227,19 @@ const COUNTRY_FLAG = {
   'Jamaica':'🇯🇲','New Zealand':'🇳🇿','South Africa':'🇿🇦','Venezuela':'🇻🇪','Bolivia':'🇧🇴',
   'Honduras':'🇭🇳','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Wales':'🏴󠁧󠁢󠁷󠁬󠁳󠁿','Cape Verde':'🇨🇻','Uzbekistan':'🇺🇿',
   'Jordan':'🇯🇴','Curacao':'🇨🇼','Curaçao':'🇨🇼','Haiti':'🇭🇹','New Caledonia':'🇳🇨',
+  'Czech Republic':'🇨🇿','Czechia':'🇨🇿','Bosnia-Herzegovina':'🇧🇦','Bosnia and Herzegovina':'🇧🇦',
+  'Nigeria ':'🇳🇬','Slovakia':'🇸🇰','Slovenia':'🇸🇮','Hungary':'🇭🇺','Romania':'🇷🇴','Finland':'🇫🇮',
 };
-
-const STAGE_ORDER = ['Group stage','Round of 32','Round of 16','Quarter-final','Semi-final','Third place','Final'];
+const KO_ORDER = ['Round of 32','Round of 16','Quarter-final','Semi-final','Third place','Final'];
+const KO_SHORT = { 'Round of 32':'R32','Round of 16':'R16','Quarter-final':'QF','Semi-final':'SF','Third place':'3rd place','Final':'Final' };
 
 /* ── state ── */
-const state = { matches: [], stages: [], live: false, at: 0, cached: false };
-let revealAll = false;                 // spoiler toggle — OFF on every load
-const peeked = new Set();              // per-match reveals
+const state = { matches: [], live: false, at: 0, cached: false };
+let revealAll = false;
+const peeked = new Set();
 
 /* ── team resolution ── */
-function teamByCode(code) {
-  const t = DATA.teams[code];
-  return t ? { name: t.name, flag: t.flag, players: t.players } : null;
-}
+function teamByCode(code) { const t = DATA.teams[code]; return t ? { name: t.name, flag: t.flag, players: t.players } : null; }
 function teamByName(name) {
   if (!name) return null;
   const code = NAME_TO_CODE[name.trim().toLowerCase()];
@@ -308,13 +256,28 @@ function winner(m) {
   if (m.away_score > m.home_score) return 'away';
   return 'draw';
 }
-function computeStages() {
-  const present = [...new Set(state.matches.map(m => m.stage))];
-  present.sort((a, b) => {
-    const ia = STAGE_ORDER.indexOf(a), ib = STAGE_ORDER.indexOf(b);
-    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-  });
-  state.stages = present;
+function bucketOf(m) {
+  if (m.live) return 'live';
+  if (played(m)) return 'result';
+  if (m._ts && m._ts < Date.now() - 3 * 3600 * 1000) return 'result'; // past, awaiting score
+  return 'upcoming';
+}
+function dayLabel(m) {
+  if (!m._ts) return m.kickoff && m.kickoff !== 'sample' ? m.kickoff : '';
+  const d = new Date(m._ts); if (isNaN(d.getTime())) return '';
+  const dk = (x) => `${x.getFullYear()}-${x.getMonth()}-${x.getDate()}`;
+  const now = new Date();
+  const yes = new Date(now); yes.setDate(now.getDate() - 1);
+  const tom = new Date(now); tom.setDate(now.getDate() + 1);
+  if (dk(d) === dk(now)) return 'Today';
+  if (dk(d) === dk(yes)) return 'Yesterday';
+  if (dk(d) === dk(tom)) return 'Tomorrow';
+  return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+}
+function timeLabel(m) {
+  if (!m._ts) return m.kickoff && m.kickoff !== 'sample' ? m.kickoff : 'TBD';
+  const d = new Date(m._ts); if (isNaN(d.getTime())) return 'TBD';
+  try { return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }); } catch (_) { return 'TBD'; }
 }
 function relTime(ts) {
   const diff = Date.now() - ts;
@@ -326,21 +289,25 @@ function relTime(ts) {
   return Math.floor(h / 24) + 'd ago';
 }
 
-/* ── render: matches ── */
+/* ── render: match card ── */
 function sideHTML(team, isWin) {
   const flag = team ? team.flag : '⚽️';
   const name = team ? team.name : 'TBD';
   return `<div class="side${isWin ? ' win' : ''}"><span class="flag">${flag}</span><span class="name${team ? '' : ' tbd'}">${name}</span></div>`;
 }
+function peekBtn(m, label, live) {
+  return `<button class="score-col" data-peek="${m.id}"><span class="tag${live ? ' live' : ''}">${label}</span><span class="hidden-dot">•••</span><span class="peek">tap</span></button>`;
+}
 function scoreColHTML(m) {
-  if (!played(m)) {
-    const tag = m.live ? `<span class="tag live">LIVE</span>` : '';
-    if (m.live && !scoreShown(m)) return `<button class="score-col" data-peek="${m.id}">${tag}<span class="hidden-dot">•••</span><span class="peek">tap</span></button>`;
-    const body = m.live ? `<span class="sc">${m.home_score ?? 0}–${m.away_score ?? 0}</span>` : `<span class="when">${m.kickoff || 'TBD'}</span>`;
-    return `<div class="score-col">${tag}${body}</div>`;
+  if (m.live) {
+    if (!scoreShown(m)) return peekBtn(m, 'LIVE', true);
+    return `<div class="score-col"><span class="tag live">LIVE</span><span class="sc">${m.home_score ?? 0}–${m.away_score ?? 0}</span></div>`;
   }
-  if (!scoreShown(m)) return `<button class="score-col" data-peek="${m.id}"><span class="tag">FT</span><span class="hidden-dot">•••</span><span class="peek">tap</span></button>`;
-  return `<div class="score-col"><span class="tag">FT</span><span class="sc">${m.home_score}–${m.away_score}</span></div>`;
+  if (played(m)) {
+    if (!scoreShown(m)) return peekBtn(m, 'FT', false);
+    return `<div class="score-col"><span class="tag">FT</span><span class="sc">${m.home_score}–${m.away_score}</span></div>`;
+  }
+  return `<div class="score-col"><span class="when">${timeLabel(m)}</span></div>`;
 }
 function playersHTML(m) {
   const col = (team) => {
@@ -351,24 +318,42 @@ function playersHTML(m) {
   };
   return `<div class="players">${col(m.home)}${col(m.away)}</div>`;
 }
+function matchCardHTML(m) {
+  const w = scoreShown(m) ? winner(m) : null;
+  const day = dayLabel(m);
+  const chip = KO_SHORT[m.stage] || '';
+  const dateLine = (day || chip || m.live)
+    ? `<div class="match-date">${day || ''}${m.live ? ' <span class="lv">● Live</span>' : ''}${chip ? ` <span class="chip">${chip}</span>` : ''}</div>`
+    : '';
+  return `<div class="match" data-id="${m.id}">
+    ${dateLine}
+    <div class="match-main">
+      <button class="teams" data-open="${m.id}">${sideHTML(m.home, w === 'home')}${sideHTML(m.away, w === 'away')}</button>
+      ${scoreColHTML(m)}
+    </div>
+    ${m.venue ? `<div class="venue">${m.venue}</div>` : ''}
+    ${playersHTML(m)}
+  </div>`;
+}
+function sectionHTML(title, ms, opts) {
+  opts = opts || {};
+  if (!ms.length && !opts.emptyMsg) return '';
+  const head = `<div class="stage-h${opts.live ? ' live-h' : ''}">${title}${ms.length ? ` <span class="count">${ms.length}</span>` : ''}</div>`;
+  const body = ms.length ? ms.map(matchCardHTML).join('') : `<div class="bucket-empty">${opts.emptyMsg}</div>`;
+  return head + body;
+}
+
+/* ── render: matches (date-centric buckets) ── */
 function renderMatches() {
+  const b = { live: [], upcoming: [], result: [] };
+  for (const m of state.matches) b[bucketOf(m)].push(m);
+  b.live.sort((a, c) => (a._ts || 0) - (c._ts || 0));
+  b.upcoming.sort((a, c) => (a._ts || 0) - (c._ts || 0));
+  b.result.sort((a, c) => (c._ts || 0) - (a._ts || 0));
   let html = '';
-  for (const stage of state.stages) {
-    const ms = state.matches.filter(m => m.stage === stage);
-    if (!ms.length) continue;
-    html += `<div class="stage-h">${stage}</div>`;
-    for (const m of ms) {
-      const w = scoreShown(m) ? winner(m) : null;
-      html += `<div class="match" data-id="${m.id}">
-        <div class="match-main">
-          <button class="teams" data-open="${m.id}">${sideHTML(m.home, w === 'home')}${sideHTML(m.away, w === 'away')}</button>
-          ${scoreColHTML(m)}
-        </div>
-        <div class="venue">${m.venue || ''}</div>
-        ${playersHTML(m)}
-      </div>`;
-    }
-  }
+  html += sectionHTML('Live now', b.live, { live: true });
+  html += sectionHTML('Upcoming', b.upcoming, { emptyMsg: state.live ? 'No fixtures scheduled in the feed yet — check back closer to kickoff.' : 'Go online to load upcoming fixtures.' });
+  html += sectionHTML('Results', b.result, {});
   document.getElementById('matches').innerHTML = html;
 }
 
@@ -381,13 +366,12 @@ function bracketRowHTML(team, isWin, m, which) {
   return `<div class="brow${isWin ? ' win' : ''}"><span class="flag">${flag}</span><span class="code${team ? '' : ' tbd'}">${label}</span><span class="bs">${sc === '' ? '' : sc}</span></div>`;
 }
 function renderBracket() {
-  const koStages = state.stages.filter(s => s !== 'Group stage');
   const root = document.getElementById('bracketInner');
-  if (!koStages.length) { root.innerHTML = `<div class="bracket-empty">Bracket appears once the knockout rounds are set.</div>`; return; }
+  const present = KO_ORDER.filter(s => state.matches.some(m => m.stage === s));
+  if (!present.length) { root.innerHTML = `<div class="bracket-empty">The bracket fills in once the knockout rounds are set.<br>Until then, check <b>Matches</b> for what's coming up.</div>`; return; }
   let html = '';
-  for (const stage of koStages) {
-    const ms = state.matches.filter(m => m.stage === stage);
-    if (!ms.length) continue;
+  for (const stage of present) {
+    const ms = state.matches.filter(m => m.stage === stage).sort((a, c) => (a._ts || 0) - (c._ts || 0));
     const cards = ms.map(m => {
       const w = scoreShown(m) ? winner(m) : null;
       return `<div class="bx${stage === 'Final' ? ' final' : ''}" data-peek-toggle="${m.id}">${bracketRowHTML(m.home, w === 'home', m, 'home')}${bracketRowHTML(m.away, w === 'away', m, 'away')}</div>`;
@@ -398,7 +382,7 @@ function renderBracket() {
 }
 function renderAll() { renderMatches(); renderBracket(); updateStatus(); }
 
-/* ── status line ── */
+/* ── status ── */
 function updateStatus() {
   const el = document.getElementById('status');
   const txt = document.getElementById('statusText');
@@ -407,7 +391,7 @@ function updateStatus() {
     txt.innerHTML = `Live · updated ${relTime(state.at)}${state.cached ? ' (cached)' : ''} · <button class="refresh" id="refreshBtn">refresh</button>`;
   } else {
     el.classList.remove('live');
-    txt.innerHTML = `Sample data · <button class="refresh" id="refreshBtn">try live</button>`;
+    txt.innerHTML = `Offline · sample data · <button class="refresh" id="refreshBtn">try live</button>`;
   }
   const r = document.getElementById('refreshBtn');
   if (r) r.addEventListener('click', () => hydrate(true));
@@ -417,14 +401,10 @@ function updateStatus() {
 async function getJSON(url) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 6000);
-  try {
-    const res = await fetch(url, { signal: ctrl.signal, cache: 'no-store' });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (_) { return null; } finally { clearTimeout(t); }
+  try { const res = await fetch(url, { signal: ctrl.signal, cache: 'no-store' }); if (!res.ok) return null; return await res.json(); }
+  catch (_) { return null; } finally { clearTimeout(t); }
 }
 function firstArray(obj) { if (obj) for (const k in obj) if (Array.isArray(obj[k])) return obj[k]; return []; }
-
 async function discoverLeagueId() {
   const cached = window.sys && sys.storage.get('cup.leagueId');
   if (cached) return cached;
@@ -437,18 +417,8 @@ async function discoverLeagueId() {
 }
 function normalizeTimestamp(e) {
   if (e.strTimestamp && String(e.strTimestamp).includes('T')) return e.strTimestamp;
-  if (e.dateEvent) {
-    const time = e.strTime && e.strTime !== 'null' ? e.strTime : '00:00:00';
-    return `${e.dateEvent}T${time}Z`;
-  }
+  if (e.dateEvent) { const time = e.strTime && e.strTime !== 'null' ? e.strTime : '00:00:00'; return `${e.dateEvent}T${time}Z`; }
   return null;
-}
-function friendlyTime(iso) {
-  if (!iso) return 'TBD';
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return 'TBD';
-  try { return d.toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' }); }
-  catch (_) { return 'TBD'; }
 }
 function mapStage(e) {
   const s = ((e.strStage || '') + ' ' + (e.strRound || '')).toLowerCase();
@@ -458,8 +428,7 @@ function mapStage(e) {
   if (/quarter/.test(s)) return 'Quarter-final';
   if (/round of 16|eighth|1\/8/.test(s)) return 'Round of 16';
   if (/round of 32|1\/16/.test(s)) return 'Round of 32';
-  if (/group|matchday|round \d|^\s*\d+\s*$/.test(s)) return 'Group stage';
-  return (e.strStage || e.strRound || 'Fixtures').trim();
+  return 'Group stage';
 }
 function normalizeEvent(e) {
   if (!e) return null;
@@ -467,14 +436,14 @@ function normalizeEvent(e) {
   const status = (e.strStatus || '').toLowerCase();
   const iso = normalizeTimestamp(e);
   return {
-    id: e.idEvent || (e.strEvent + e.dateEvent),
+    id: e.idEvent || (e.strEvent + '|' + e.dateEvent),
     stage: mapStage(e),
     home: e.strHomeTeam ? teamByName(e.strHomeTeam) : null,
     away: e.strAwayTeam ? teamByName(e.strAwayTeam) : null,
     home_score: num(e.intHomeScore),
     away_score: num(e.intAwayScore),
-    live: /1h|2h|ht|live|half|in play|play/.test(status),
-    kickoff: friendlyTime(iso),
+    live: /1h|2h|ht|live|half|in play|\bplay\b/.test(status),
+    kickoff: null,
     venue: e.strVenue || null,
     _ts: iso ? Date.parse(iso) : 0,
   };
@@ -482,26 +451,21 @@ function normalizeEvent(e) {
 async function fetchLive() {
   const leagueId = await discoverLeagueId();
   if (!leagueId) return null;
-  let events = null;
-  const season = await getJSON(`${SOURCE.base}eventsseason.php?id=${leagueId}&s=${SOURCE.season}`);
-  if (season && season.events && season.events.length) events = season.events;
-  if (!events) {
-    const [past, next] = await Promise.all([
-      getJSON(`${SOURCE.base}eventspastleague.php?id=${leagueId}`),
-      getJSON(`${SOURCE.base}eventsnextleague.php?id=${leagueId}`),
-    ]);
-    const merged = [...((past && past.events) || []), ...((next && next.events) || [])];
-    if (merged.length) events = merged;
-  }
-  if (!events) return null;
+  // Merge all three so upcoming games always appear, not just finished ones.
+  const [next, past, season] = await Promise.all([
+    getJSON(`${SOURCE.base}eventsnextleague.php?id=${leagueId}`),
+    getJSON(`${SOURCE.base}eventspastleague.php?id=${leagueId}`),
+    getJSON(`${SOURCE.base}eventsseason.php?id=${leagueId}&s=${SOURCE.season}`),
+  ]);
+  const all = [];
+  for (const r of [next, past, season]) if (r && r.events) all.push(...r.events);
+  if (!all.length) return null;
   const seen = new Set();
-  const matches = events.map(normalizeEvent).filter(m => m && m.id && !seen.has(m.id) && seen.add(m.id));
+  const matches = all.map(normalizeEvent).filter(m => m && m.id && !seen.has(m.id) && seen.add(m.id));
   matches.sort((a, b) => (a._ts || 0) - (b._ts || 0));
   return matches.length ? matches : null;
 }
-
 async function hydrate(force) {
-  // fast path: last good payload from storage (instant, survives brief offline)
   if (!force && window.sys) {
     const c = sys.storage.get('cup.live');
     if (c && c.matches && c.matches.length) applyLive(c.matches, c.at, true);
@@ -510,16 +474,10 @@ async function hydrate(force) {
   if (live && live.length) {
     applyLive(live, Date.now(), false);
     if (window.sys) sys.storage.set('cup.live', { matches: live, at: Date.now() });
-  } else if (!state.live) {
-    updateStatus(); // stays on sample data
-  }
+  } else if (!state.live) { updateStatus(); }
 }
 function applyLive(matches, at, cached) {
-  state.matches = matches;
-  state.live = true;
-  state.at = at || Date.now();
-  state.cached = !!cached;
-  computeStages();
+  state.matches = matches; state.live = true; state.at = at || Date.now(); state.cached = !!cached;
   renderAll();
 }
 
@@ -530,7 +488,7 @@ function fromBaked() {
     home: m.home ? teamByCode(m.home) : null,
     away: m.away ? teamByCode(m.away) : null,
     home_score: m.home_score, away_score: m.away_score,
-    live: !!m.live, kickoff: m.kickoff || null, venue: m.venue || null,
+    live: !!m.live, kickoff: m.kickoff || null, venue: m.venue || null, _ts: 0,
   }));
 }
 
@@ -565,11 +523,10 @@ document.getElementById('tab-bracket').addEventListener('click', () => selectTab
 /* ── init ── */
 document.getElementById('edition').textContent = DATA.edition;
 document.getElementById('note').innerHTML =
-  'Spoiler-safe: scores hide until you flip <b>Scores</b> on, or tap a single match to peek. ' +
-  'Pulls live results when online (free, no key); falls back to the built-in schedule offline. ' +
-  'Key players come from the curated <code>DATA</code> in <code>index.html</code>.';
+  'Spoiler-safe: scores hide until you flip <b>Scores</b> on, or tap a match to peek. ' +
+  'Live fixtures + results pull from a free feed (no key); the feed shows a rolling window, ' +
+  'so more games appear as kickoff nears. Key players are curated in <code>DATA</code>.';
 state.matches = fromBaked();
-computeStages();
 renderAll();
 hydrate(false);
 </script>
