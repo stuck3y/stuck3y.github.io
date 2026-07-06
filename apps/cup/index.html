@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>World Cup</title>
+<meta name="description" content="A dead-simple World Cup companion — who's playing, key players, spoiler-safe scores, and the bracket." />
+<meta name="theme-color" content="#0b8a43" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="World Cup" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<script src="../lib/pwa.js" defer></script>
+<script src="../lib/sys.js" defer></script>
+<script>addEventListener('DOMContentLoaded', function () { if (window.sys) sys.theme.init(); });</script>
+<style>
+  :root {
+    --bg: #f4f6f4;
+    --card: #ffffff;
+    --fg: #14201a;
+    --muted: #6b7770;
+    --line: rgba(20, 32, 26, 0.10);
+    --line-strong: rgba(20, 32, 26, 0.18);
+    --accent: #0b8a43;
+    --accent-fg: #ffffff;
+    --live: #e5484d;
+    --shadow: 0 6px 22px rgba(20, 32, 26, 0.07);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0c110e;
+      --card: #151b17;
+      --fg: #e8efe9;
+      --muted: #8a968f;
+      --line: rgba(232, 239, 233, 0.12);
+      --line-strong: rgba(232, 239, 233, 0.22);
+      --accent: #30d158;
+      --accent-fg: #0c110e;
+      --live: #ff5a5f;
+      --shadow: 0 6px 22px rgba(0, 0, 0, 0.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0c110e;
+    --card: #151b17;
+    --fg: #e8efe9;
+    --muted: #8a968f;
+    --line: rgba(232, 239, 233, 0.12);
+    --line-strong: rgba(232, 239, 233, 0.22);
+    --accent: #30d158;
+    --accent-fg: #0c110e;
+    --live: #ff5a5f;
+    --shadow: 0 6px 22px rgba(0, 0, 0, 0.4);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 100dvh;
+  }
+
+  .wrap { max-width: 680px; margin: 0 auto; padding: 0 16px 40px; }
+
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    padding: max(12px, env(safe-area-inset-top)) 16px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .header-row {
+    max-width: 680px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+  h1 .edition { display: block; font-size: 11px; font-weight: 500; color: var(--muted); letter-spacing: 0.02em; margin-top: 2px; }
+
+  /* reveal toggle */
+  .reveal {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; user-select: none;
+  }
+  .reveal .switch {
+    width: 42px; height: 26px; border-radius: 999px; background: var(--line-strong);
+    position: relative; transition: background 0.2s ease; flex: none;
+  }
+  .reveal .switch::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+    border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease;
+  }
+  .reveal.on .switch { background: var(--accent); }
+  .reveal.on .switch::after { transform: translateX(16px); }
+  .reveal.on { color: var(--accent); }
+
+  /* tabs */
+  .tabs { max-width: 680px; margin: 10px auto 0; display: flex; gap: 6px; }
+  .tab {
+    flex: 1; border: 0; background: transparent; color: var(--muted);
+    font: inherit; font-size: 15px; font-weight: 600; padding: 8px; border-radius: 10px; cursor: pointer;
+  }
+  .tab[aria-selected="true"] { background: var(--card); color: var(--fg); box-shadow: var(--shadow); }
+
+  .stage-h {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); margin: 24px 4px 10px;
+  }
+
+  /* match card */
+  .match { background: var(--card); border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 10px; overflow: hidden; }
+  .match-main { display: flex; align-items: stretch; }
+  .teams { flex: 1; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; padding: 14px 14px; min-width: 0; }
+  .side { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+  .side .flag { font-size: 22px; line-height: 1; flex: none; }
+  .side .name { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .side .name.tbd { color: var(--muted); font-weight: 500; }
+  .side.win .name { color: var(--accent); }
+
+  .score-col {
+    flex: none; min-width: 74px; border-left: 1px solid var(--line);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    padding: 10px; background: transparent; color: inherit; font: inherit; cursor: pointer;
+  }
+  .score-col .sc { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+  .score-col .hidden-dot { color: var(--muted); letter-spacing: 0.15em; }
+  .score-col .when { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; text-align: center; line-height: 1.25; }
+  .score-col .tag { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .score-col .tag.live { color: var(--live); display: inline-flex; align-items: center; gap: 4px; }
+  .score-col .tag.live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--live); animation: blink 1.2s ease-in-out infinite; }
+  .score-col .peek { font-size: 10px; font-weight: 600; color: var(--accent); }
+  @keyframes blink { 50% { opacity: 0.3; } }
+
+  .venue { padding: 0 14px 12px; font-size: 12px; color: var(--muted); margin-top: -2px; }
+
+  /* players panel */
+  .players { display: none; border-top: 1px solid var(--line); padding: 12px 14px 14px; gap: 16px; }
+  .match.open .players { display: flex; }
+  .players .col { flex: 1; min-width: 0; }
+  .players .col h4 { margin: 0 0 8px; font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.04em; display: flex; align-items: center; gap: 6px; }
+  .players ul { list-style: none; margin: 0; padding: 0; }
+  .players li { font-size: 14px; padding: 3px 0; color: var(--fg); }
+  .players li .pos { color: var(--muted); font-size: 11px; margin-left: 4px; }
+
+  /* bracket */
+  .bracket-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px -16px 0; padding: 8px 16px 16px; }
+  .bracket { display: flex; gap: 14px; min-width: min-content; }
+  .round { flex: none; width: 170px; display: flex; flex-direction: column; justify-content: space-around; gap: 12px; }
+  .round-h { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; text-align: center; }
+  .bx { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); padding: 8px 10px; cursor: pointer; }
+  .bx .brow { display: flex; align-items: center; gap: 7px; padding: 3px 0; }
+  .bx .brow .flag { font-size: 15px; flex: none; }
+  .bx .brow .code { font-size: 13px; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bx .brow .code.tbd { color: var(--muted); font-weight: 500; }
+  .bx .brow .bs { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .bx .brow.win .code { color: var(--accent); }
+  .bx .brow.win .bs { color: var(--accent); }
+  .bx.final { outline: 1px solid var(--accent); }
+
+  .note { margin-top: 22px; font-size: 12px; line-height: 1.6; color: var(--muted); text-align: center; }
+  .note code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <h1>World Cup<span class="edition" id="edition">—</span></h1>
+    <button class="reveal" id="reveal" role="switch" aria-checked="false" aria-label="Reveal scores">
+      <span>Scores</span><span class="switch"></span>
+    </button>
+  </div>
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab-matches" role="tab" aria-selected="true">Matches</button>
+    <button class="tab" id="tab-bracket" role="tab" aria-selected="false">Bracket</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="matches" role="tabpanel"></div>
+  <div id="bracket" role="tabpanel" hidden>
+    <div class="bracket-scroll"><div class="bracket" id="bracketInner"></div></div>
+  </div>
+  <p class="note" id="note"></p>
+</div>
+
+<script>
+'use strict';
+
+/* ────────────────────────────────────────────────────────────────────────
+ * DATA — the whole app. Edit this one object to match reality.
+ *   teams:   code -> { name, flag, players:[{name,pos}] }
+ *   matches: knockout fixtures. Set home/away to a team code or null (TBD).
+ *            Give home_score/away_score numbers once played; leave null if not.
+ *            Optional: live:true, kickoff:'Sat 4:00pm', venue:'…'
+ * Scores hide by default (spoiler-safe) — the seed below is an EXAMPLE bracket.
+ * ──────────────────────────────────────────────────────────────────────── */
+const DATA = {
+  edition: '2026 · USA · Canada · Mexico',
+  teams: {
+    ARG: { name: 'Argentina',   flag: '🇦🇷', players: [{name:'Lionel Messi',pos:'FW'},{name:'Lautaro Martínez',pos:'FW'},{name:'Emiliano Martínez',pos:'GK'}] },
+    FRA: { name: 'France',      flag: '🇫🇷', players: [{name:'Kylian Mbappé',pos:'FW'},{name:'Aurélien Tchouaméni',pos:'MF'},{name:'Ousmane Dembélé',pos:'FW'}] },
+    BRA: { name: 'Brazil',      flag: '🇧🇷', players: [{name:'Vinícius Jr.',pos:'FW'},{name:'Rodrygo',pos:'FW'},{name:'Alisson',pos:'GK'}] },
+    ENG: { name: 'England',     flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', players: [{name:'Jude Bellingham',pos:'MF'},{name:'Harry Kane',pos:'FW'},{name:'Bukayo Saka',pos:'FW'}] },
+    ESP: { name: 'Spain',       flag: '🇪🇸', players: [{name:'Lamine Yamal',pos:'FW'},{name:'Pedri',pos:'MF'},{name:'Rodri',pos:'MF'}] },
+    POR: { name: 'Portugal',    flag: '🇵🇹', players: [{name:'Cristiano Ronaldo',pos:'FW'},{name:'Bruno Fernandes',pos:'MF'},{name:'Bernardo Silva',pos:'MF'}] },
+    NED: { name: 'Netherlands', flag: '🇳🇱', players: [{name:'Virgil van Dijk',pos:'DF'},{name:'Cody Gakpo',pos:'FW'},{name:'Frenkie de Jong',pos:'MF'}] },
+    GER: { name: 'Germany',     flag: '🇩🇪', players: [{name:'Jamal Musiala',pos:'MF'},{name:'Florian Wirtz',pos:'MF'},{name:'Joshua Kimmich',pos:'MF'}] },
+    USA: { name: 'USA',         flag: '🇺🇸', players: [{name:'Christian Pulisic',pos:'FW'},{name:'Weston McKennie',pos:'MF'},{name:'Folarin Balogun',pos:'FW'}] },
+    MEX: { name: 'Mexico',      flag: '🇲🇽', players: [{name:'Raúl Jiménez',pos:'FW'},{name:'Edson Álvarez',pos:'MF'},{name:'Santiago Giménez',pos:'FW'}] },
+    CRO: { name: 'Croatia',     flag: '🇭🇷', players: [{name:'Luka Modrić',pos:'MF'},{name:'Mateo Kovačić',pos:'MF'},{name:'Joško Gvardiol',pos:'DF'}] },
+    MAR: { name: 'Morocco',     flag: '🇲🇦', players: [{name:'Achraf Hakimi',pos:'DF'},{name:'Youssef En-Nesyri',pos:'FW'},{name:'Sofyan Amrabat',pos:'MF'}] },
+    BEL: { name: 'Belgium',     flag: '🇧🇪', players: [{name:'Kevin De Bruyne',pos:'MF'},{name:'Romelu Lukaku',pos:'FW'},{name:'Jérémy Doku',pos:'FW'}] },
+    URU: { name: 'Uruguay',     flag: '🇺🇾', players: [{name:'Federico Valverde',pos:'MF'},{name:'Darwin Núñez',pos:'FW'},{name:'Ronald Araújo',pos:'DF'}] },
+    JPN: { name: 'Japan',       flag: '🇯🇵', players: [{name:'Takefusa Kubo',pos:'FW'},{name:'Kaoru Mitoma',pos:'FW'},{name:'Wataru Endo',pos:'MF'}] },
+    SEN: { name: 'Senegal',     flag: '🇸🇳', players: [{name:'Sadio Mané',pos:'FW'},{name:'Nicolas Jackson',pos:'FW'},{name:'Kalidou Koulibaly',pos:'DF'}] },
+  },
+  // stage order drives both the list and the bracket columns
+  stages: ['Round of 16', 'Quarter-final', 'Semi-final', 'Final'],
+  matches: [
+    // ── Round of 16 (example — a few played, one live, rest upcoming) ──
+    { id: 'r16-1', stage: 'Round of 16', home: 'ARG', away: 'NED', home_score: 2, away_score: 1, venue: 'MetLife Stadium, NJ' },
+    { id: 'r16-2', stage: 'Round of 16', home: 'FRA', away: 'ENG', home_score: 1, away_score: 3, venue: 'AT&T Stadium, Dallas' },
+    { id: 'r16-3', stage: 'Round of 16', home: 'BRA', away: 'CRO', home_score: 2, away_score: 0, venue: 'SoFi Stadium, LA' },
+    { id: 'r16-4', stage: 'Round of 16', home: 'ESP', away: 'MAR', home_score: 1, away_score: 1, live: true, venue: 'Estadio Azteca, Mexico City' },
+    { id: 'r16-5', stage: 'Round of 16', home: 'POR', away: 'GER', home_score: null, away_score: null, kickoff: 'Sun 3:00pm', venue: 'Lincoln Financial, Philly' },
+    { id: 'r16-6', stage: 'Round of 16', home: 'USA', away: 'MEX', home_score: null, away_score: null, kickoff: 'Sun 6:00pm', venue: 'Levi’s Stadium, Bay Area' },
+    { id: 'r16-7', stage: 'Round of 16', home: 'BEL', away: 'URU', home_score: null, away_score: null, kickoff: 'Mon 3:00pm', venue: 'BC Place, Vancouver' },
+    { id: 'r16-8', stage: 'Round of 16', home: 'JPN', away: 'SEN', home_score: null, away_score: null, kickoff: 'Mon 6:00pm', venue: 'BMO Field, Toronto' },
+    // ── Quarter-finals (winners of the played R16 ties seeded in) ──
+    { id: 'qf-1', stage: 'Quarter-final', home: 'ARG', away: 'ENG', home_score: null, away_score: null, kickoff: 'Thu 4:00pm', venue: 'MetLife Stadium, NJ' },
+    { id: 'qf-2', stage: 'Quarter-final', home: 'BRA', away: null,  home_score: null, away_score: null, kickoff: 'Thu 8:00pm', venue: 'AT&T Stadium, Dallas' },
+    { id: 'qf-3', stage: 'Quarter-final', home: null,  away: null,  home_score: null, away_score: null, kickoff: 'Fri 4:00pm', venue: 'SoFi Stadium, LA' },
+    { id: 'qf-4', stage: 'Quarter-final', home: null,  away: null,  home_score: null, away_score: null, kickoff: 'Fri 8:00pm', venue: 'Arrowhead, Kansas City' },
+    // ── Semi-finals ──
+    { id: 'sf-1', stage: 'Semi-final', home: null, away: null, home_score: null, away_score: null, kickoff: 'Tue Jul 14', venue: 'AT&T Stadium, Dallas' },
+    { id: 'sf-2', stage: 'Semi-final', home: null, away: null, home_score: null, away_score: null, kickoff: 'Wed Jul 15', venue: 'Mercedes-Benz, Atlanta' },
+    // ── Final ──
+    { id: 'final', stage: 'Final', home: null, away: null, home_score: null, away_score: null, kickoff: 'Sun Jul 19', venue: 'MetLife Stadium, NJ' },
+  ],
+};
+
+/* ── state ── */
+let revealAll = false;            // global spoiler toggle — OFF on every load
+const peeked = new Set();         // per-match score reveals
+const T = (code) => (code && DATA.teams[code]) || null;
+
+function scoreShown(m) { return revealAll || peeked.has(m.id); }
+function played(m) { return m.home_score != null && m.away_score != null; }
+function winner(m) {
+  if (!played(m)) return null;
+  if (m.home_score > m.away_score) return 'home';
+  if (m.away_score > m.home_score) return 'away';
+  return 'draw';
+}
+
+/* ── matches view ── */
+function sideHTML(code, isWin) {
+  const t = T(code);
+  const flag = t ? t.flag : '⚽️';
+  const name = t ? t.name : 'TBD';
+  return `<div class="side${isWin ? ' win' : ''}">
+    <span class="flag">${flag}</span>
+    <span class="name${t ? '' : ' tbd'}">${name}</span>
+  </div>`;
+}
+
+function scoreColHTML(m) {
+  if (!played(m)) {
+    const tag = m.live ? `<span class="tag live">LIVE</span>` : '';
+    if (m.live && !scoreShown(m)) {
+      return `<button class="score-col" data-peek="${m.id}">${tag}<span class="hidden-dot">•••</span><span class="peek">tap</span></button>`;
+    }
+    const body = m.live
+      ? `<span class="sc">${m.home_score ?? 0}–${m.away_score ?? 0}</span>`
+      : `<span class="when">${m.kickoff || 'TBD'}</span>`;
+    return `<div class="score-col">${tag}${body}</div>`;
+  }
+  if (!scoreShown(m)) {
+    return `<button class="score-col" data-peek="${m.id}"><span class="tag">FT</span><span class="hidden-dot">•••</span><span class="peek">tap</span></button>`;
+  }
+  return `<div class="score-col"><span class="tag">FT</span><span class="sc">${m.home_score}–${m.away_score}</span></div>`;
+}
+
+function playersHTML(m) {
+  const col = (code) => {
+    const t = T(code);
+    if (!t) return `<div class="col"><h4>TBD</h4></div>`;
+    const li = t.players.map(p => `<li>${p.name}<span class="pos">${p.pos}</span></li>`).join('');
+    return `<div class="col"><h4>${t.flag} ${t.name}</h4><ul>${li}</ul></div>`;
+  };
+  return `<div class="players">${col(m.home)}${col(m.away)}</div>`;
+}
+
+function renderMatches() {
+  const root = document.getElementById('matches');
+  let html = '';
+  for (const stage of DATA.stages) {
+    const ms = DATA.matches.filter(m => m.stage === stage);
+    if (!ms.length) continue;
+    html += `<div class="stage-h">${stage}</div>`;
+    for (const m of ms) {
+      const w = scoreShown(m) ? winner(m) : null;
+      html += `<div class="match" data-id="${m.id}">
+        <div class="match-main">
+          <button class="teams" data-open="${m.id}">
+            ${sideHTML(m.home, w === 'home')}
+            ${sideHTML(m.away, w === 'away')}
+          </button>
+          ${scoreColHTML(m)}
+        </div>
+        <div class="venue">${m.venue || ''}</div>
+        ${playersHTML(m)}
+      </div>`;
+    }
+  }
+  root.innerHTML = html;
+}
+
+/* ── bracket view ── */
+function bracketRowHTML(code, isWin, m, whichSide) {
+  const t = T(code);
+  const flag = t ? t.flag : '⚽️';
+  const label = t ? t.name : 'TBD';
+  let sc = '';
+  if (played(m) && scoreShown(m)) sc = whichSide === 'home' ? m.home_score : m.away_score;
+  return `<div class="brow${isWin ? ' win' : ''}">
+    <span class="flag">${flag}</span>
+    <span class="code${t ? '' : ' tbd'}">${label}</span>
+    <span class="bs">${sc === '' ? '' : sc}</span>
+  </div>`;
+}
+
+function renderBracket() {
+  const root = document.getElementById('bracketInner');
+  let html = '';
+  for (const stage of DATA.stages) {
+    const ms = DATA.matches.filter(m => m.stage === stage);
+    if (!ms.length) continue;
+    const cards = ms.map(m => {
+      const w = scoreShown(m) ? winner(m) : null;
+      return `<div class="bx${stage === 'Final' ? ' final' : ''}" data-peek-toggle="${m.id}">
+        ${bracketRowHTML(m.home, w === 'home', m, 'home')}
+        ${bracketRowHTML(m.away, w === 'away', m, 'away')}
+      </div>`;
+    }).join('');
+    html += `<div class="round"><div class="round-h">${stage}</div>${cards}</div>`;
+  }
+  root.innerHTML = html;
+}
+
+function renderAll() { renderMatches(); renderBracket(); }
+
+/* ── interactions ── */
+document.getElementById('matches').addEventListener('click', (e) => {
+  const openBtn = e.target.closest('[data-open]');
+  if (openBtn) {
+    openBtn.closest('.match').classList.toggle('open');
+    return;
+  }
+  const peek = e.target.closest('[data-peek]');
+  if (peek) { peeked.add(peek.dataset.peek); renderMatches(); }
+});
+
+document.getElementById('bracketInner').addEventListener('click', (e) => {
+  const bx = e.target.closest('[data-peek-toggle]');
+  if (bx) { peeked.add(bx.dataset.peekToggle); renderBracket(); }
+});
+
+const revealBtn = document.getElementById('reveal');
+revealBtn.addEventListener('click', () => {
+  revealAll = !revealAll;
+  revealBtn.classList.toggle('on', revealAll);
+  revealBtn.setAttribute('aria-checked', String(revealAll));
+  renderAll();
+});
+
+function selectTab(which) {
+  const isM = which === 'matches';
+  document.getElementById('tab-matches').setAttribute('aria-selected', String(isM));
+  document.getElementById('tab-bracket').setAttribute('aria-selected', String(!isM));
+  document.getElementById('matches').hidden = !isM;
+  document.getElementById('bracket').hidden = isM;
+}
+document.getElementById('tab-matches').addEventListener('click', () => selectTab('matches'));
+document.getElementById('tab-bracket').addEventListener('click', () => selectTab('bracket'));
+
+/* ── init ── */
+document.getElementById('edition').textContent = DATA.edition;
+document.getElementById('note').innerHTML =
+  'Spoiler-safe: scores hide until you flip <b>Scores</b> on, or tap a single match to peek. ' +
+  'Sample bracket — edit the <code>DATA</code> object in <code>index.html</code> to match reality.';
+renderAll();
+</script>
+</body>
+</html>

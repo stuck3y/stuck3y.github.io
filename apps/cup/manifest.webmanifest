@@ -1,0 +1,20 @@
+{
+  "name": "World Cup",
+  "short_name": "World Cup",
+  "description": "A dead-simple World Cup companion — who's playing, key players, spoiler-safe scores, and the bracket.",
+  "scope": "/apps/cup/",
+  "start_url": "/apps/cup/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0b8a43",
+  "background_color": "#0b8a43",
+  "categories": ["sports", "entertainment"],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
