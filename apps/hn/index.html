@@ -1,7 +1,7 @@
-<!-- hn-plus.html  – v9.4 -->
+<!-- hn-plus.html  – v9.5 -->
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Hacker News Plus – v9.4</title>
+  <title>Hacker News Plus – v9.5</title>
   <meta name="theme-color" content="#f7f7f7" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script src="../lib/pwa.js" defer></script>
@@ -62,7 +62,7 @@
   </style>
   </head><body>
   
-  <header>Hacker News Plus – v9.4</header>
+  <header>Hacker News Plus – v9.5</header>
   
   <div id="toolbar">
     <button id="refresh" class="tbtn">⟳</button>
@@ -251,57 +251,28 @@
   }
   
   /* ---------- summary dialog ---------- */
-  /* Pull the HN discussion so the LLM can read the actual comments, not guess.
-     Algolia's item endpoint returns the nested comment tree. We flatten the
-     top-level comments, strip HTML, and cap length so the prompt stays pasteable. */
-  function stripHtml(html){
-    const d=document.createElement("div"); d.innerHTML=html||"";
-    return (d.textContent||"").replace(/\s+/g," ").trim();
-  }
-  async function fetchComments(id,{maxComments=18,perComment=380,maxChars=4200}={}){
-    try{
-      const j=await withTimeout(sig=>fetchJSON(`https://hn.algolia.com/api/v1/items/${id}`,sig));
-      const top=(j&&j.children||[]).filter(c=>c&&c.text&&c.author);
-      const lines=[]; let total=0;
-      for(const c of top){
-        const text=stripHtml(c.text);
-        if(text.length<40) continue;                    // skip one-liners / noise
-        const line=`- ${c.author}: ${text.slice(0,perComment)}${text.length>perComment?"…":""}`;
-        if(total+line.length>maxChars) break;
-        lines.push(line); total+=line.length+1;
-        if(lines.length>=maxComments) break;
-      }
-      return lines;
-    }catch{ return null; }
-  }
-  function buildFullPrompt(a,comments){
-    const hasC=comments&&comments.length;
-    const block=hasC
-      ? `Hacker News comments (excerpts, most-visible first):\n${comments.join("\n")}`
-      : `(Couldn't fetch the comments automatically — read the discussion at the link and base the chatter section on what's there.)`;
+  function buildPrompt(a){
+    const hn=`https://news.ycombinator.com/item?id=${a.id}`;
     return `**${a.title}**
-${a.url}
-
-Do two things.
+Article: ${a.url}
+HN discussion: ${hn}
 
 1) SUMMARY
 • 5 concise bullet points summarizing the article.
-• Add one analogy or concrete scenario that makes the core idea click.
+• One analogy or concrete scenario that makes the core idea click.
 • One sentence on why this is interesting or significant.
 
-2) THE CHATTER — interesting takes, reception & feedback (from the HN discussion below)
-• Open with the general reception/sentiment in a sentence or two — is the crowd convinced, skeptical, or split?
-• Surface 3–6 of the most interesting, non-obvious, or expert takes — one line each, loosely attributed ("one commenter…", "a few pushed back…").
-• Flag any sharp disagreement, correction, or first-hand experience worth reading.
-• Point to the single thread most worth reading myself, if one stands out.
-• Only include what's genuinely worth a look — skip the noise and the pile-ons.
-
-${block}
-Full discussion: https://news.ycombinator.com/item?id=${a.id}`;
+2) THE CHATTER
+Read the Hacker News comments at the discussion link and add helpful perspective:
+• The general reception/sentiment in a sentence or two — convinced, skeptical, or split?
+• 3–6 of the most interesting or expert takes worth knowing.
+• Any sharp disagreement, correction, or first-hand experience worth reading.
+• The single thread most worth reading myself.`;
   }
   function summarize(arr){
+    const txt=arr.map(buildPrompt).join("\n\n———\n\n");
     modal("Copy these prompts",
-      `<textarea id="copyBox" readonly rows="16" style="width:100%">Gathering the Hacker News discussion…</textarea>
+      `<textarea id="copyBox" readonly rows="16" style="width:100%">${txt}</textarea>
        <div class="chat-wrapper">
          <button class="copy-btn"   id="btnCopy"  >Copy 📋</button>
          <button class="listen-btn" id="btnListen">🔊 Listen</button>
@@ -310,21 +281,12 @@ Full discussion: https://news.ycombinator.com/item?id=${a.id}`;
          <button class="chat-btn"   id="btnGem"   >Gemini ↗</button>
        </div>`);
 
-    const box=document.getElementById("copyBox");
-    let ready=false;
-    const guard=fn=>()=>{ if(!ready){ showToast("Still gathering…"); return; } fn(); };
-
-    document.getElementById("btnCopy").onclick   = guard(()=>copyToClipboard(box.value));
-    document.getElementById("btnListen").onclick = guard(()=>{ try{ speechSynthesis.cancel(); }catch{} speechSynthesis.speak(new SpeechSynthesisUtterance(box.value)); });
-    const openChat=url=>copyToClipboard(box.value).then(()=>window.open(url,"_blank"));
-    document.getElementById("btnGPT"   ).onclick = guard(()=>openChat("https://chat.openai.com/"));
-    document.getElementById("btnClaude").onclick = guard(()=>openChat("https://claude.ai/chat"));
-    document.getElementById("btnGem"   ).onclick = guard(()=>openChat("https://gemini.google.com/app"));
-
-    /* fetch each story's comments, then assemble the full prompt(s) */
-    Promise.all(arr.map(async a=>buildFullPrompt(a, await fetchComments(a.id))))
-      .then(parts=>{ box.value=parts.join("\n\n———\n\n"); ready=true; })
-      .catch(()=>{ box.value=arr.map(a=>buildFullPrompt(a,null)).join("\n\n———\n\n"); ready=true; });
+    document.getElementById("btnCopy").onclick   = ()=>copyToClipboard(txt);
+    document.getElementById("btnListen").onclick = ()=>{ try{ speechSynthesis.cancel(); }catch{} speechSynthesis.speak(new SpeechSynthesisUtterance(txt)); };
+    const openChat=url=>copyToClipboard(txt).then(()=>window.open(url,"_blank"));
+    document.getElementById("btnGPT"   ).onclick = ()=>openChat("https://chat.openai.com/");
+    document.getElementById("btnClaude").onclick = ()=>openChat("https://claude.ai/chat");
+    document.getElementById("btnGem"   ).onclick = ()=>openChat("https://gemini.google.com/app");
   }
   
   /* ---------- boot ---------- */
