@@ -1,88 +1,168 @@
-<!-- hn-plus.html  – v9.5 -->
+<!-- hn-plus.html  – v9.6 -->
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Hacker News Plus – v9.5</title>
-  <meta name="theme-color" content="#f7f7f7" />
+  <title>Hacker News Plus – v9.6</title>
+  <meta name="theme-color" content="#f2f2f5" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script src="../lib/pwa.js" defer></script>
-  
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
   <style>
-  :root{--orange:#ff6600;--radius:12px;--anim:.18s cubic-bezier(.25,.8,.5,1)}
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;height:100%;font:-apple-system-body;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f7f7f7}
-  
-  /* ---------- header & toolbar ---------- */
-  header{background:var(--orange);color:#fff;padding:.75rem 1.2rem;font-weight:600;font-size:1.15rem}
-  #toolbar{display:flex;gap:.5rem;padding:.55rem 1rem}
-  .tbtn{background:var(--orange);color:#fff;border:0;border-radius:var(--radius);
-    width:38px;height:38px;font-size:1.6rem;line-height:1;display:flex;align-items:center;justify-content:center;
-    cursor:pointer;transition:opacity var(--anim)}
-  #refresh{font-size:1.8rem}
-  .tbtn:active{opacity:.7}#filter,#showAll{display:none}
-  
+  :root{
+    --bg:#f2f2f5; --surface:#ffffff; --surface-2:#f4f4f7;
+    --text:#16161a; --muted:#6b6b72; --faint:#9a9aa2;
+    --border:rgba(0,0,0,.08); --border-strong:rgba(0,0,0,.14);
+    --orange:#ff6600; --orange-soft:rgba(255,102,0,.12);
+    --danger:#e5484d;
+    --radius:14px; --radius-sm:10px;
+    --shadow:0 1px 2px rgba(0,0,0,.05), 0 1px 3px rgba(0,0,0,.04);
+    --shadow-lg:0 14px 40px rgba(0,0,0,.18);
+    --anim:.18s cubic-bezier(.25,.8,.5,1);
+    --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+    --bg:#000000; --surface:#161618; --surface-2:#1f1f23;
+    --text:#f2f2f5; --muted:#9a9aa2; --faint:#6c6c74;
+    --border:rgba(255,255,255,.10); --border-strong:rgba(255,255,255,.16);
+    --orange:#ff7a2f; --orange-soft:rgba(255,122,47,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 14px 40px rgba(0,0,0,.6);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#000000; --surface:#161618; --surface-2:#1f1f23;
+    --text:#f2f2f5; --muted:#9a9aa2; --faint:#6c6c74;
+    --border:rgba(255,255,255,.10); --border-strong:rgba(255,255,255,.16);
+    --orange:#ff7a2f; --orange-soft:rgba(255,122,47,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 14px 40px rgba(0,0,0,.6);
+  }
+
+  *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;min-height:100dvh}
+  a{color:inherit}
+  button{font-family:inherit}
+
+  /* ---------- header ---------- */
+  .app-header{position:sticky;top:0;z-index:100;
+    background:color-mix(in srgb,var(--bg) 82%,transparent);
+    -webkit-backdrop-filter:saturate(1.6) blur(14px);backdrop-filter:saturate(1.6) blur(14px);
+    border-bottom:1px solid var(--border);
+    padding:max(10px,env(safe-area-inset-top)) 14px 10px;
+    display:flex;align-items:center;gap:11px}
+  .logo{width:30px;height:30px;border-radius:8px;background:var(--orange);color:#fff;
+    display:grid;place-items:center;font-weight:800;font-size:17px;flex:none}
+  .wordmark{display:flex;flex-direction:column;line-height:1.08;min-width:0}
+  .wordmark .t{font-weight:700;font-size:16px;letter-spacing:-.01em}
+  .wordmark .v{font-size:11px;color:var(--muted)}
+  .spacer{flex:1}
+  .tbtn{width:40px;height:40px;border:1px solid var(--border);border-radius:12px;
+    background:var(--surface);color:var(--text);font-size:19px;line-height:1;
+    display:grid;place-items:center;cursor:pointer;transition:transform var(--anim),background var(--anim)}
+  .tbtn:active{transform:scale(.9);background:var(--surface-2)}
+  .tbtn:disabled{opacity:.5}
+  #filter,#showAll{display:none}
+
   /* ---------- list & row ---------- */
-  ul#stories{list-style:none;margin:0;padding:0}
-  li.story{background:#fff;margin:.5rem 0;padding:.9rem 1rem;border-radius:var(--radius);
-    display:flex;align-items:center;gap:.8rem;position:relative;touch-action:none;
-    box-shadow:0 1px 2px rgba(0,0,0,.06)}
-  .drag-handle{font-size:1.35rem;cursor:grab}
-  .menu-btn{font-size:1.5rem;cursor:pointer;color:#555;padding:.25rem}
-  .comment{font-size:1.25rem;text-decoration:none;color:#666;margin-left:.15rem}
-  a.title{flex:1;font-size:1rem;font-weight:500;text-decoration:none;color:#000}
-  .points{background:var(--orange);color:#fff;border-radius:6px;padding:.2rem .55rem;font-size:.75rem}
-  .checkbox{display:none;margin-right:.3rem}.selecting .checkbox{display:block}
-  .checkbox input{width:22px;height:22px}
-  
-  .swipe-delete{position:absolute;top:0;right:-80px;height:100%;display:flex;align-items:center;padding:0 .8rem;transition:right var(--anim)}
-  .swipe-delete button{background:#e74c3c;border:0;border-radius:8px;padding:.6rem .9rem;font-size:1.05rem;color:#fff}
-  
+  ul#stories{list-style:none;margin:0;padding:8px 10px calc(env(safe-area-inset-bottom) + 96px)}
+  li.story{background:var(--surface);border:1px solid var(--border);margin:8px 0;padding:12px;
+    border-radius:var(--radius);display:flex;align-items:flex-start;gap:10px;position:relative;
+    overflow:hidden;touch-action:pan-y;box-shadow:var(--shadow);transition:transform var(--anim),opacity var(--anim)}
+  .rank{font-variant-numeric:tabular-nums;color:var(--faint);font-size:13px;font-weight:600;
+    min-width:16px;text-align:right;padding-top:2px;flex:none}
+  .checkbox{display:none;padding-top:1px;flex:none}
+  .selecting .checkbox{display:block}
+  .checkbox input{width:20px;height:20px;accent-color:var(--orange)}
+  .body{flex:1;min-width:0}
+  a.title{display:block;font-size:16px;font-weight:600;line-height:1.34;color:var(--text);
+    text-decoration:none;letter-spacing:-.01em}
+  a.title:active{opacity:.55}
+  .meta{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px;margin-top:6px;
+    font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .meta .domain{color:var(--faint);max-width:56vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .meta .score{color:var(--orange);font-weight:700}
+  .meta .comment{color:var(--muted);text-decoration:none}
+  .meta .comment:active{opacity:.6}
+  .drag-handle{color:var(--faint);font-size:17px;cursor:grab;padding:2px;align-self:center;
+    touch-action:none;letter-spacing:-3px}
+  .menu-btn{color:var(--muted);font-size:20px;cursor:pointer;padding:2px 4px;align-self:center;flex:none}
+
+  .swipe-delete{position:absolute;top:0;right:0;height:100%;display:flex;align-items:center;
+    padding:0 10px;transform:translateX(110%);transition:transform var(--anim)}
+  .swipe-delete.open{transform:translateX(0)}
+  .swipe-delete button{background:var(--danger);border:0;border-radius:10px;padding:0 16px;
+    height:calc(100% - 18px);color:#fff;font-size:.92rem;font-weight:700;cursor:pointer}
+
   /* ---------- floating bits ---------- */
-  #fab{position:fixed;bottom:calc(env(safe-area-inset-bottom)+1rem);left:50%;transform:translateX(-50%);
-    background:var(--orange);color:#fff;border-radius:999px;padding:.6rem 1.3rem;font-weight:600;display:none;
-    box-shadow:0 4px 14px rgba(0,0,0,.2)}
-  
-  #modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:1rem;z-index:900}
-  #modal .card{background:#fff;border-radius:var(--radius);max-width:650px;width:100%;max-height:90vh;overflow:auto;padding:1rem;position:relative}
-  #modal header{font-size:1.25rem;font-weight:700;margin-bottom:.4rem}
-  #modal .close{position:absolute;top:.35rem;right:.8rem;font-size:1.6rem;cursor:pointer;color:#555}
-  
-  .copy-btn,.chat-btn,.listen-btn{margin-top:.7rem;border:0;border-radius:8px;padding:.6rem 1rem;font-size:.95rem;cursor:pointer}
-  .copy-btn{background:#2ecc71;color:#fff}
-  .listen-btn{background:#3498db;color:#fff}
-  .chat-btn{background:#ecf0f1;color:#333}
-  .chat-wrapper{display:flex;gap:.5rem;flex-wrap:wrap}
-  
-  .toast{position:fixed;top:0;left:0;right:0;background:#333;color:#fff;text-align:center;padding:.4rem 0;font-size:.9rem;transform:translateY(-120%);transition:transform var(--anim);z-index:950}
-  .toast.show{transform:translateY(0)}
-  
-  .sheet{position:fixed;background:#fff;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.25);overflow:hidden;z-index:1100}
-  .sheet button{display:block;width:100%;text-align:left;padding:.8rem 1.1rem;border:0;background:#fff;font-size:.95rem;color:#222}
-  .sheet button:hover{background:#f2f2f2}
+  #fab{position:fixed;bottom:calc(env(safe-area-inset-bottom)+16px);left:50%;transform:translateX(-50%);
+    background:var(--orange);color:#fff;border:0;border-radius:999px;padding:.7rem 1.4rem;font-weight:700;
+    font-size:15px;display:none;box-shadow:var(--shadow-lg);cursor:pointer}
+
+  #modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;
+    justify-content:center;z-index:900}
+  @media(min-width:640px){#modal{align-items:center;padding:1rem}}
+  #modal .card{background:var(--surface);color:var(--text);border-radius:20px 20px 0 0;max-width:640px;
+    width:100%;max-height:88vh;overflow:auto;padding:18px 16px calc(env(safe-area-inset-bottom)+16px);
+    position:relative;box-shadow:var(--shadow-lg)}
+  @media(min-width:640px){#modal .card{border-radius:20px}}
+  #modal header{font-size:1.12rem;font-weight:700;margin:0 0 12px;padding-right:2rem}
+  #modal .close{position:absolute;top:12px;right:14px;font-size:1.5rem;cursor:pointer;color:var(--muted);line-height:1}
+  #copyBox{width:100%;background:var(--surface-2);color:var(--text);border:1px solid var(--border);
+    border-radius:12px;padding:12px;font:13px/1.55 var(--font);resize:vertical}
+
+  .chat-wrapper{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .copy-btn,.chat-btn,.listen-btn{border:0;border-radius:10px;padding:.62rem 1rem;font-size:.92rem;
+    font-weight:600;cursor:pointer}
+  .copy-btn{background:var(--orange);color:#fff}
+  .listen-btn,.chat-btn{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}
+
+  .toast{position:fixed;top:calc(env(safe-area-inset-top) + 10px);left:50%;
+    transform:translate(-50%,-180%);background:var(--text);color:var(--bg);border-radius:999px;
+    padding:.5rem 1.1rem;font-size:.86rem;font-weight:600;z-index:950;box-shadow:var(--shadow-lg);
+    transition:transform var(--anim)}
+  .toast.show{transform:translate(-50%,0)}
+
+  .sheet{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    box-shadow:var(--shadow-lg);overflow:hidden;z-index:1100}
+  .sheet button{display:block;width:100%;text-align:left;padding:.8rem 1.1rem;border:0;background:transparent;
+    font-size:.95rem;color:var(--text);cursor:pointer}
+  .sheet button:not(:last-child){border-bottom:1px solid var(--border)}
+  .sheet button:active{background:var(--surface-2)}
+
+  .state{padding:3.2rem 1.5rem;text-align:center;color:var(--muted);line-height:1.6}
+  .state code{font-size:.85rem;color:var(--faint)}
+  .state button{margin-top:1.1rem;background:var(--orange);color:#fff;border:0;border-radius:10px;
+    padding:.6rem 1.3rem;font-weight:600;cursor:pointer}
+  .skeleton{background:var(--surface);border:1px solid var(--border);margin:8px 0;padding:14px 12px;
+    border-radius:var(--radius);box-shadow:var(--shadow)}
+  .skeleton .bar{height:12px;border-radius:6px;background:var(--surface-2);margin:6px 0}
+  .skeleton .bar.w70{width:70%}.skeleton .bar.w40{width:40%}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
   </style>
   </head><body>
-  
-  <header>Hacker News Plus – v9.5</header>
-  
-  <div id="toolbar">
-    <button id="refresh" class="tbtn">⟳</button>
-    <button id="select"  class="tbtn">☑</button>
-    <button id="filter"  class="tbtn">👁</button>
-    <button id="showAll" class="tbtn">🔄</button>
-  </div>
-  
+
+  <header class="app-header">
+    <div class="logo">Y</div>
+    <div class="wordmark"><span class="t">Hacker News<span style="color:var(--orange)">+</span></span><span class="v">v9.6</span></div>
+    <div class="spacer"></div>
+    <button id="refresh" class="tbtn" aria-label="Refresh">⟳</button>
+    <button id="select"  class="tbtn" aria-label="Select">☑</button>
+    <button id="filter"  class="tbtn" aria-label="Filter">👁</button>
+    <button id="showAll" class="tbtn" aria-label="Show all">🔄</button>
+  </header>
+
   <ul id="stories"></ul>
   <button id="fab"></button>
-  
+
   <!-- Modal -->
   <div id="modal"><div class="card">
     <span class="close">×</span>
     <header id="modal-title"></header>
     <div id="modal-body"></div>
   </div></div>
-  
+
   <div id="toast" class="toast">Copied</div>
-  
+
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
   <script>
@@ -93,14 +173,14 @@
         API_ALG = "https://hn.algolia.com/api/v1/search?tags=front_page",
         TIMEOUT = 6000,
         MAX_STORIES = 30;
-  
+
   const list=document.getElementById("stories"),fab=document.getElementById("fab");
   const btnRefresh=document.getElementById("refresh"),btnSelect=document.getElementById("select");
   const btnFilter=document.getElementById("filter"),btnShowAll=document.getElementById("showAll");
   const toast=document.getElementById("toast");
-  
+
   let stories=[],selectMode=false,filterActive=false,sortable;
-  
+
   /* ---------- helpers ---------- */
   const vibrate=n=>{try{navigator.vibrate(n);}catch{}};
   const showToast=t=>{toast.textContent=t;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1400);};
@@ -111,9 +191,12 @@
     m.querySelector(".close").onclick=()=>m.style.display="none";
   }
   function copyToClipboard(text){
-    return navigator.clipboard.writeText(text).then(()=>showToast("Copied"));
+    return navigator.clipboard.writeText(text).then(()=>showToast("Copied ✓"));
   }
-  
+  function domainOf(u){
+    try{ return new URL(u).hostname.replace(/^www\./,""); }catch{ return "news.ycombinator.com"; }
+  }
+
   /* ---------- sheet logic ---------- */
   let sheet=null,sheetTimeout=null,sheetDocHandler=null;
   function closeSheet(){
@@ -124,14 +207,14 @@
   function openSheet(dom,x,y){
     closeSheet();
     sheet=dom; document.body.appendChild(sheet);
-    const w=190; sheet.style.width=w+"px";
-    sheet.style.left=Math.max(8,x-w/2)+"px";
+    const w=200; sheet.style.width=w+"px";
+    sheet.style.left=Math.min(window.innerWidth-w-8,Math.max(8,x-w/2))+"px";
     sheet.style.top=(y+10)+"px";
     sheetTimeout=setTimeout(closeSheet,4000);
     sheetDocHandler=()=>closeSheet();
     setTimeout(()=>document.addEventListener("click",sheetDocHandler,{once:true}));
   }
-  
+
   /* ---------- loader ---------- */
   function fetchJSON(url,signal){return fetch(url,{signal}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();});}
   function withTimeout(promise){
@@ -140,92 +223,109 @@
   }
   function algoliaStories(sig){
     return fetchJSON(API_ALG,sig).then(j=>j.hits.slice(0,MAX_STORIES).map(h=>({
-      id:h.objectID,title:h.title||"(no title)",url:h.url||`https://news.ycombinator.com/item?id=${h.objectID}`,score:h.points||0
+      id:h.objectID,title:h.title||"(no title)",
+      url:h.url||`https://news.ycombinator.com/item?id=${h.objectID}`,
+      score:h.points||0,comments:h.num_comments||0
     })));
   }
   async function firebaseStories(sig){
     const ids=await fetchJSON(`${API_FB}/topstories.json`,sig);
     const items=await Promise.all(ids.slice(0,MAX_STORIES).map(id=>fetchJSON(`${API_FB}/item/${id}.json`,sig)));
-    return items.map(it=>({id:it.id,title:it.title,url:it.url||`https://news.ycombinator.com/item?id=${it.id}`,score:it.score||0}));
+    return items.map(it=>({id:it.id,title:it.title,
+      url:it.url||`https://news.ycombinator.com/item?id=${it.id}`,
+      score:it.score||0,comments:it.descendants||0}));
   }
-  
+
+  function showSkeleton(){
+    list.innerHTML=Array.from({length:8}).map(()=>
+      `<li class="skeleton"><div class="bar w70"></div><div class="bar w40"></div></li>`).join("");
+  }
+
   async function loadStories(){
-    btnRefresh.disabled=true;btnRefresh.textContent='⏳';list.innerHTML="";
+    btnRefresh.disabled=true;btnRefresh.textContent='⏳';showSkeleton();
     try{
       stories=await Promise.any([withTimeout(algoliaStories),withTimeout(firebaseStories)]);
       render();vibrate(40);
     }catch(err){
       console.error(err);
       list.innerHTML=`
-        <p style="padding:2rem">
-          Couldn’t load Hacker News:<br>
-          <code>${err instanceof AggregateError ? err.errors[0].message : err.message}</code><br><br>
+        <div class="state">
+          Couldn’t load Hacker News.<br>
+          <code>${err instanceof AggregateError ? err.errors[0].message : err.message}</code><br>
           <button id="retry">Retry</button>
-        </p>`;
+        </div>`;
       list.querySelector("#retry").onclick=loadStories;
     }finally{
       btnRefresh.disabled=false;btnRefresh.textContent='⟳';
     }
   }
-  
+
   /* ---------- render ---------- */
   function render(){
     list.innerHTML="";
     stories.forEach((s,i)=>list.appendChild(makeItem(s,i)));
     if(!sortable){
       sortable=Sortable.create(list,{handle:".drag-handle",animation:150,
-        onEnd:e=>{const [m]=stories.splice(e.oldIndex,1);stories.splice(e.newIndex,0,m);}
+        onEnd:e=>{const [m]=stories.splice(e.oldIndex,1);stories.splice(e.newIndex,0,m);
+          [...list.children].forEach((li,i)=>{li.dataset.index=i;const r=li.querySelector(".rank");if(r)r.textContent=i+1;});}
       });
     }
     updateUI();
   }
   function makeItem(s,i){
     const li=document.createElement("li");li.className="story";li.dataset.index=i;
+    const dom=domainOf(s.url);
+    const isHN=/ycombinator\.com$/.test(dom);
     li.innerHTML=`
-      <span class="drag-handle">☰</span>
+      <span class="rank">${i+1}</span>
       <label class="checkbox"><input type="checkbox"></label>
-      <a class="title" href="${s.url}" target="_blank">${s.title}</a>
-      <span class="points">${s.score}</span>
-      <a class="comment" href="https://news.ycombinator.com/item?id=${s.id}" target="_blank">💬</a>
-      <span class="menu-btn">⋯</span>
-      <div class="swipe-delete"><button class="remove">🗑</button></div>`;
+      <div class="body">
+        <a class="title" href="${s.url}" target="_blank" rel="noopener">${s.title}</a>
+        <div class="meta">
+          ${isHN?"":`<span class="domain">${dom}</span>`}
+          <span class="score">▲ ${s.score}</span>
+          <a class="comment" href="https://news.ycombinator.com/item?id=${s.id}" target="_blank" rel="noopener">💬 ${s.comments||0}</a>
+        </div>
+      </div>
+      <span class="drag-handle" aria-label="reorder">⣿</span>
+      <span class="menu-btn" aria-label="menu">⋯</span>
+      <div class="swipe-delete"><button class="remove">Delete</button></div>`;
     wire(li);return li;
   }
-  
+
   /* ---------- interactions ---------- */
   function wire(li){
     const mc=new Hammer(li);mc.get("swipe").set({direction:Hammer.DIRECTION_HORIZONTAL,velocity:0.2});
-    mc.on("swipeleft",()=>li.querySelector(".swipe-delete").style.right="0");
+    mc.on("swipeleft",()=>li.querySelector(".swipe-delete").classList.add("open"));
     mc.on("swiperight",ev=>{
-      li.querySelector(".swipe-delete").style.right="-80px";
-      /* Quick‑select on right swipe */
+      li.querySelector(".swipe-delete").classList.remove("open");
       if(!selectMode){btnSelect.click();}
       const cb=li.querySelector("input");cb.checked=true;updateUI();vibrate(15);
     });
-  
+
     li.querySelector(".remove").onclick=()=>{
-      stories.splice(li.dataset.index,1);li.remove();updateUI();vibrate(25);
+      stories.splice(li.dataset.index,1);render();vibrate(25);
     };
     li.querySelector("input").addEventListener("change",updateUI);
-  
+
     li.querySelector(".menu-btn").onclick=e=>{
       const i=li.dataset.index;
       const node=document.createElement("div");node.className="sheet";
-      node.innerHTML=`<button id="msum">Summarize</button>
-        <button id="mhide">Hide others</button>
+      node.innerHTML=`<button id="msum">✨ Summarize</button>
+        <button id="mhide">Focus this one</button>
         <button id="mcomments">Open comments</button>
         <button id="mremove">Remove</button>`;
       openSheet(node,e.clientX,e.clientY);
-  
+
       node.querySelector("#msum").onclick=()=>{closeSheet();summarize([stories[i]]);};
       node.querySelector("#mhide").onclick=()=>{closeSheet();hideOthers([li]);};
       node.querySelector("#mcomments").onclick=()=>{window.open('https://news.ycombinator.com/item?id='+stories[i].id,'_blank');closeSheet();};
       node.querySelector("#mremove").onclick=()=>{li.querySelector(".remove").click();closeSheet();};
-  
+
       e.stopPropagation();
     };
   }
-  
+
   /* ---------- select & filter ---------- */
   btnSelect.onclick=()=>{
     selectMode=!selectMode;
@@ -233,7 +333,7 @@
     if(!selectMode) list.querySelectorAll("input").forEach(cb=>cb.checked=false);
     updateUI();vibrate(18);
   };
-  function selectedLis(){return [...list.children].filter(li=>li.querySelector("input").checked);}
+  function selectedLis(){return [...list.children].filter(li=>li.querySelector("input")&&li.querySelector("input").checked);}
   btnFilter.onclick=()=>hideOthers(selectedLis());
   btnShowAll.onclick=()=>{[...list.children].forEach(li=>li.style.display="flex");filterActive=false;updateUI();}
   function hideOthers(keep){
@@ -245,11 +345,12 @@
   function updateUI(){
     const cnt=selectedLis().length;
     fab.style.display=cnt&&selectMode?"block":"none";
-    fab.textContent=cnt?`${cnt} selected`:"";
-    btnFilter.style.display=cnt&&!filterActive?"inline-block":"none";
-    btnShowAll.style.display=filterActive?"inline-block":"none";
+    fab.textContent=cnt?`Summarize ${cnt} ✨`:"";
+    fab.onclick=()=>summarize(selectedLis().map(li=>stories[li.dataset.index]));
+    btnFilter.style.display=cnt&&!filterActive?"grid":"none";
+    btnShowAll.style.display=filterActive?"grid":"none";
   }
-  
+
   /* ---------- summary dialog ---------- */
   function buildPrompt(a){
     const hn=`https://news.ycombinator.com/item?id=${a.id}`;
@@ -272,7 +373,7 @@ Read the Hacker News comments at the discussion link and add helpful perspective
   function summarize(arr){
     const txt=arr.map(buildPrompt).join("\n\n———\n\n");
     modal("Copy these prompts",
-      `<textarea id="copyBox" readonly rows="16" style="width:100%">${txt}</textarea>
+      `<textarea id="copyBox" readonly rows="16">${txt}</textarea>
        <div class="chat-wrapper">
          <button class="copy-btn"   id="btnCopy"  >Copy 📋</button>
          <button class="listen-btn" id="btnListen">🔊 Listen</button>
@@ -288,7 +389,7 @@ Read the Hacker News comments at the discussion link and add helpful perspective
     document.getElementById("btnClaude").onclick = ()=>openChat("https://claude.ai/chat");
     document.getElementById("btnGem"   ).onclick = ()=>openChat("https://gemini.google.com/app");
   }
-  
+
   /* ---------- boot ---------- */
   btnRefresh.onclick=loadStories;
   loadStories();
