@@ -4,7 +4,8 @@
 // open instantly and work offline. Each sub-app owns its own caching through
 // its own service worker; this one deliberately only manages the shell.
 
-const CACHE = 'shell-v1';
+const CACHE = 'shell-v2';
+const PREFIX = CACHE.slice(0, CACHE.lastIndexOf('-') + 1); // this app's caches only
 const SHELL = [
   './',
   './index.html',
@@ -23,7 +24,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((names) =>
-      Promise.all(names.filter((n) => n !== CACHE).map((n) => caches.delete(n)))
+      Promise.all(names.filter((n) => n.startsWith(PREFIX) && /^v\d+$/.test(n.slice(PREFIX.length)) && n !== CACHE).map((n) => caches.delete(n)))
     )
   );
   self.clients.claim();

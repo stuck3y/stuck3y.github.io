@@ -1,5 +1,6 @@
 // The ADHD Playbook — per-app service worker. Scope: /apps/adhd/
-const CACHE = 'app-adhd-v1';
+const CACHE = 'app-adhd-v2';
+const PREFIX = CACHE.slice(0, CACHE.lastIndexOf('-') + 1); // this app's caches only
 const SHELL = ['./', './index.html', './manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
@@ -10,7 +11,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((names) =>
-      Promise.all(names.filter((n) => n !== CACHE).map((n) => caches.delete(n)))
+      Promise.all(names.filter((n) => n.startsWith(PREFIX) && /^v\d+$/.test(n.slice(PREFIX.length)) && n !== CACHE).map((n) => caches.delete(n)))
     )
   );
   self.clients.claim();
