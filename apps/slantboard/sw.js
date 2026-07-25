@@ -1,5 +1,6 @@
 // Slant Board Timer — per-app service worker. Scope: /apps/slantboard/
-const CACHE = 'app-slantboard-v2';
+const CACHE = 'app-slantboard-v3';
+const PREFIX = CACHE.slice(0, CACHE.lastIndexOf('-') + 1); // this app's caches only
 const SHELL = ['./', './index.html', './styles.css', './app.js'];
 
 self.addEventListener('install', (event) => {
@@ -10,7 +11,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((names) =>
-      Promise.all(names.filter((n) => n !== CACHE).map((n) => caches.delete(n)))
+      Promise.all(names.filter((n) => n.startsWith(PREFIX) && /^v\d+$/.test(n.slice(PREFIX.length)) && n !== CACHE).map((n) => caches.delete(n)))
     )
   );
   self.clients.claim();

@@ -1,7 +1,8 @@
 // Anchor — per-app service worker. Scope: /apps/anchor/
 // HTML navigations are network-first (so the app shell can never get stuck on
 // a stale cached page); other static assets are cache-first for offline use.
-const CACHE = 'app-anchor-v6';
+const CACHE = 'app-anchor-v7';
+const PREFIX = CACHE.slice(0, CACHE.lastIndexOf('-') + 1); // this app's caches only
 const SHELL = [
   './',
   './index.html',
@@ -20,7 +21,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
       .then((names) =>
-        Promise.all(names.filter((n) => n !== CACHE).map((n) => caches.delete(n)))
+        Promise.all(names.filter((n) => n.startsWith(PREFIX) && /^v\d+$/.test(n.slice(PREFIX.length)) && n !== CACHE).map((n) => caches.delete(n)))
       )
       .then(() => self.clients.claim())
   );
