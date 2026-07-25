@@ -1,13 +1,7 @@
-// Per-app service worker template. Copy this file into an app's folder as `sw.js`
-// and edit CACHE + SHELL for that app.
-//
-// Example for /apps/slantboard/sw.js:
-//   const CACHE = 'app-slantboard-v1';
-//   const SHELL = ['./', './index.html', './styles.css', './app.js'];
-
-const CACHE = 'app-template-v1';
+// nutty — per-app service worker. Scope: /apps/nutty/
+const CACHE = 'app-nutty-v1';
 const PREFIX = CACHE.slice(0, CACHE.lastIndexOf('-') + 1); // this app's caches only
-const SHELL = ['./', './index.html'];
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));

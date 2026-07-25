@@ -1,0 +1,20 @@
+{
+  "name": "nutty",
+  "short_name": "nutty",
+  "description": "A food cache that does trustworthy arithmetic. One tap to log your regulars, export clean totals to the thread.",
+  "scope": "/apps/nutty/",
+  "start_url": "/apps/nutty/?source=pwa",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#f6f3ec",
+  "background_color": "#f6f3ec",
+  "categories": ["health", "food", "lifestyle", "utilities"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
