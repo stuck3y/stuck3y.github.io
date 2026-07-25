@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#f6f3ec" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>nutty</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<script src="../lib/pwa.js" defer></script>
+<script src="../lib/sys.js" defer></script>
+<script>addEventListener('DOMContentLoaded', function () { if (window.sys) sys.theme.init(); });</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f3ec;
+    --panel: #efeade;
+    --ink: #1a1a1c;
+    --soft: #6e6e74;
+    --faint: #d4d1c8;
+    --rule: rgba(26,26,28,0.12);
+    --accent: #c8451d;
+    --clear: #3f7d4f;
+    --serif: 'Fraunces', ui-serif, Georgia, serif;
+    --ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #2a2825; --panel: #322f2b; --ink: #f2efe8; --soft: #a6a39b;
+      --faint: #44413c; --rule: rgba(242,239,232,0.14);
+      --accent: #f0805a; --clear: #7fb98c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #2a2825; --panel: #322f2b; --ink: #f2efe8; --soft: #a6a39b;
+    --faint: #44413c; --rule: rgba(242,239,232,0.14);
+    --accent: #f0805a; --clear: #7fb98c;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: var(--serif); font-size: 19px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none; user-select: none;
+  }
+  ::selection { background: var(--accent); color: #fff; }
+
+  .wrap { min-height: 100dvh; display: flex; flex-direction: column;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+  main { flex: 1; width: 100%; max-width: 600px; margin: 0 auto; padding: 0 22px calc(env(safe-area-inset-bottom) + 40px); }
+
+  .dots {
+    position: fixed; top: calc(env(safe-area-inset-top) + 8px); right: 12px; z-index: 6;
+    width: 46px; height: 46px; border: 0; background: transparent; color: var(--soft);
+    font-size: 26px; line-height: 1; cursor: pointer; font-family: var(--ui);
+  }
+  .dots:active { color: var(--accent); }
+
+  /* ── hero ─────────────────────────────────────────────── */
+  .hero { padding: 34px 0 4px; }
+  .eye { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--soft); margin-bottom: 8px; }
+  .big {
+    font-size: clamp(54px, 17vw, 78px); font-weight: 400; letter-spacing: -0.03em;
+    line-height: 1; font-variant-numeric: tabular-nums; margin: 0;
+  }
+  .big.over { color: var(--accent); }
+  .under { margin-top: 8px; font-size: 15px; color: var(--soft); font-style: italic; }
+  .under b { font-style: normal; color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+  .macros { display: flex; gap: 18px; flex-wrap: wrap; margin: 20px 0 6px; }
+  .macro { min-width: 62px; }
+  .macro .v { font-size: 22px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .macro .k { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--soft); }
+  .macro .goal { font-size: 11px; color: var(--soft); font-variant-numeric: tabular-nums; }
+  .micros { font-size: 13px; color: var(--soft); font-variant-numeric: tabular-nums; margin-bottom: 6px; }
+
+  /* ── log ──────────────────────────────────────────────── */
+  h2 {
+    font-family: var(--ui); font-weight: 500; font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--soft); margin: 30px 0 4px;
+  }
+  ul { list-style: none; margin: 0; padding: 0; }
+  .row {
+    display: flex; align-items: baseline; gap: 12px; width: 100%;
+    padding: 13px 2px; border-bottom: 1px solid var(--faint);
+    background: transparent; border-left: 0; border-right: 0; border-top: 0;
+    font-family: var(--serif); font-size: 18px; color: var(--ink); text-align: left; cursor: pointer;
+  }
+  .row:first-child { border-top: 1px solid var(--faint); }
+  .row:active { background: var(--panel); }
+  .row .t { flex-shrink: 0; font-size: 13px; color: var(--soft); font-variant-numeric: tabular-nums; min-width: 58px; }
+  .row .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .q { flex-shrink: 0; font-size: 13px; color: var(--soft); font-variant-numeric: tabular-nums; }
+  .row .c { flex-shrink: 0; font-variant-numeric: tabular-nums; min-width: 52px; text-align: right; }
+
+  .empty { color: var(--soft); font-style: italic; font-size: 15px; padding: 22px 2px; }
+  .empty a { color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ── cache chips ──────────────────────────────────────── */
+  .chips { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 10px; }
+  .chip {
+    border: 1px solid var(--rule); border-radius: 15px; background: var(--panel);
+    padding: 11px 15px; cursor: pointer; font-family: var(--serif); color: var(--ink);
+    text-align: left; min-height: 56px; transition: transform .1s ease, filter .1s ease;
+  }
+  .chip:active { transform: scale(0.97); filter: brightness(0.96); }
+  .chip .cn { display: block; font-size: 16px; line-height: 1.25; max-width: 42vw;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip .ck { display: block; font-size: 12px; color: var(--soft); font-variant-numeric: tabular-nums; margin-top: 2px; }
+
+  /* ── sheet ────────────────────────────────────────────── */
+  .sheet {
+    position: fixed; inset: 0; z-index: 20; background: var(--bg);
+    display: none; flex-direction: column;
+    padding: calc(env(safe-area-inset-top) + 20px) 22px calc(env(safe-area-inset-bottom) + 24px);
+    overflow-y: auto;
+  }
+  .sheet.open { display: flex; }
+  .sheet-in { width: 100%; max-width: 600px; margin: 0 auto; }
+  .sheet h3 { font-family: var(--serif); font-weight: 400; font-size: 26px; letter-spacing: -0.02em; margin: 0 0 4px; }
+  .sheet .sub { color: var(--soft); font-size: 14px; font-style: italic; margin-bottom: 22px; }
+
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-family: var(--ui); font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--soft); margin-bottom: 7px; }
+  .stepper { display: flex; align-items: center; gap: 10px; }
+  .stepper button, .qbtn {
+    min-width: 48px; height: 48px; border: 1px solid var(--rule); border-radius: 12px;
+    background: transparent; color: var(--ink); font-family: var(--ui); font-size: 19px; cursor: pointer;
+  }
+  .stepper button:active, .qbtn:active { background: var(--panel); }
+  .qbtn.on { border-color: var(--accent); color: var(--accent); }
+  .stepper .qv { font-size: 24px; font-variant-numeric: tabular-nums; min-width: 62px; text-align: center; }
+  .quick { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .quick .qbtn { font-size: 15px; padding: 0 12px; }
+
+  input[type="time"], input[type="text"], textarea {
+    width: 100%; padding: 13px 14px; border: 1px solid var(--rule); border-radius: 12px;
+    background: transparent; color: var(--ink); font-family: var(--ui); font-size: 17px; outline: none;
+    -webkit-user-select: text; user-select: text;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  textarea { min-height: 190px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; line-height: 1.5; resize: vertical; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid .cell label { margin-bottom: 5px; }
+  .grid input { padding: 11px 12px; font-size: 16px; font-variant-numeric: tabular-nums; }
+
+  .btns { display: flex; flex-direction: column; gap: 10px; margin-top: 26px; }
+  .primary {
+    width: 100%; min-height: 56px; border: 0; border-radius: 15px; cursor: pointer;
+    background: var(--accent); color: #fff; font-family: var(--ui); font-weight: 600; font-size: 17px;
+  }
+  .primary:active { filter: brightness(0.93); }
+  .secondary {
+    width: 100%; min-height: 52px; border: 1px solid var(--rule); border-radius: 14px; cursor: pointer;
+    background: transparent; color: var(--ink); font-family: var(--ui); font-weight: 500; font-size: 16px;
+  }
+  .secondary:active { background: var(--panel); }
+  .danger { color: var(--accent); border-color: var(--accent); }
+  .link { background: none; border: 0; color: var(--soft); font-family: var(--ui); font-size: 13px;
+    padding: 10px; cursor: pointer; align-self: center; }
+  .link:hover { color: var(--accent); }
+
+  pre.spec {
+    background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 14px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 1.5;
+    overflow-x: auto; white-space: pre; -webkit-user-select: text; user-select: text; margin: 0 0 12px;
+  }
+  .manage-row { display: flex; align-items: center; gap: 10px; padding: 11px 2px; border-bottom: 1px solid var(--faint); }
+  .manage-row .mn { flex: 1; min-width: 0; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .manage-row .mk { font-size: 12px; color: var(--soft); font-variant-numeric: tabular-nums; }
+  .manage-row .x { border: 0; background: none; color: var(--soft); font-size: 22px; cursor: pointer; padding: 4px 8px; }
+  .manage-row .x:active { color: var(--accent); }
+
+  .toast {
+    position: fixed; bottom: calc(env(safe-area-inset-bottom) + 22px); left: 50%;
+    transform: translateX(-50%) translateY(8px); background: var(--ink); color: var(--bg);
+    padding: 9px 16px; border-radius: 999px; font-family: var(--ui); font-size: 14px;
+    opacity: 0; transition: all .2s ease; z-index: 40; pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<button class="dots" id="dotsBtn" aria-label="import and export">&#8943;</button>
+
+<div class="wrap">
+<main>
+  <div class="hero">
+    <div class="eye" id="eye">today</div>
+    <p class="big" id="hero">0</p>
+    <div class="under" id="under"></div>
+    <div class="macros" id="macros"></div>
+    <div class="micros" id="micros"></div>
+  </div>
+
+  <h2>logged</h2>
+  <ul id="log"></ul>
+  <p class="empty" id="logEmpty" hidden>nothing logged yet.</p>
+
+  <h2>tap to log</h2>
+  <div class="chips" id="chips"></div>
+  <p class="empty" id="cacheEmpty" hidden>
+    no foods cached yet — <a id="emptyImport">paste some from your Claude thread</a>.
+  </p>
+</main>
+</div>
+
+<!-- adjust an entry -->
+<div class="sheet" id="editSheet">
+  <div class="sheet-in">
+    <h3 id="editName">—</h3>
+    <div class="sub" id="editSub">—</div>
+
+    <div class="field">
+      <label>servings</label>
+      <div class="stepper">
+        <button type="button" id="qMinus">&minus;</button>
+        <span class="qv" id="qVal">1</span>
+        <button type="button" id="qPlus">+</button>
+      </div>
+      <div class="quick" id="qQuick"></div>
+    </div>
+
+    <div class="field">
+      <label>time</label>
+      <input type="time" id="editTime" />
+    </div>
+
+    <div class="field">
+      <label>per serving</label>
+      <div class="grid" id="editGrid"></div>
+    </div>
+
+    <div class="btns">
+      <button class="primary" id="editSave">Save</button>
+      <button class="secondary danger" id="editDelete">Delete this entry</button>
+      <button class="link" id="editCancel">cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- menu -->
+<div class="sheet" id="menuSheet">
+  <div class="sheet-in">
+    <h3>nutty</h3>
+    <div class="sub">the thread looks things up · nutty does the arithmetic</div>
+    <div class="btns" style="margin-top:0">
+      <button class="secondary" id="mImport">Import from thread</button>
+      <button class="secondary" id="mExport">Export for thread</button>
+      <button class="secondary" id="mManage">Manage cached foods</button>
+      <button class="link" id="menuClose">close</button>
+    </div>
+  </div>
+</div>
+
+<!-- import -->
+<div class="sheet" id="importSheet">
+  <div class="sheet-in">
+    <h3>Import</h3>
+    <div class="sub">paste JSON (or one food per line) from your Claude thread</div>
+    <pre class="spec" id="specBlock"></pre>
+    <button class="secondary" id="copySpec" style="margin-bottom:16px">Copy this spec for Claude</button>
+    <textarea id="importText" placeholder='{"foods":[{"name":"Greek yogurt","serving":"1 cup","kcal":200,"protein":20,"carbs":8,"fat":5}]}' spellcheck="false"></textarea>
+    <div class="btns">
+      <button class="primary" id="importGo">Import</button>
+      <button class="link" id="importCancel">cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- export -->
+<div class="sheet" id="exportSheet">
+  <div class="sheet-in">
+    <h3>Export</h3>
+    <div class="sub">totals already done — paste into the thread</div>
+    <div class="field">
+      <label>range</label>
+      <div class="quick" id="rangePick"></div>
+    </div>
+    <textarea id="exportText" readonly spellcheck="false" style="min-height:240px"></textarea>
+    <div class="btns">
+      <button class="primary" id="copyMd">Copy markdown</button>
+      <button class="secondary" id="copyJson">Copy JSON backup</button>
+      <button class="link" id="exportCancel">close</button>
+    </div>
+  </div>
+</div>
+
+<!-- manage -->
+<div class="sheet" id="manageSheet">
+  <div class="sheet-in">
+    <h3>Cached foods</h3>
+    <div class="sub">your regulars — remove anything stale</div>
+    <div id="manageList"></div>
+    <div class="btns">
+      <button class="link" id="manageClose">close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ── nutrients ────────────────────────────────────────────────
+// kcal is the hero; protein/carbs/fat are the macro row; the rest ride along.
+var NUTRIENTS = ['kcal', 'protein', 'carbs', 'fat', 'fiber', 'sugar', 'sodium'];
+var MACROS = ['protein', 'carbs', 'fat'];
+var MICROS = ['fiber', 'sugar', 'sodium'];
+var UNIT = { kcal: '', protein: 'g', carbs: 'g', fat: 'g', fiber: 'g', sugar: 'g', sodium: 'mg' };
+var SHORT = { protein: 'protein', carbs: 'carbs', fat: 'fat' };
+
+var KEY = 'nutty.v1';
+var $ = function (s) { return document.querySelector(s); };
+var uid = function () { return Math.random().toString(36).slice(2, 9) + Date.now().toString(36); };
+
+var state = { foods: [], entries: [], targets: {} };
+
+function load() {
+  try {
+    var r = JSON.parse(localStorage.getItem(KEY));
+    if (r && typeof r === 'object') {
+      state.foods = Array.isArray(r.foods) ? r.foods.map(normFood).filter(Boolean) : [];
+      state.entries = Array.isArray(r.entries) ? r.entries.map(normEntry).filter(Boolean) : [];
+      state.targets = (r.targets && typeof r.targets === 'object') ? cleanNums(r.targets) : {};
+    }
+  } catch (_) {}
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {} }
+
+function num(v) { var n = Number(v); return isFinite(n) ? n : 0; }
+function cleanNums(o) {
+  var out = {};
+  NUTRIENTS.forEach(function (k) { if (o[k] !== undefined && o[k] !== null && o[k] !== '') out[k] = num(o[k]); });
+  return out;
+}
+function normFood(f) {
+  if (!f || !f.name) return null;
+  var o = { id: String(f.id || uid()), name: String(f.name).trim(), serving: f.serving ? String(f.serving).trim() : '',
+    addedAt: num(f.addedAt) || Date.now(), lastUsedAt: num(f.lastUsedAt) || 0, useCount: num(f.useCount) || 0 };
+  NUTRIENTS.forEach(function (k) { o[k] = num(f[k]); });
+  return o;
+}
+function normEntry(e) {
+  if (!e || !e.name) return null;
+  var o = { id: String(e.id || uid()), foodId: e.foodId || null, name: String(e.name).trim(),
+    serving: e.serving ? String(e.serving).trim() : '', qty: num(e.qty) || 1, ts: num(e.ts) || Date.now() };
+  NUTRIENTS.forEach(function (k) { o[k] = num(e[k]); });
+  return o;
+}
+
+// ── the arithmetic contract ──────────────────────────────────
+// Sum RAW values, round exactly once at display. Never sum rounded values.
+function totalsFor(entries) {
+  var t = {};
+  NUTRIENTS.forEach(function (k) { t[k] = 0; });
+  entries.forEach(function (e) {
+    NUTRIENTS.forEach(function (k) { t[k] += e[k] * e.qty; });
+  });
+  return t;
+}
+function roundFor(k, v) {
+  if (k === 'kcal' || k === 'sodium') return Math.round(v);
+  return Math.round(v * 10) / 10;   // one decimal for grams
+}
+function show(k, v) {
+  var r = roundFor(k, v);
+  var s = (k === 'kcal' || k === 'sodium') ? r.toLocaleString('en-US')
+        : (Math.abs(r % 1) < 1e-9 ? String(Math.round(r)) : String(r));
+  return s;
+}
+
+// ── local-day helpers ────────────────────────────────────────
+function dayKey(ts) {
+  var d = new Date(ts);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function todayKey() { return dayKey(Date.now()); }
+function entriesForDay(k) { return state.entries.filter(function (e) { return dayKey(e.ts) === k; }); }
+function clockOf(ts) {
+  return new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+    .toLowerCase().replace(/\s/g, '').replace(':00', ':00');
+}
+function dayLabel(k) {
+  var p = k.split('-');
+  var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+// ── render ───────────────────────────────────────────────────
+function render() {
+  var today = entriesForDay(todayKey());
+  var t = totalsFor(today);
+  var tg = state.targets;
+
+  // hero: remaining if a kcal target exists, else the total
+  if (tg.kcal) {
+    var left = tg.kcal - t.kcal;
+    $('#hero').textContent = show('kcal', Math.abs(left)) + (left < 0 ? ' over' : ' left');
+    $('#hero').classList.toggle('over', left < 0);
+    $('#under').innerHTML = '<b>' + show('kcal', t.kcal) + '</b> of <b>' + show('kcal', tg.kcal) + '</b> kcal';
+  } else {
+    $('#hero').textContent = show('kcal', t.kcal);
+    $('#hero').classList.remove('over');
+    $('#under').innerHTML = today.length ? 'kcal today' : 'nothing logged yet';
+  }
+
+  var mac = $('#macros'); mac.innerHTML = '';
+  MACROS.forEach(function (k) {
+    var d = document.createElement('div'); d.className = 'macro';
+    var v = document.createElement('div'); v.className = 'v'; v.textContent = show(k, t[k]) + UNIT[k];
+    var lbl = document.createElement('div'); lbl.className = 'k'; lbl.textContent = SHORT[k];
+    d.append(v, lbl);
+    if (tg[k]) {
+      var g = document.createElement('div'); g.className = 'goal';
+      g.textContent = 'of ' + show(k, tg[k]) + UNIT[k];
+      d.appendChild(g);
+    }
+    mac.appendChild(d);
+  });
+
+  $('#micros').textContent = MICROS.map(function (k) {
+    return show(k, t[k]) + UNIT[k] + ' ' + k + (tg[k] ? ' / ' + show(k, tg[k]) : '');
+  }).join('  ·  ');
+
+  // today's log
+  var log = $('#log'); log.innerHTML = '';
+  var sorted = today.slice().sort(function (a, b) { return a.ts - b.ts; });
+  $('#logEmpty').hidden = sorted.length > 0;
+  sorted.forEach(function (e) {
+    var li = document.createElement('li');
+    var b = document.createElement('button');
+    b.className = 'row'; b.type = 'button';
+    var tEl = document.createElement('span'); tEl.className = 't'; tEl.textContent = clockOf(e.ts);
+    var nEl = document.createElement('span'); nEl.className = 'n'; nEl.textContent = e.name;
+    var qEl = document.createElement('span'); qEl.className = 'q'; qEl.textContent = e.qty === 1 ? '' : '×' + e.qty;
+    var cEl = document.createElement('span'); cEl.className = 'c'; cEl.textContent = show('kcal', e.kcal * e.qty);
+    b.append(tEl, nEl, qEl, cEl);
+    b.addEventListener('click', function () { openEdit(e.id); });
+    li.appendChild(b); log.appendChild(li);
+  });
+
+  // cache chips — regulars first (most used, then most recent)
+  var chips = $('#chips'); chips.innerHTML = '';
+  var foods = state.foods.slice().sort(function (a, b) {
+    if (b.useCount !== a.useCount) return b.useCount - a.useCount;
+    return (b.lastUsedAt || b.addedAt) - (a.lastUsedAt || a.addedAt);
+  });
+  $('#cacheEmpty').hidden = foods.length > 0;
+  foods.forEach(function (f) {
+    var c = document.createElement('button');
+    c.className = 'chip'; c.type = 'button';
+    var n = document.createElement('span'); n.className = 'cn'; n.textContent = f.name;
+    var k = document.createElement('span'); k.className = 'ck';
+    k.textContent = show('kcal', f.kcal) + ' kcal' + (f.serving ? ' · ' + f.serving : '');
+    c.append(n, k);
+    c.addEventListener('click', function () { logFood(f.id); });
+    chips.appendChild(c);
+  });
+}
+
+// ── one-tap log ──────────────────────────────────────────────
+function logFood(foodId) {
+  var f = state.foods.find(function (x) { return x.id === foodId; });
+  if (!f) return;
+  var e = { id: uid(), foodId: f.id, name: f.name, serving: f.serving, qty: 1, ts: Date.now() };
+  NUTRIENTS.forEach(function (k) { e[k] = f[k]; });   // snapshot, so later edits can't rewrite history
+  state.entries.push(e);
+  f.useCount += 1;
+  f.lastUsedAt = Date.now();
+  save(); render();
+  toast(f.name + ' · ' + show('kcal', f.kcal) + ' kcal');
+}
+
+// ── adjust sheet ─────────────────────────────────────────────
+var editingId = null;
+var editQty = 1;
+var QUICKS = [0.5, 1, 1.5, 2, 3];
+
+function openEdit(id) {
+  var e = state.entries.find(function (x) { return x.id === id; });
+  if (!e) return;
+  editingId = id; editQty = e.qty;
+
+  $('#editName').textContent = e.name;
+  $('#editSub').textContent = e.serving ? 'per serving · ' + e.serving : 'per serving';
+
+  var d = new Date(e.ts);
+  $('#editTime').value = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+
+  var grid = $('#editGrid'); grid.innerHTML = '';
+  NUTRIENTS.forEach(function (k) {
+    var cell = document.createElement('div'); cell.className = 'cell';
+    var lab = document.createElement('label'); lab.textContent = k + (UNIT[k] ? ' (' + UNIT[k] + ')' : '');
+    var inp = document.createElement('input');
+    inp.type = 'text'; inp.inputMode = 'decimal'; inp.id = 'f_' + k; inp.value = String(e[k]);
+    cell.append(lab, inp); grid.appendChild(cell);
+  });
+
+  renderQty();
+  openSheet('#editSheet');
+}
+function renderQty() {
+  $('#qVal').textContent = String(Math.round(editQty * 100) / 100);
+  var q = $('#qQuick'); q.innerHTML = '';
+  QUICKS.forEach(function (v) {
+    var b = document.createElement('button');
+    b.className = 'qbtn' + (Math.abs(v - editQty) < 1e-9 ? ' on' : '');
+    b.type = 'button'; b.textContent = '×' + v;
+    b.addEventListener('click', function () { editQty = v; renderQty(); });
+    q.appendChild(b);
+  });
+}
+$('#qMinus').addEventListener('click', function () { editQty = Math.max(0.25, Math.round((editQty - 0.25) * 100) / 100); renderQty(); });
+$('#qPlus').addEventListener('click', function () { editQty = Math.round((editQty + 0.25) * 100) / 100; renderQty(); });
+
+$('#editSave').addEventListener('click', function () {
+  var e = state.entries.find(function (x) { return x.id === editingId; });
+  if (!e) return closeSheets();
+  e.qty = editQty;
+  var tv = $('#editTime').value;
+  if (/^\d{1,2}:\d{2}$/.test(tv)) {
+    var parts = tv.split(':');
+    var d = new Date(e.ts);
+    d.setHours(Number(parts[0]), Number(parts[1]), 0, 0);
+    e.ts = d.getTime();     // may move the entry to another day; totals follow automatically
+  }
+  NUTRIENTS.forEach(function (k) {
+    var el = document.getElementById('f_' + k);
+    if (el) e[k] = num(String(el.value).replace(/[^0-9.\-]/g, ''));
+  });
+  save(); closeSheets(); render();
+});
+$('#editDelete').addEventListener('click', function () {
+  state.entries = state.entries.filter(function (x) { return x.id !== editingId; });
+  save(); closeSheets(); render(); toast('removed');
+});
+$('#editCancel').addEventListener('click', closeSheets);
+
+// ── import ───────────────────────────────────────────────────
+var SPEC = [
+  'nutty import format — hand me JSON like this:',
+  '{',
+  '  "foods": [',
+  '    {"name":"Greek yogurt, plain 2%","serving":"1 cup (227g)",',
+  '     "kcal":200,"protein":20,"carbs":8,"fat":5,',
+  '     "fiber":0,"sugar":8,"sodium":65}',
+  '  ],',
+  '  "targets": {"kcal":2500,"protein":180,"fiber":30},',
+  '  "entries": [{"name":"Greek yogurt, plain 2%","qty":1,',
+  '               "at":"2026-07-25T08:14:00"}]',
+  '}',
+  '',
+  'All three keys optional. Values are PER SERVING.',
+  'foods -> cached for one-tap logging (dedupes on name+serving)',
+  'targets -> replaces my daily goals',
+  'entries -> back-fills my log',
+  '',
+  'Shorthand also works, one per line:',
+  'name | kcal | protein | carbs | fat | fiber | sugar | sodium'
+].join('\n');
+
+function parseImport(text) {
+  var t = String(text).trim();
+  if (!t) return null;
+  if (t.charAt(0) === '{' || t.charAt(0) === '[') {
+    var data = JSON.parse(t);                       // throws → caught by caller
+    if (Array.isArray(data)) return { foods: data };
+    return data;
+  }
+  // shorthand: name | kcal | protein | carbs | fat | fiber | sugar | sodium
+  var order = ['kcal', 'protein', 'carbs', 'fat', 'fiber', 'sugar', 'sodium'];
+  var foods = [];
+  t.split('\n').forEach(function (line) {
+    var parts = line.split('|').map(function (s) { return s.trim(); });
+    if (parts.length < 2 || !parts[0]) return;
+    var f = { name: parts[0] };
+    for (var i = 1; i < parts.length && i - 1 < order.length; i++) {
+      if (parts[i] !== '') f[order[i - 1]] = num(parts[i].replace(/[^0-9.\-]/g, ''));
+    }
+    foods.push(f);
+  });
+  return foods.length ? { foods: foods } : null;
+}
+
+function sameFood(a, b) {
+  return a.name.toLowerCase() === String(b.name || '').trim().toLowerCase() &&
+         (a.serving || '').toLowerCase() === String(b.serving || '').trim().toLowerCase();
+}
+
+// Resolve an imported entry to a cached food. Exact name+serving wins; when
+// the entry omits serving (as the spec's own example does) fall back to a
+// name-only match, but only when it's unambiguous — guessing between
+// "Chicken, 4oz" and "Chicken, 6oz" would silently invent a total.
+function resolveFood(raw) {
+  var exact = state.foods.find(function (x) { return sameFood(x, raw); });
+  if (exact) return exact;
+  if (raw.serving) return null;                 // serving given but no match
+  var name = String(raw.name || '').trim().toLowerCase();
+  var byName = state.foods.filter(function (x) { return x.name.toLowerCase() === name; });
+  return byName.length === 1 ? byName[0] : null;
+}
+
+function applyImport(data) {
+  var addedFoods = 0, updatedFoods = 0, addedEntries = 0, skipped = 0, gotTargets = false;
+
+  (data.foods || []).forEach(function (raw) {
+    var f = normFood(raw);
+    if (!f) return;
+    var existing = state.foods.find(function (x) { return sameFood(x, f); });
+    if (existing) {
+      // Only overwrite nutrients the record actually carries — a shorthand row
+      // must not silently zero out cached fiber/sugar/sodium.
+      NUTRIENTS.forEach(function (k) {
+        if (raw[k] !== undefined && raw[k] !== null && raw[k] !== '') existing[k] = f[k];
+      });
+      updatedFoods++;
+    } else {
+      state.foods.push(f); addedFoods++;
+    }
+  });
+
+  if (data.targets && typeof data.targets === 'object') {
+    state.targets = cleanNums(data.targets); gotTargets = true;
+  }
+
+  (data.entries || []).forEach(function (raw) {
+    if (!raw || !raw.name) return;
+    var ts = raw.at ? Date.parse(raw.at) : (raw.ts ? num(raw.ts) : Date.now());
+    if (!isFinite(ts)) ts = Date.now();
+    var src = resolveFood(raw);
+    var carriesOwn = NUTRIENTS.some(function (k) { return raw[k] !== undefined; });
+    // Unmatched and no nutrition of its own would log as a 0-calorie meal.
+    // Refuse rather than quietly corrupt the day's total.
+    if (!src && !carriesOwn) { skipped++; return; }
+    var base = src || {};
+    var e = { id: uid(), foodId: base.id || null, name: String(raw.name).trim(),
+      serving: raw.serving || base.serving || '', qty: num(raw.qty) || 1, ts: ts };
+    NUTRIENTS.forEach(function (k) { e[k] = (raw[k] !== undefined) ? num(raw[k]) : num(base[k]); });
+    state.entries.push(e); addedEntries++;
+  });
+
+  save(); render();
+  var bits = [];
+  if (addedFoods) bits.push(addedFoods + ' food' + (addedFoods > 1 ? 's' : ''));
+  if (updatedFoods) bits.push(updatedFoods + ' updated');
+  if (addedEntries) bits.push(addedEntries + ' logged');
+  if (gotTargets) bits.push('targets set');
+  if (skipped) bits.push(skipped + ' skipped (no match)');
+  toast(bits.length ? 'imported ' + bits.join(' · ') : 'nothing to import');
+}
+
+$('#importGo').addEventListener('click', function () {
+  var raw = $('#importText').value;
+  var data;
+  try { data = parseImport(raw); }
+  catch (err) { toast("couldn't read that — check the JSON"); return; }
+  if (!data) { toast('nothing to import'); return; }
+  applyImport(data);
+  $('#importText').value = '';
+  closeSheets();
+});
+$('#importCancel').addEventListener('click', closeSheets);
+$('#copySpec').addEventListener('click', function () { copy(SPEC, 'spec copied — paste it in the thread'); });
+
+// ── export ───────────────────────────────────────────────────
+var exportRange = 1;   // days; 0 = all
+var RANGES = [{ d: 1, label: 'today' }, { d: 7, label: '7 days' }, { d: 0, label: 'all' }];
+
+function dayKeysInRange() {
+  var keys = {};
+  state.entries.forEach(function (e) { keys[dayKey(e.ts)] = true; });
+  var all = Object.keys(keys).sort().reverse();
+  if (exportRange === 0) return all;
+  if (exportRange === 1) return [todayKey()];
+  // Walk the calendar rather than subtracting fixed 24h spans — across a DST
+  // fall-back that arithmetic lands at 1am and drops the oldest day.
+  var c = new Date(); c.setHours(0, 0, 0, 0);
+  c.setDate(c.getDate() - (exportRange - 1));
+  var cutoff = c.getTime();
+  return all.filter(function (k) {
+    var p = k.split('-');
+    return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])).getTime() >= cutoff;
+  });
+}
+
+function markdown() {
+  var keys = dayKeysInRange();
+  var out = [];
+  keys.forEach(function (k) {
+    var day = entriesForDay(k).sort(function (a, b) { return a.ts - b.ts; });
+    if (!day.length) return;
+    var t = totalsFor(day);
+    out.push('## ' + dayLabel(k));
+    out.push('**' + show('kcal', t.kcal) + ' kcal · ' +
+      MACROS.map(function (m) { return show(m, t[m]) + UNIT[m] + ' ' + m; }).join(' · ') + '**');
+    out.push(MICROS.map(function (m) { return show(m, t[m]) + UNIT[m] + ' ' + m; }).join(' · '));
+    if (state.targets.kcal) {
+      var left = state.targets.kcal - t.kcal;
+      out.push('_Target ' + show('kcal', state.targets.kcal) + ' kcal — ' +
+        show('kcal', Math.abs(left)) + (left < 0 ? ' over' : ' remaining') + '_');
+    }
+    out.push('');
+    day.forEach(function (e) {
+      out.push('- ' + clockOf(e.ts) + ' — ' + e.name + (e.serving ? ' (' + e.serving + ')' : '') +
+        (e.qty === 1 ? '' : ' ×' + e.qty) + ' — ' + show('kcal', e.kcal * e.qty) + ' kcal, ' +
+        MACROS.map(function (m) { return show(m, e[m] * e.qty) + UNIT[m] + ' ' + m; }).join(', '));
+    });
+    out.push('');
+  });
+  return out.length ? out.join('\n').trim() : 'Nothing logged in this range.';
+}
+
+function jsonBackup() {
+  var keys = {};
+  dayKeysInRange().forEach(function (k) { keys[k] = true; });
+  return JSON.stringify({
+    foods: state.foods,
+    targets: state.targets,
+    entries: state.entries.filter(function (e) { return keys[dayKey(e.ts)]; })
+      .map(function (e) {
+        var o = { name: e.name, serving: e.serving, qty: e.qty, at: new Date(e.ts).toISOString() };
+        NUTRIENTS.forEach(function (k) { o[k] = e[k]; });
+        return o;
+      })
+  }, null, 2);
+}
+
+function renderExport() {
+  var rp = $('#rangePick'); rp.innerHTML = '';
+  RANGES.forEach(function (r) {
+    var b = document.createElement('button');
+    b.className = 'qbtn' + (r.d === exportRange ? ' on' : '');
+    b.type = 'button'; b.textContent = r.label;
+    b.addEventListener('click', function () { exportRange = r.d; renderExport(); });
+    rp.appendChild(b);
+  });
+  $('#exportText').value = markdown();
+}
+$('#copyMd').addEventListener('click', function () { copy(markdown(), 'markdown copied'); });
+$('#copyJson').addEventListener('click', function () { copy(jsonBackup(), 'JSON copied'); });
+$('#exportCancel').addEventListener('click', closeSheets);
+
+// ── manage cache ─────────────────────────────────────────────
+function renderManage() {
+  var wrap = $('#manageList'); wrap.innerHTML = '';
+  if (!state.foods.length) {
+    var p = document.createElement('p'); p.className = 'empty'; p.textContent = 'nothing cached yet.';
+    wrap.appendChild(p); return;
+  }
+  state.foods.slice().sort(function (a, b) { return b.useCount - a.useCount; }).forEach(function (f) {
+    var row = document.createElement('div'); row.className = 'manage-row';
+    var n = document.createElement('span'); n.className = 'mn'; n.textContent = f.name;
+    var k = document.createElement('span'); k.className = 'mk';
+    k.textContent = show('kcal', f.kcal) + ' kcal · used ' + f.useCount + '×';
+    var x = document.createElement('button'); x.className = 'x'; x.type = 'button';
+    x.setAttribute('aria-label', 'remove ' + f.name); x.innerHTML = '&times;';
+    x.addEventListener('click', function () {
+      state.foods = state.foods.filter(function (y) { return y.id !== f.id; });
+      save(); renderManage(); render(); toast('removed from cache');
+    });
+    row.append(n, k, x); wrap.appendChild(row);
+  });
+}
+
+// ── sheets + feedback ────────────────────────────────────────
+function openSheet(sel) {
+  closeSheets();
+  var el = $(sel); if (el) el.classList.add('open');
+}
+function closeSheets() {
+  document.querySelectorAll('.sheet').forEach(function (s) { s.classList.remove('open'); });
+}
+$('#dotsBtn').addEventListener('click', function () { openSheet('#menuSheet'); });
+$('#menuClose').addEventListener('click', closeSheets);
+$('#mImport').addEventListener('click', function () { $('#specBlock').textContent = SPEC; openSheet('#importSheet'); });
+$('#mExport').addEventListener('click', function () { renderExport(); openSheet('#exportSheet'); });
+$('#mManage').addEventListener('click', function () { renderManage(); openSheet('#manageSheet'); });
+$('#manageClose').addEventListener('click', closeSheets);
+$('#emptyImport').addEventListener('click', function () { $('#specBlock').textContent = SPEC; openSheet('#importSheet'); });
+
+function copy(text, msg) {
+  if (!navigator.clipboard) { toast('copy unavailable'); return; }
+  navigator.clipboard.writeText(text).then(function () { toast(msg); }, function () { toast('copy failed'); });
+}
+function toast(msg) {
+  var t = $('#toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(function () { t.classList.remove('show'); }, 1500);
+}
+
+// ── init ─────────────────────────────────────────────────────
+load();
+$('#specBlock').textContent = SPEC;
+render();
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState === 'visible') render();   // roll over at midnight
+});
+</script>
+</body>
+</html>

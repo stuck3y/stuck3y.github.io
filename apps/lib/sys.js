@@ -44,6 +44,7 @@
     { id: 'horsemen',   name: 'Four Horsemen',       color: '#f6f0e6', desc: 'Reframe a task you’re avoiding into a do-it-now prompt.' },
     { id: 'ketchapp',   name: 'Ketchapp',            color: '#c92a2a', desc: 'The dumbest pomodoro. 25/5.' },
     { id: 'not-to-do',  name: 'Not-Todo List',       color: '#f5f5f5', desc: 'What not to do.' },
+    { id: 'nutty',      name: 'nutty',               color: '#f6f3ec', desc: 'Food cache and trustworthy totals. Calories, macros, import/export.' },
     { id: 'rest',       name: 'rest.',               color: '#141210', desc: 'Rest timer.' },
     { id: 'river',      name: 'river',               color: '#f5efe6', desc: 'Your stream of meaningful activity.' },
     { id: 'sam',        name: 'sam',                 color: '#f6f3ec' },
