@@ -597,15 +597,32 @@ function sameFood(a, b) {
          (a.serving || '').toLowerCase() === String(b.serving || '').trim().toLowerCase();
 }
 
+// Resolve an imported entry to a cached food. Exact name+serving wins; when
+// the entry omits serving (as the spec's own example does) fall back to a
+// name-only match, but only when it's unambiguous — guessing between
+// "Chicken, 4oz" and "Chicken, 6oz" would silently invent a total.
+function resolveFood(raw) {
+  var exact = state.foods.find(function (x) { return sameFood(x, raw); });
+  if (exact) return exact;
+  if (raw.serving) return null;                 // serving given but no match
+  var name = String(raw.name || '').trim().toLowerCase();
+  var byName = state.foods.filter(function (x) { return x.name.toLowerCase() === name; });
+  return byName.length === 1 ? byName[0] : null;
+}
+
 function applyImport(data) {
-  var addedFoods = 0, updatedFoods = 0, addedEntries = 0, gotTargets = false;
+  var addedFoods = 0, updatedFoods = 0, addedEntries = 0, skipped = 0, gotTargets = false;
 
   (data.foods || []).forEach(function (raw) {
     var f = normFood(raw);
     if (!f) return;
     var existing = state.foods.find(function (x) { return sameFood(x, f); });
     if (existing) {
-      NUTRIENTS.forEach(function (k) { existing[k] = f[k]; });
+      // Only overwrite nutrients the record actually carries — a shorthand row
+      // must not silently zero out cached fiber/sugar/sodium.
+      NUTRIENTS.forEach(function (k) {
+        if (raw[k] !== undefined && raw[k] !== null && raw[k] !== '') existing[k] = f[k];
+      });
       updatedFoods++;
     } else {
       state.foods.push(f); addedFoods++;
@@ -620,11 +637,15 @@ function applyImport(data) {
     if (!raw || !raw.name) return;
     var ts = raw.at ? Date.parse(raw.at) : (raw.ts ? num(raw.ts) : Date.now());
     if (!isFinite(ts)) ts = Date.now();
-    // fill nutrition from the matching cached food when the entry omits it
-    var src = state.foods.find(function (x) { return sameFood(x, raw); }) || {};
-    var e = { id: uid(), foodId: src.id || null, name: String(raw.name).trim(),
-      serving: raw.serving || src.serving || '', qty: num(raw.qty) || 1, ts: ts };
-    NUTRIENTS.forEach(function (k) { e[k] = (raw[k] !== undefined) ? num(raw[k]) : num(src[k]); });
+    var src = resolveFood(raw);
+    var carriesOwn = NUTRIENTS.some(function (k) { return raw[k] !== undefined; });
+    // Unmatched and no nutrition of its own would log as a 0-calorie meal.
+    // Refuse rather than quietly corrupt the day's total.
+    if (!src && !carriesOwn) { skipped++; return; }
+    var base = src || {};
+    var e = { id: uid(), foodId: base.id || null, name: String(raw.name).trim(),
+      serving: raw.serving || base.serving || '', qty: num(raw.qty) || 1, ts: ts };
+    NUTRIENTS.forEach(function (k) { e[k] = (raw[k] !== undefined) ? num(raw[k]) : num(base[k]); });
     state.entries.push(e); addedEntries++;
   });
 
@@ -634,6 +655,7 @@ function applyImport(data) {
   if (updatedFoods) bits.push(updatedFoods + ' updated');
   if (addedEntries) bits.push(addedEntries + ' logged');
   if (gotTargets) bits.push('targets set');
+  if (skipped) bits.push(skipped + ' skipped (no match)');
   toast(bits.length ? 'imported ' + bits.join(' · ') : 'nothing to import');
 }
 
@@ -660,8 +682,11 @@ function dayKeysInRange() {
   var all = Object.keys(keys).sort().reverse();
   if (exportRange === 0) return all;
   if (exportRange === 1) return [todayKey()];
-  var cutoff = new Date(); cutoff.setHours(0, 0, 0, 0);
-  cutoff = cutoff.getTime() - (exportRange - 1) * 86400000;
+  // Walk the calendar rather than subtracting fixed 24h spans — across a DST
+  // fall-back that arithmetic lands at 1am and drops the oldest day.
+  var c = new Date(); c.setHours(0, 0, 0, 0);
+  c.setDate(c.getDate() - (exportRange - 1));
+  var cutoff = c.getTime();
   return all.filter(function (k) {
     var p = k.split('-');
     return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])).getTime() >= cutoff;
