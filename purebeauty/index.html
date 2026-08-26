@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Pure Beauty — Hair, Lashes, Skin &amp; Nails</title>
+<meta name="description" content="Five independent beauty studios under one roof. Find the service you want, meet the pro who does it, and book in about thirty seconds." />
+<meta name="theme-color" content="#fbf8f5" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Pure Beauty" />
+
+<meta property="og:title" content="Pure Beauty — Five studios. One roof." />
+<meta property="og:description" content="Hair, lashes, skin, nails and more. Find what you're after and book in about thirty seconds." />
+<meta property="og:type" content="website" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23B5695E'/%3E%3Ctext x='16' y='22' font-family='Georgia,serif' font-size='16' fill='%23fff' text-anchor='middle'%3EPB%3C/text%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&display=swap" />
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+<div id="demo-ribbon" hidden>
+  <span><strong>Prototype</strong> — sample names, prices and booking links. All of it lives in <code>data.js</code>.</span>
+  <button type="button" aria-label="Dismiss">&times;</button>
+</div>
+
+<header class="site-header">
+  <a class="brand" href="#/">
+    <span class="brand-mark">PB</span>
+    <span class="brand-name">Pure Beauty</span>
+  </a>
+  <nav class="site-nav">
+    <a href="#/services" data-nav="services">Services</a>
+    <a href="#/talent"   data-nav="talent">The Talent</a>
+    <a href="#/suites"   data-nav="suites">Rent a Suite</a>
+    <a href="#/visit"    data-nav="visit">Visit</a>
+  </nav>
+</header>
+
+<main id="view"></main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="brand-mark">PB</span>
+      <p id="footer-tagline"></p>
+    </div>
+    <div class="footer-cols" id="footer-cols"></div>
+  </div>
+  <p class="footer-legal">
+    &copy; <span id="year"></span> Pure Beauty. Each studio is independently owned and operated.
+  </p>
+</footer>
+
+<!-- Text-to-book sheet, used by pros who don't take online bookings -->
+<div id="sheet" class="sheet-backdrop" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <button class="sheet-close" type="button" aria-label="Close">&times;</button>
+    <h2 id="sheet-title"></h2>
+    <p id="sheet-note"></p>
+    <div id="sheet-actions" class="sheet-actions"></div>
+  </div>
+</div>
+
+<script src="./data.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
