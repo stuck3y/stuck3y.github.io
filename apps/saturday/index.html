@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Saturday</title>
+<meta name="description" content="A spoiler-safe college football companion — Auburn everything, the SEC around it, and how to catch every game." />
+<meta name="theme-color" content="#0c2340" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Saturday" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="stylesheet" href="../lib/tokens.css" />
+<link rel="stylesheet" href="./styles.css" />
+<script src="../lib/pwa.js" defer></script>
+<script src="../lib/sys.js" defer></script>
+<script src="../lib/river.js" defer></script>
+<script src="./app.js" defer></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="bar">
+    <h1>Saturday<span class="sub" id="sub">college football</span></h1>
+    <button class="nospoil on" id="nospoil" role="switch" aria-checked="true" aria-label="No-spoil mode">
+      <span class="lbl">No-spoil</span><span class="switch"></span>
+    </button>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" data-tab="weekend" aria-selected="true">Weekend</button>
+    <button class="tab" role="tab" data-tab="auburn" aria-selected="false">Auburn</button>
+    <button class="tab" role="tab" data-tab="players" aria-selected="false">Players</button>
+  </nav>
+  <div class="status" id="status"><span class="dot"></span><span id="statusText">loading…</span></div>
+</header>
+
+<main class="wrap">
+  <section id="view-weekend" role="tabpanel" aria-label="Weekend"></section>
+  <section id="view-auburn" role="tabpanel" aria-label="Auburn" hidden></section>
+  <section id="view-players" role="tabpanel" aria-label="Players" hidden></section>
+  <p class="note" id="note"></p>
+</main>
+
+</body>
+</html>
