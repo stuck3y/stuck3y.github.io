@@ -53,7 +53,7 @@ h1 .sub { display: block; font-size: 12px; font-weight: 500; color: var(--text-s
 .nospoil.on .switch::after { transform: translateX(18px); }
 
 .tabs { max-width: var(--max); margin: var(--space-3) auto 0; display: flex; gap: var(--space-1); background: var(--surface-2); border-radius: var(--radius-md); padding: 3px; }
-.tab { flex: 1; border: 0; background: transparent; color: var(--text-secondary); font-size: 14px; font-weight: 600; padding: 7px; border-radius: 10px; cursor: pointer; transition: background var(--fast) var(--ease), color var(--fast) var(--ease); }
+.tab { flex: 1; border: 0; background: transparent; color: var(--text-secondary); font-size: 14px; font-weight: 600; padding: 7px 4px; border-radius: 10px; cursor: pointer; transition: background var(--fast) var(--ease), color var(--fast) var(--ease); }
 .tab[aria-selected="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
 
 .status { max-width: var(--max); margin: var(--space-2) auto 0; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.01em; min-height: 16px; }
@@ -144,7 +144,7 @@ button.score-col:active { background: var(--surface-2); }
 .score-col .tag.live { color: var(--live); }
 .score-col .hint { font-size: 10px; font-weight: 600; color: var(--accent); }
 
-.game .foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); padding: 0 12px 10px; }
+.game .foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); padding: 0 12px 10px; flex-wrap: wrap; }
 .game .why { font-size: 12px; color: var(--text-secondary); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .game .acts { display: flex; gap: 6px; flex: none; }
 .act { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: var(--radius-full); padding: 5px 11px; font-size: 12px; font-weight: 600; cursor: pointer; min-height: 30px; transition: background var(--fast) var(--ease); }
@@ -248,6 +248,39 @@ button.score-col:active { background: var(--surface-2); }
 .addp .picked b { color: var(--text); }
 .addp .go { grid-column: 1 / -1; border: 0; background: var(--accent); color: var(--accent-text); border-radius: var(--radius-md); padding: 11px; font-weight: 700; cursor: pointer; }
 .addp .go:disabled { opacity: 0.4; cursor: default; }
+
+/* ── plan ──────────────────────────────────────────────────────────────── */
+.slot { display: flex; gap: 12px; align-items: flex-start; background: var(--surface); border: 1px solid var(--border); border-left-width: 4px; border-radius: var(--radius-lg); padding: 12px 12px 12px 10px; margin-bottom: var(--space-2); }
+.slot.watch { border-left-color: var(--au); }
+.slot.replay { border-left-color: var(--navy); }
+.slot.hl { border-left-color: var(--heat-warm); }
+.slot.done { opacity: 0.55; }
+.slot.now { box-shadow: 0 0 0 2px color-mix(in srgb, var(--live) 45%, transparent); }
+.slot.conflict { border-color: color-mix(in srgb, var(--warning) 55%, var(--border)); }
+.slot .time { flex: none; width: 74px; text-align: right; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.slot .time b { display: block; font-size: 15px; font-weight: 700; }
+.slot .time span { font-size: 11px; color: var(--text-secondary); }
+.slot .what { flex: 1; min-width: 0; }
+.slot .ttl { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.slot .sub { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; margin-top: 4px; font-size: 12px; color: var(--text-secondary); }
+.slot .sub a { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border); border-radius: var(--radius-full); padding: 3px 9px; font-weight: 600; color: var(--text); }
+.slot .sub .net { font-size: 11px; }
+.slot .warn { margin-top: 6px; font-size: 12px; color: var(--warning); }
+.slot .warn button { border: 0; background: none; padding: 0; color: var(--accent); font-size: 12px; font-weight: 600; cursor: pointer; }
+.slot .ctl { display: flex; gap: 6px; flex: none; }
+.slot .ctl button { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); font-size: 15px; line-height: 1; cursor: pointer; }
+.slot .ctl button.on { background: var(--text); color: var(--bg); border-color: transparent; }
+
+/* ── gameday ───────────────────────────────────────────────────────────── */
+.gameday { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 12px 6px; margin-bottom: var(--space-3); }
+.gameday .gd-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; font-size: 12px; color: var(--text-secondary); }
+.gameday .gd-h b { font-size: 15px; color: var(--text); }
+.gameday .tbl { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 4px 0 6px; }
+.gameday table { border-collapse: collapse; font-size: 12px; min-width: 100%; }
+.gameday th, .gameday td { text-align: left; padding: 5px 10px 5px 0; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.gameday th { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-secondary); }
+.gameday .muted { font-size: 12px; color: var(--text-secondary); }
+.gameday .linkrow { margin-bottom: 4px; }
 
 /* ── misc ──────────────────────────────────────────────────────────────── */
 img.broken { visibility: hidden; }

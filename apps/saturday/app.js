@@ -21,6 +21,12 @@ const ESPN = 'https://site.api.espn.com/apis/site/v2/sports/football/college-foo
 const LOGO = (id) => `https://a.espncdn.com/i/teamlogos/ncaa/500/${id}.png`;
 const GAMECAST = (id) => `https://www.espn.com/college-football/game/_/gameId/${id}`;
 const YT = (q) => 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
+const RCFB = 'https://www.reddit.com/r/CFB/';
+const rcfbSearch = (q) => RCFB + 'search/?q=' + encodeURIComponent(q) + '&restrict_sr=1&sort=new';
+const rcfbRss = (q, t) => RCFB + 'search.rss?q=' + encodeURIComponent(q) + '&restrict_sr=1&sort=new&t=' + t;
+const GAME_MS = 3.5 * 3600e3;            // kickoff to final, give or take
+const HL_MS = 20 * 60e3;                 // one highlights block
+const HL_LAG = 45 * 60e3;                // uploads usually land about this long after the final
 
 /* ── your bundle: ESPN Unlimited + Disney+ ──────────────────────────────────
  * Anything ESPN produces streams in the ESPN app, ABC simulcasts included.
@@ -136,7 +142,9 @@ const state = {
   news: { items: [], at: 0, status: {} },
   box: {},                             // gameId -> box score lines
   settings: { nospoil: true, filter: 'worth', tab: 'weekend' },
-  revealed: {}, queue: {}, watched: {},
+  revealed: {}, plan: {}, watched: {},
+  gameday: { at: 0, week: null, picks: null, links: [] },
+  rcfb: { at: 0, items: [] },
   players: [],
   online: null,                        // null (unknown), true, false
   loading: false,
@@ -361,6 +369,7 @@ async function boot() {
   render();
   if (state.view.week !== state.curWeek || state.view.type !== state.curType) loadWeek(state.view.type, state.view.week, false);
   refreshAuburn(false);
+  loadGameDay(false); loadRcfb(false);
   startTicking();
 }
 async function refreshAuburn(force) {
@@ -500,11 +509,11 @@ function parseXmlFeed(xml, src) {
   if (!doc || doc.querySelector('parsererror')) return null;
   const txt = (el, tag) => { const n = el.getElementsByTagName(tag)[0]; return n ? n.textContent.trim() : ''; };
   const items = [];
-  Array.from(doc.getElementsByTagName('item')).forEach((it) => items.push({ title: txt(it, 'title'), url: txt(it, 'link') || txt(it, 'guid'), ts: Date.parse(txt(it, 'pubDate') || txt(it, 'dc:date')) || 0, thumb: '' }));
+  Array.from(doc.getElementsByTagName('item')).forEach((it) => items.push({ title: txt(it, 'title'), url: txt(it, 'link') || txt(it, 'guid'), ts: Date.parse(txt(it, 'pubDate') || txt(it, 'dc:date')) || 0, thumb: '', content: txt(it, 'content:encoded') || txt(it, 'description') }));
   Array.from(doc.getElementsByTagName('entry')).forEach((en) => {
     const link = en.getElementsByTagName('link')[0];
     const thumb = en.getElementsByTagNameNS('*', 'thumbnail')[0];
-    items.push({ title: txt(en, 'title'), url: link ? (link.getAttribute('href') || '') : '', ts: Date.parse(txt(en, 'published') || txt(en, 'updated')) || 0, thumb: thumb ? (thumb.getAttribute('url') || '') : '' });
+    items.push({ title: txt(en, 'title'), url: link ? (link.getAttribute('href') || '') : '', ts: Date.parse(txt(en, 'published') || txt(en, 'updated')) || 0, thumb: thumb ? (thumb.getAttribute('url') || '') : '', content: txt(en, 'content') || txt(en, 'summary') });
   });
   return items.map((i) => ({ ...i, url: safeUrl(i.url), thumb: safeUrl(i.thumb) })).filter((i) => i.title && i.url).map((i) => ({ ...i, id: src.id + ':' + i.url, src: src.id }));
 }
@@ -521,12 +530,16 @@ async function fetchSource(src) {
     })).filter((i) => i.title && i.url);
     return all.filter((i) => i.auburn);               // the team filter is unofficial; enforce it ourselves
   }
+  return fetchFeed(src);
+}
+// Any RSS/Atom feed through the proxies; null when none of them come through.
+async function fetchFeed(src) {
   for (const via of PROXIES) {
     const p = via(src.url);
     const d = await getJSON(p.url, 10000);
     if (!d) continue;
     if (p.shape === 'rss2json' && d.status === 'ok' && Array.isArray(d.items)) {
-      return d.items.map((i) => ({ id: src.id + ':' + i.link, title: i.title || '', url: safeUrl(i.link), ts: Date.parse(i.pubDate || '') || 0, src: src.id, thumb: safeUrl(i.thumbnail) })).filter((i) => i.title && i.url);
+      return d.items.map((i) => ({ id: src.id + ':' + i.link, title: i.title || '', url: safeUrl(i.link), ts: Date.parse(i.pubDate || '') || 0, src: src.id, thumb: safeUrl(i.thumbnail), content: i.content || i.description || '' })).filter((i) => i.title && i.url);
     }
     if (p.shape === 'allorigins' && typeof d.contents === 'string') { const items = parseXmlFeed(d.contents, src); if (items) return items; }
   }
@@ -551,6 +564,117 @@ async function loadNews(force) {
     render();
   })();
   return newsInFlight;
+}
+
+/* ── College GameDay verdicts ──────────────────────────────────────────────
+ * There is no structured feed for the panel's picks. Best effort: find ESPN's
+ * weekly picks story and r/CFB's picks thread, and parse a picks table when
+ * one comes through. The links always stand on their own. */
+let gamedayTriedAt = 0;
+function parsePicksTable(html) {
+  if (!html) return null;
+  let doc; try { doc = new DOMParser().parseFromString(html, 'text/html'); } catch (_) { return null; }
+  const tables = Array.from(doc.querySelectorAll('table'));
+  for (const t of tables) {
+    const rows = Array.from(t.querySelectorAll('tr')).map((tr) => Array.from(tr.querySelectorAll('th,td')).map((c) => c.textContent.trim().replace(/\s+/g, ' ')));
+    const body = rows.filter((r) => r.some(Boolean));
+    if (body.length < 2 || body[0].length < 2) continue;
+    return { head: body[0].slice(0, 8), rows: body.slice(1, 16).map((r) => r.slice(0, 8)) };
+  }
+  return null;
+}
+async function loadGameDay(force) {
+  const wk = state.curWeek;
+  const cached = cache.get('gameday');
+  if (cached && !state.gameday.at && cached.data.week === wk) state.gameday = cached.data;
+  if (!force && state.gameday.at && state.gameday.week === wk && Date.now() - state.gameday.at < 6 * 3600e3) return;
+  if (!force && Date.now() - gamedayTriedAt < 5 * 60e3) return;
+  gamedayTriedAt = Date.now();
+  const [espn, reddit] = await Promise.all([
+    getJSON(ESPN + 'news?limit=50'),
+    fetchFeed({ id: 'rcfb-gd', url: rcfbRss('gameday picks', 'week') }),
+  ]);
+  const links = [];
+  let picks = null;
+  const isPicks = (t) => /gameday/i.test(t || '') && /pick/i.test(t || '');
+  const art = espn && Array.isArray(espn.articles) ? espn.articles.find((a) => isPicks(a.headline)) : null;
+  if (art && art.links && art.links.web && safeUrl(art.links.web.href)) links.push({ label: 'ESPN · ' + art.headline, href: art.links.web.href });
+  const post = reddit ? reddit.find((i) => isPicks(i.title)) : null;
+  if (post) { links.push({ label: 'r/CFB · ' + post.title, href: post.url }); picks = parsePicksTable(post.content); if (picks) picks.from = 'r/CFB'; }
+  state.gameday = { at: Date.now(), week: wk, picks, links, tried: true };
+  cache.set('gameday', state.gameday);
+  render();
+}
+
+/* ── r/CFB game threads ─────────────────────────────────────────────────────
+ * Every card links to an r/CFB search that lands on the thread. When the
+ * flair feed comes through, the link upgrades to the thread itself. Postgame
+ * threads carry the result in the title, so they are never surfaced. */
+let rcfbTriedAt = 0;
+async function loadRcfb(force) {
+  const cached = cache.get('rcfb');
+  if (cached && !state.rcfb.at) state.rcfb = cached.data;
+  if (!force && state.rcfb.at && Date.now() - state.rcfb.at < 15 * 60e3) return;
+  if (!force && Date.now() - rcfbTriedAt < 5 * 60e3) return;
+  rcfbTriedAt = Date.now();
+  const items = await fetchFeed({ id: 'rcfb', url: rcfbRss('flair:"Game Thread"', 'day') });
+  if (!items) return;
+  state.rcfb = { at: Date.now(), items: items.filter((i) => /game thread/i.test(i.title) && !/postgame/i.test(i.title)).map((i) => ({ title: i.title, url: i.url })) };
+  cache.set('rcfb', state.rcfb);
+  render();
+}
+function rcfbThread(g) { return (state.rcfb.items || []).find((i) => mentions(i.title, g.home) && mentions(i.title, g.away)) || null; }
+
+/* ── the plan ──────────────────────────────────────────────────────────────
+ * plan[id] = { mode: 'watch' | 'hl' | 'off' }. Auburn games are in as a full
+ * watch unless you took them out. Full watches sit on the kickoff; replays and
+ * 20-minute highlight blocks float to the first free slot after the game
+ * should be over (and uploaded), never on top of something you're watching. */
+function planMode(g) {
+  const p = state.plan[g.id];
+  if (p) return p.mode === 'off' ? null : p.mode;
+  return involves(g, AUBURN.id) ? 'watch' : null;
+}
+function setPlan(id, mode) {
+  const g = gameById(id); if (!g) return;
+  if (planMode(g) === mode) { if (involves(g, AUBURN.id)) state.plan[id] = { mode: 'off', at: Date.now() }; else delete state.plan[id]; }
+  else state.plan[id] = { mode, at: Date.now() };
+  store.set('plan', state.plan);
+  render();
+}
+function gameEnd(g) {
+  if (g.status === 'in') return g.period >= 4 ? Date.now() + 30 * 60e3 : Math.max(Date.now() + 30 * 60e3, g.ts + GAME_MS);
+  return g.ts + GAME_MS;
+}
+function morningRoll(t) {                 // nothing gets planned between 11:30pm and 7am
+  const d = new Date(t);
+  const h = d.getHours(), m = d.getMinutes();
+  if ((h === 23 && m >= 30) || h < 7) { if (h === 23) d.setDate(d.getDate() + 1); d.setHours(8, 0, 0, 0); return d.getTime(); }
+  return t;
+}
+function planBlocks() {
+  const now = Date.now();
+  const picked = allKnownGames().map((g) => ({ g, mode: planMode(g) })).filter((x) => x.mode);
+  const fixed = [], floating = [];
+  for (const { g, mode } of picked) {
+    const done = !!state.watched[g.id];
+    if (mode === 'watch' && g.status !== 'post') fixed.push({ g, mode, done, tba: !!g.tba, start: g.ts, end: gameEnd(g) });
+    else if (mode === 'watch') floating.push({ g, mode: 'replay', done, tba: false, len: GAME_MS, avail: g.ts + GAME_MS });
+    else floating.push({ g, mode: 'hl', done, tba: !!g.tba, len: HL_MS, avail: gameEnd(g) + HL_LAG });
+  }
+  fixed.sort((a, b) => a.start - b.start);
+  for (const w of fixed) w.conflicts = fixed.filter((o) => o !== w && !o.tba && !w.tba && o.start < w.end && w.start < o.end).map((o) => o.g);
+  const busy = fixed.filter((w) => !w.tba).map((w) => [w.start, w.end]);
+  floating.sort((a, b) => a.avail - b.avail);
+  for (const f of floating) {
+    f.conflicts = [];
+    if (f.done) { f.start = f.avail; f.end = f.avail + f.len; continue; }   // history doesn't move
+    let t = morningRoll(Math.max(f.avail, now));                            // overdue → it's next
+    for (let guard = 0; guard < 60; guard++) { const hit = busy.find(([s, e]) => s < t + f.len && t < e); if (!hit) break; t = morningRoll(hit[1]); }
+    f.start = t; f.end = t + f.len;
+    busy.push([f.start, f.end]);
+  }
+  return fixed.concat(floating).sort((a, b) => a.start - b.start);
 }
 
 /* ── box scores for tracked players ─────────────────────────────────────── */
@@ -606,8 +730,9 @@ function scoreCol(g, shown) {
   return `<div class="score-col">${tag}${sc}</div>`;
 }
 function actions(g) {
-  const saved = !!state.queue[g.id], watched = !!state.watched[g.id];
-  let h = `<button class="act${saved ? ' on' : ''}" data-save="${esc(g.id)}">${saved ? 'Saved ✓' : 'Save'}</button>`;
+  const mode = planMode(g), watched = !!state.watched[g.id];
+  const btn = (m, label) => `<button class="act${mode === m ? ' on' : ''}" data-plan="${esc(g.id)}" data-mode="${m}" aria-pressed="${mode === m}">${label}${mode === m ? ' ✓' : ''}</button>`;
+  let h = btn('watch', g.status === 'post' ? 'Replay' : 'Watch') + btn('hl', 'Highlights');
   if (g.status !== 'pre') h += `<button class="act${watched ? ' on' : ''}" data-watched="${esc(g.id)}">${watched ? 'Watched ✓' : 'Watched'}</button>`;
   return h;
 }
@@ -624,7 +749,10 @@ function extraHTML(g, H, plan, shown) {
   rows.push(`<div class="row"><span class="k">Heat</span><span class="v">${H.h} · ${esc(H.why.join(' · ') || 'Just a game')}</span></div>`);
   const links = [];
   if (g.status !== 'pre') for (const l of highlightLinks(g)) links.push(`<a href="${esc(l.href)}" target="_blank" rel="noopener">▶ ${esc(l.label)}</a>`);
-  if (isNum(g.id)) links.push(`<a href="${esc(GAMECAST(g.id))}" target="_blank" rel="noopener">ESPN gamecast${state.settings.nospoil && !shown && g.status !== 'pre' ? ' 🙈' : ''}</a>`);
+  const eye = state.settings.nospoil && !shown && g.status !== 'pre' ? ' 🙈' : '';
+  if (isNum(g.id)) links.push(`<a href="${esc(GAMECAST(g.id))}" target="_blank" rel="noopener">ESPN gamecast${eye}</a>`);
+  const th = rcfbThread(g);
+  links.push(`<a href="${esc(th ? th.url : rcfbSearch(`flair:"Game Thread" ${g.away.name} ${g.home.name}`))}" target="_blank" rel="noopener">r/CFB ${th ? 'game thread' : 'thread'}${eye}</a>`);
   if (links.length) rows.push(`<div class="row links"><span class="k">${g.status === 'pre' ? 'Links' : 'Highlights'}</span>${links.join('')}</div>`);
   const tracked = state.players.filter((p) => involves(g, p.teamId));
   if (tracked.length && g.status === 'post') {
@@ -680,6 +808,19 @@ function weekLabel(entry) {
   const nxt = calNeighbor(-1); const isNext = nxt && nxt.type === state.curType && nxt.week === state.curWeek;
   return { title: entry.label, sub: range + (isCur ? ' · <em>this week</em>' : isNext ? ' · <em>up next</em>' : '') };
 }
+function weekNavHTML() {
+  const lbl = weekLabel(calEntry(state.view.type, state.view.week));
+  const prev = calNeighbor(-1), next = calNeighbor(1);
+  return `<div class="weeknav">
+    <button class="arrow" data-wk="prev" aria-label="Previous week" ${prev ? '' : 'disabled'}>‹</button>
+    <button class="wk" data-wk="now" title="Jump to this week"><b>${esc(lbl.title)}</b><span>${lbl.sub}</span></button>
+    <button class="arrow" data-wk="next" aria-label="Next week" ${next ? '' : 'disabled'}>›</button>
+  </div>`;
+}
+function viewWindow() {                   // the viewing week's span, for anything that follows the week nav
+  const e = calEntry(state.view.type, state.view.week);
+  return e && e.start && e.end ? [e.start, e.end] : [Date.now() - 7 * 864e5, Date.now() + 7 * 864e5];
+}
 function renderWeekend() {
   const root = $('view-weekend');
   const ctx = buildContext();
@@ -687,27 +828,23 @@ function renderWeekend() {
   const wk = state.weeks[key];
   const filter = state.settings.filter;
   const lbl = weekLabel(calEntry(state.view.type, state.view.week));
-  const prev = calNeighbor(-1), next = calNeighbor(1);
-  let html = `<div class="weeknav">
-    <button class="arrow" data-wk="prev" aria-label="Previous week" ${prev ? '' : 'disabled'}>‹</button>
-    <button class="wk" data-wk="now" title="Jump to this week"><b>${esc(lbl.title)}</b><span>${lbl.sub}</span></button>
-    <button class="arrow" data-wk="next" aria-label="Next week" ${next ? '' : 'disabled'}>›</button>
-  </div>`;
+  let html = weekNavHTML();
   const games = wk ? wk.games : [];
   const heats = new Map(games.map((g) => [g.id, heat(g, ctx).h]));
-  const counts = { worth: games.filter((g) => heats.get(g.id) >= WORTH_IT).length, sec: games.filter((g) => g.home.conf === SEC || g.away.conf === SEC).length, saved: Object.keys(state.queue).length, all: games.length };
-  const chips = [['worth', 'Worth it'], ['sec', 'SEC'], ['saved', 'Saved'], ['all', 'Everything']];
+  const counts = { worth: games.filter((g) => heats.get(g.id) >= WORTH_IT).length, sec: games.filter((g) => g.home.conf === SEC || g.away.conf === SEC).length, plan: games.filter(planMode).length, all: games.length };
+  const chips = [['worth', 'Worth it'], ['sec', 'SEC'], ['plan', 'Planned'], ['all', 'Everything']];
   html += `<div class="chips">${chips.map(([id, name]) => `<button class="chip${filter === id ? ' on' : ''}" data-filter="${id}">${name}<span class="n">${counts[id]}</span></button>`).join('')}</div>`;
+  if (state.view.type === state.curType && state.view.week === state.curWeek) html += gamedayHTML();
 
   let list;
-  if (filter === 'saved') list = allKnownGames().filter((g) => state.queue[g.id]).sort((a, b) => a.ts - b.ts);
+  if (filter === 'plan') list = games.filter(planMode).sort((a, b) => a.ts - b.ts);
   else if (filter === 'sec') list = games.filter((g) => g.home.conf === SEC || g.away.conf === SEC);
   else if (filter === 'worth') list = games.filter((g) => heats.get(g.id) >= WORTH_IT);
   else list = games.slice();
 
   if (!list.length) {
     let msg;
-    if (filter === 'saved') msg = 'Nothing saved yet. Tap <b>Save</b> on any game to build your catch-up list.';
+    if (filter === 'plan') msg = 'Nothing planned yet. Tap <b>Watch</b> or <b>Highlights</b> on any game.';
     else if (!wk && state.online === false) msg = 'You\'re offline and this week isn\'t cached yet. The slate loads the next time you\'re online.';
     else if (!wk) msg = state.loading ? 'Loading the slate…' : `Nothing loaded for <b>${esc(lbl.title)}</b> yet. Times and TV usually land 6–12 days out.`;
     else if (filter === 'worth') msg = 'Nothing clears the bar this week. Try <b>SEC</b> or <b>Everything</b>.';
@@ -726,10 +863,71 @@ function renderWeekend() {
     let day = null;
     for (const g of rest) {
       const k = dayKey(g.ts);
-      if (k !== day) { day = k; html += sectionH(fmtLong.format(new Date(g.ts)), null, filter === 'saved' && g.week ? `Wk ${g.week}` : null); }
+      if (k !== day) { day = k; html += sectionH(fmtLong.format(new Date(g.ts)), null, filter === 'plan' && g.week ? `Wk ${g.week}` : null); }
       html += gameCard(g, ctx, {});
     }
   }
+  root.innerHTML = html;
+}
+
+function gamedayHTML() {
+  const gd = state.gameday;
+  const wk = state.curWeek;
+  const fallback = [
+    { label: '▶ GameDay picks on YouTube', href: YT(`College GameDay picks Week ${wk} ${state.season}`) },
+    { label: 'r/CFB picks thread', href: rcfbSearch('college gameday picks') },
+    { label: 'ESPN', href: 'https://www.espn.com/college-football/' },
+  ];
+  const links = (gd.links || []).concat(fallback);
+  let body;
+  if (gd.picks && gd.picks.rows && gd.picks.rows.length) {
+    body = `<div class="tbl"><table><thead><tr>${gd.picks.head.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${gd.picks.rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="muted">Picks as posted on ${esc(gd.picks.from || 'r/CFB')}.</div>`;
+  } else if (gd.at) body = `<div class="muted">${gd.links && gd.links.length ? 'Found this week\'s picks story — no table came through, so open it below.' : 'No picks story found yet. They land Saturday morning during the show.'}</div>`;
+  else body = `<div class="muted">${state.online === false ? 'Offline.' : 'Looking for this week\'s picks…'}</div>`;
+  return `<div class="gameday"><div class="gd-h"><b>College GameDay</b><span>Week ${wk} verdicts</span></div>${body}<div class="linkrow">${links.map((l) => `<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label.length > 60 ? l.label.slice(0, 58) + '…' : l.label)}</a>`).join('')}</div></div>`;
+}
+
+/* ── render: Plan ───────────────────────────────────────────────────────── */
+function fmtDur(ms) { const m = Math.round(ms / 60e3); return m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? ' ' + (m % 60) + 'm' : ''}` : `${m}m`; }
+function slotHTML(b) {
+  const g = b.g, now = Date.now();
+  const title = `${g.away.name} ${g.neutral ? 'vs' : 'at'} ${g.home.name}`;
+  const plan = watchPlan(g);
+  const live = g.status === 'in';
+  const timeCol = b.tba ? `<b>TBA</b><span>${esc(fmtDow.format(new Date(g.ts)))}</span>` : `<b>${esc(fmtTime.format(new Date(b.start)))}</b><span>– ${esc(fmtTime.format(new Date(b.end)))}</span>`;
+  let sub;
+  if (b.mode === 'watch') sub = `${netChip(plan)}<span>${esc(plan.detail)}</span>${live ? `<span class="live-tag">${esc(g.detail)}</span>` : ''}`;
+  else if (b.mode === 'replay') sub = `<span>Replay · ${fmtDur(b.len)}</span>${netChip(plan)}<span>${plan.kind === 'bundle' ? 'in the ESPN app' : 'from your recording'}</span>`;
+  else {
+    const ready = b.tba ? 'after the game' : (b.avail <= now ? 'ready now' : `ready after ~${fmtTime.format(new Date(b.avail))}`);
+    sub = `<span>Highlights · 20 min · ${esc(ready)}</span>${highlightLinks(g).map((l) => `<a href="${esc(l.href)}" target="_blank" rel="noopener">▶ ${esc(l.label)}</a>`).join('')}`;
+  }
+  const warn = b.conflicts && b.conflicts.length
+    ? `<div class="warn">Overlaps ${esc(b.conflicts.map((c) => `${c.away.name}–${c.home.name}`).join(', '))} · <button data-plan="${esc(g.id)}" data-mode="hl">switch this one to highlights</button></div>` : '';
+  const icon = b.mode === 'hl' ? '▶' : involves(g, AUBURN.id) ? '🔥' : '';
+  return `<div class="slot ${b.mode}${b.done ? ' done' : ''}${live && b.mode === 'watch' ? ' now' : ''}${b.conflicts && b.conflicts.length ? ' conflict' : ''}" data-id="${esc(g.id)}">
+    <div class="time">${timeCol}</div>
+    <div class="what"><div class="ttl">${icon ? icon + ' ' : ''}${esc(title)}</div><div class="sub">${sub}</div>${warn}</div>
+    <div class="ctl"><button class="${b.done ? 'on' : ''}" data-watched="${esc(g.id)}" aria-label="Mark watched" title="Watched">✓</button><button data-plan="${esc(g.id)}" data-mode="${b.mode === 'replay' ? 'watch' : b.mode}" aria-label="Remove from plan" title="Remove">×</button></div>
+  </div>`;
+}
+function renderPlan() {
+  const root = $('view-plan');
+  const [ws, we] = viewWindow();
+  const blocks = planBlocks().filter((b) => b.start >= ws && b.start <= we);
+  let html = weekNavHTML();
+  if (!blocks.length) { root.innerHTML = html + `<div class="empty">Nothing planned this week. Tap <b>Watch</b> or <b>Highlights</b> on any game — Auburn games land here on their own.</div>`; return; }
+  let day = null, dayItems = [];
+  const flush = () => {
+    if (!dayItems.length) return;
+    const total = dayItems.filter((b) => !b.done).reduce((acc, b) => acc + (b.end - b.start), 0);
+    html += sectionH(fmtLong.format(new Date(dayItems[0].start)), null, total ? `${fmtDur(total)} to watch` : 'all watched');
+    html += dayItems.map(slotHTML).join('');
+    dayItems = [];
+  };
+  for (const b of blocks) { const k = dayKey(b.start); if (k !== day) { flush(); day = k; } dayItems.push(b); }
+  flush();
+  html += `<div class="bundle-line">Full games sit on kickoff. Highlights and replays float to the first free slot after the game should be over, about 3½ hours plus upload time.</div>`;
   root.innerHTML = html;
 }
 
@@ -897,11 +1095,13 @@ function render() {
   const tab = state.settings.tab;
   document.querySelectorAll('.tab').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
   $('view-weekend').hidden = tab !== 'weekend';
+  $('view-plan').hidden = tab !== 'plan';
   $('view-auburn').hidden = tab !== 'auburn';
   $('view-players').hidden = tab !== 'players';
   const ns = $('nospoil'); ns.classList.toggle('on', state.settings.nospoil); ns.setAttribute('aria-checked', String(state.settings.nospoil));
   $('sub').textContent = `${state.season} · ${(calEntry(state.view.type, state.view.week) || {}).label || 'Week ' + state.view.week}`;
-  if (tab === 'weekend') renderWeekend();
+  if (tab === 'weekend') { renderWeekend(); loadGameDay(false); loadRcfb(false); }
+  else if (tab === 'plan') renderPlan();
   else if (tab === 'auburn') { renderAuburn(); loadNews(false); }
   else renderPlayers();
   renderStatus();
@@ -915,23 +1115,17 @@ function togglePeek(id) {
   store.set('revealed', state.revealed);
   render();
 }
-function toggleSave(id) {
-  if (state.queue[id]) delete state.queue[id]; else state.queue[id] = Date.now();
-  store.set('queue', state.queue);
-  render();
-}
 function toggleWatched(id) {
   const g = gameById(id);
   if (state.watched[id]) { delete state.watched[id]; }
   else {
     state.watched[id] = Date.now();
     state.revealed[id] = Date.now();
-    delete state.queue[id];
     if (g && window.river && window.river.emit) {
       window.river.emit({ app: 'saturday', kind: 'game.watched', startedAt: Date.now(), endedAt: Date.now(), durationMs: 0, label: `${g.away.name} vs ${g.home.name}` });
     }
   }
-  store.set('watched', state.watched); store.set('revealed', state.revealed); store.set('queue', state.queue);
+  store.set('watched', state.watched); store.set('revealed', state.revealed);
   render();
 }
 document.addEventListener('click', (e) => {
@@ -946,11 +1140,11 @@ document.addEventListener('click', (e) => {
     if (target) { state.view = { type: target.type, week: target.week }; render(); loadWeek(target.type, target.week, false); }
     return;
   }
-  if (t.closest('[data-refresh]')) { loadWeek(state.view.type, state.view.week, true); refreshAuburn(true); return; }
+  if (t.closest('[data-refresh]')) { loadWeek(state.view.type, state.view.week, true); refreshAuburn(true); loadNews(true); loadGameDay(true); loadRcfb(true); return; }
   if (t.closest('[data-news-refresh]')) { loadNews(true); render(); return; }
   const open = t.closest('[data-open]'); if (open) { const id = open.dataset.open; if (expanded.has(id)) expanded.delete(id); else expanded.add(id); render(); return; }
   const peek = t.closest('[data-peek]'); if (peek) { togglePeek(peek.dataset.peek); return; }
-  const save = t.closest('[data-save]'); if (save) { toggleSave(save.dataset.save); return; }
+  const pl = t.closest('[data-plan]'); if (pl) { setPlan(pl.dataset.plan, pl.dataset.mode); return; }
   const watched = t.closest('[data-watched]'); if (watched) { toggleWatched(watched.dataset.watched); return; }
   const news = t.closest('[data-news]'); if (news) { shownNews.add(news.dataset.news); render(); return; }
   const rm = t.closest('[data-remove]'); if (rm) { state.players = state.players.filter((p) => p.id !== rm.dataset.remove); store.set('players', state.players); render(); return; }
@@ -964,14 +1158,18 @@ function init() {
   const s = store.get('settings');
   if (s) state.settings = Object.assign(state.settings, s);
   state.revealed = store.get('revealed', {}) || {};
-  state.queue = store.get('queue', {}) || {};
+  state.plan = store.get('plan', {}) || {};
   state.watched = store.get('watched', {}) || {};
+  const oldQueue = store.get('queue');                       // v1 "Save" queue → full watches
+  if (oldQueue) { for (const id of Object.keys(oldQueue)) if (!state.plan[id]) state.plan[id] = { mode: 'watch', at: oldQueue[id] }; store.set('plan', state.plan); if (window.sys) sys.storage.remove('saturday.queue'); }
+  if (state.settings.filter === 'saved') state.settings.filter = 'plan';
   const players = store.get('players');
   state.players = Array.isArray(players) ? players : SEED_PLAYERS.slice();
   if (!Array.isArray(players)) store.set('players', state.players);
   $('note').innerHTML = `Spoiler-safe by default: scores, records and result headlines stay hidden until you flip <b>No-spoil</b> off or reveal a game. ` +
     `Heat: Auburn is always 100; rivals, SEC stakes, rankings, tracked players and tight finishes add up for everyone else. ` +
-    `Watch verdicts assume <b>${esc(BUNDLE)}</b>. Slate, scores and TV come from ESPN's public JSON; feeds ride a free proxy and fall back to links.`;
+    `<b>Watch</b> or <b>Highlights</b> puts a game on your Plan; Auburn is there automatically. ` +
+    `Watch verdicts assume <b>${esc(BUNDLE)}</b>. Slate, scores and TV come from ESPN's public JSON; feeds, GameDay picks and r/CFB threads ride a free proxy and fall back to links.`;
   boot();
 }
 init();
