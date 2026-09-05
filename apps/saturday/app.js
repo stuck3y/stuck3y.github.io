@@ -141,7 +141,7 @@ const state = {
   auburn: { games: [], at: 0, live: false, record: null },
   news: { items: [], at: 0, status: {} },
   box: {},                             // gameId -> box score lines
-  settings: { nospoil: true, filter: 'worth', tab: 'weekend' },
+  settings: { nospoil: true, filter: 'worth', tab: 'weekend', sortBy: {} },
   revealed: {}, plan: {}, watched: {},
   gameday: { at: 0, week: null, picks: null, links: [] },
   rcfb: { at: 0, items: [] },
@@ -772,7 +772,7 @@ function gameCard(g, ctx, o) {
   const open = expanded.has(g.id);
   const mine = involves(g, AUBURN.id);
   const why = H.why.filter((w) => !(o.week && mine && w === 'Auburn')).slice(0, 2).join(' · ');
-  return `<article class="game ${heatTier(H.h)}${open ? ' open' : ''}${o.compact ? ' compact' : ''}" data-id="${esc(g.id)}">
+  return `<article class="game ${heatTier(H.h)} st-${g.status}${open ? ' open' : ''}${o.compact ? ' compact' : ''}" data-id="${esc(g.id)}">
     <div class="meta">
       ${o.week && mine ? '' : `<span class="heat" title="Heat index">${H.h === 100 ? '🔥 ' : ''}${H.h}</span>`}
       ${netChip(plan)}
@@ -807,6 +807,12 @@ function weekLabel(entry) {
   const isCur = entry.type === state.curType && entry.week === state.curWeek;
   const nxt = calNeighbor(-1); const isNext = nxt && nxt.type === state.curType && nxt.week === state.curWeek;
   return { title: entry.label, sub: range + (isCur ? ' · <em>this week</em>' : isNext ? ' · <em>up next</em>' : '') };
+}
+const SORT_DEFAULT = { worth: 'heat', sec: 'time', plan: 'time', all: 'time' };
+function sortFor(filter) { const s = (state.settings.sortBy || {})[filter]; return s === 'heat' || s === 'time' ? s : (SORT_DEFAULT[filter] || 'time'); }
+function sortHTML(filter) {
+  const cur = sortFor(filter);
+  return `<span class="sort" role="group" aria-label="Sort">${[['heat', 'Heat'], ['time', 'Time']].map(([id, lbl]) => `<button class="${cur === id ? 'on' : ''}" data-sort="${id}" aria-pressed="${cur === id}">${lbl}</button>`).join('')}</span>`;
 }
 function weekNavHTML() {
   const lbl = weekLabel(calEntry(state.view.type, state.view.week));
@@ -852,12 +858,14 @@ function renderWeekend() {
     root.innerHTML = html + `<div class="empty">${msg}</div>`;
     return;
   }
-  const live = list.filter((g) => g.status === 'in');
-  if (filter === 'worth') {
+  const sort = sortFor(filter);
+  if (sort === 'heat') {
     const ranked = list.slice().sort((a, b) => (heats.get(b.id) - heats.get(a.id)) || (a.ts - b.ts));
-    html += sectionH('Ranked by heat', ranked.length, `Bundle: ${esc(BUNDLE)}`);
+    html += sectionH('Ranked by heat', ranked.length, sortHTML(filter));
     html += ranked.map((g) => gameCard(g, ctx, { showDay: true })).join('');
   } else {
+    html += sectionH('By kickoff', list.length, sortHTML(filter));
+    const live = list.filter((g) => g.status === 'in');
     if (live.length) { html += sectionH('Live now', live.length, null, true); html += live.map((g) => gameCard(g, ctx, {})).join(''); }
     const rest = list.filter((g) => g.status !== 'in').sort((a, b) => a.ts - b.ts);
     let day = null;
@@ -905,7 +913,7 @@ function slotHTML(b) {
   const warn = b.conflicts && b.conflicts.length
     ? `<div class="warn">Overlaps ${esc(b.conflicts.map((c) => `${c.away.name}–${c.home.name}`).join(', '))} · <button data-plan="${esc(g.id)}" data-mode="hl">switch this one to highlights</button></div>` : '';
   const icon = b.mode === 'hl' ? '▶' : involves(g, AUBURN.id) ? '🔥' : '';
-  return `<div class="slot ${b.mode}${b.done ? ' done' : ''}${live && b.mode === 'watch' ? ' now' : ''}${b.conflicts && b.conflicts.length ? ' conflict' : ''}" data-id="${esc(g.id)}">
+  return `<div class="slot ${b.mode} st-${g.status}${b.done ? ' done' : ''}${b.conflicts && b.conflicts.length ? ' conflict' : ''}" data-id="${esc(g.id)}">
     <div class="time">${timeCol}</div>
     <div class="what"><div class="ttl">${icon ? icon + ' ' : ''}${esc(title)}</div><div class="sub">${sub}</div>${warn}</div>
     <div class="ctl"><button class="${b.done ? 'on' : ''}" data-watched="${esc(g.id)}" aria-label="Mark watched" title="Watched">✓</button><button data-plan="${esc(g.id)}" data-mode="${b.mode === 'replay' ? 'watch' : b.mode}" aria-label="Remove from plan" title="Remove">×</button></div>
@@ -1132,6 +1140,7 @@ document.addEventListener('click', (e) => {
   const t = e.target;
   const tab = t.closest('[data-tab]'); if (tab) { setSetting('tab', tab.dataset.tab); render(); return; }
   const ch = t.closest('[data-filter]'); if (ch) { setSetting('filter', ch.dataset.filter); render(); return; }
+  const so = t.closest('[data-sort]'); if (so) { const by = Object.assign({}, state.settings.sortBy || {}); by[state.settings.filter] = so.dataset.sort; setSetting('sortBy', by); render(); return; }
   const wk = t.closest('[data-wk]');
   if (wk) {
     let target = null;
