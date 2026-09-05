@@ -143,7 +143,8 @@ window.river.emit({
 ```
 
 `river.js` fails silently and never throws into the caller. Producers today:
-`ketchapp` (`pom.work`), `big`, `floor` (`workout.*`), `horsemen` (`prompt.built`).
+`ketchapp` (`pom.work`), `big`, `floor` (`workout.*`), `horsemen` (`prompt.built`),
+`saturday` (`game.watched`).
 
 **Bus vs. river:** the bus is *live and ephemeral* (react now, in another open
 app). The river is *durable history* (review later). Many apps emit to both.
