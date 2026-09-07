@@ -29,6 +29,7 @@
     { id: 'adhd',       name: 'The ADHD Playbook',   color: '#f5f0eb' },
     { id: 'ai',         name: 'AI Command Center',   color: '#f5f1eb', desc: 'Prompt well. Context well. Build well.' },
     { id: 'anchor',     name: 'Anchor',              color: '#0f0c0a' },
+    { id: 'bagger',     name: 'bagger',              color: '#c99a5b', desc: 'Bag groceries. Cold with cold, household apart, fragile on top.' },
     { id: 'bd',         name: 'Brain Dumper',        color: '#0b0b0c', desc: 'Empty your head, minimal UI.' },
     { id: 'big',        name: 'big',                 color: '#f5efe6', desc: 'The one big thing.' },
     { id: 'billy',      name: 'billy',               color: '#f6f3ec' },

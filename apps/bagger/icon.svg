@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="bagger">
+  <rect width="512" height="512" rx="112" ry="112" fill="#c99a5b"/>
+  <!-- what's peeking out -->
+  <rect x="172" y="132" width="60" height="92" rx="14" fill="#dbeafe"/>
+  <rect x="172" y="132" width="60" height="26" rx="10" fill="#93c5fd"/>
+  <circle cx="288" cy="186" r="38" fill="#ef6f6c"/>
+  <path d="M288 150 q10 -22 26 -24 q-6 20 -26 24 z" fill="#4c9a4c"/>
+  <!-- the bag -->
+  <path d="M132 214 h248 a14 14 0 0 1 14 14 v160 a30 30 0 0 1 -30 30 H148 a30 30 0 0 1 -30 -30 V228 a14 14 0 0 1 14 -14 z" fill="#f6ead6"/>
+  <rect x="118" y="214" width="276" height="28" rx="12" fill="#e6d2b0"/>
+  <path d="M256 242 v176" stroke="#e6d2b0" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+</svg>
