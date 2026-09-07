@@ -1,0 +1,20 @@
+{
+  "name": "bagger",
+  "short_name": "bagger",
+  "description": "Bag groceries. Cold with cold, household apart, fragile on top. Keep up with the belt.",
+  "scope": "/apps/bagger/",
+  "start_url": "/apps/bagger/?source=pwa",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#c99a5b",
+  "background_color": "#f5f5f7",
+  "categories": ["games"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

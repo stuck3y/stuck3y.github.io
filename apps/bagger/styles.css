@@ -1,0 +1,508 @@
+/* bagger — styles.
+ *
+ * Speaks tokens.css for surfaces, type, and motion. Adds the checkout lane:
+ * a belt, three kraft-paper bags, and the small pieces of motion that make
+ * bagging feel like bagging. Light and dark follow the system theme signal.
+ */
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+:root {
+  --cold: var(--accent);
+  --dry: #c4841d;
+  --home: #7c5cd6;
+
+  --belt: #e3e3e8;
+  --belt-stripe: rgba(0, 0, 0, 0.06);
+  --belt-reach: rgba(255, 255, 255, 0.5);
+  --belt-end: rgba(0, 0, 0, 0.14);
+
+  --paper: #eddcbf;
+  --paper-edge: #d9c3a0;
+  --paper-fold: rgba(0, 0, 0, 0.07);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --dry: #e3a13a;
+    --home: #a48cf5;
+    --belt: #1c1c1e;
+    --belt-stripe: rgba(255, 255, 255, 0.05);
+    --belt-reach: rgba(255, 255, 255, 0.04);
+    --belt-end: rgba(255, 255, 255, 0.12);
+    --paper: #3a2f22;
+    --paper-edge: #4d3f2e;
+    --paper-fold: rgba(255, 255, 255, 0.06);
+  }
+}
+:root[data-theme="dark"] {
+  --dry: #e3a13a;
+  --home: #a48cf5;
+  --belt: #1c1c1e;
+  --belt-stripe: rgba(255, 255, 255, 0.05);
+  --belt-reach: rgba(255, 255, 255, 0.04);
+  --belt-end: rgba(255, 255, 255, 0.12);
+  --paper: #3a2f22;
+  --paper-edge: #4d3f2e;
+  --paper-fold: rgba(255, 255, 255, 0.06);
+}
+
+/* --- Page ---------------------------------------------------------------- */
+
+html, body { margin: 0; height: 100%; }
+body {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+#app { height: 100%; }
+
+.screen { display: none; flex-direction: column; height: 100%; }
+.screen.is-active { display: flex; }
+
+button {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.btn-primary {
+  min-width: 220px;
+  height: 54px;
+  padding: 0 32px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 17px;
+  font-weight: 600;
+  transition: transform var(--fast) var(--ease), background var(--fast) var(--ease);
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:active { transform: scale(0.97); }
+
+.btn-ghost {
+  padding: 12px 16px;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+}
+.btn-ghost:active { background: var(--surface-2); }
+
+/* --- Home ---------------------------------------------------------------- */
+
+#home {
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
+  text-align: center;
+}
+.home-head { display: flex; flex-direction: column; align-items: center; }
+.wordmark {
+  margin: 0;
+  font-size: 64px;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+.tagline { margin: 10px 0 0; color: var(--text-secondary); font-size: 17px; }
+
+.rules {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 17px;
+  font-weight: 500;
+  text-align: left;
+}
+.rules li { display: flex; align-items: center; gap: 14px; }
+.rule-emoji { width: 36px; font-size: 26px; line-height: 1; text-align: center; }
+
+.hint {
+  max-width: 300px;
+  margin: -8px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.home-foot { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.best { margin: 0; color: var(--text-secondary); font-size: 15px; font-variant-numeric: tabular-nums; }
+.best strong { color: var(--text); font-weight: 700; }
+
+/* --- Play: HUD ----------------------------------------------------------- */
+
+#play { position: relative; }
+
+.hud {
+  display: flex;
+  align-items: center;
+  padding: calc(12px + env(safe-area-inset-top)) 16px 4px;
+}
+.hud-score { display: flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; }
+.hud-score span {
+  display: inline-block;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.hud-score span.bump { animation: bump 420ms var(--ease); }
+.hud-score small { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+
+.hud-strikes { display: flex; gap: 8px; margin-left: auto; margin-right: 16px; }
+.hud-strikes i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--text-secondary);
+  opacity: 0.45;
+  transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease), opacity var(--fast) var(--ease);
+}
+.hud-strikes i.hit {
+  background: var(--danger);
+  border-color: var(--danger);
+  opacity: 1;
+  animation: pop 320ms var(--ease);
+}
+
+.hud-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  transition: transform var(--fast) var(--ease);
+}
+.hud-btn:active { transform: scale(0.92); }
+
+/* A strike flashes the edges of the screen red for a beat. */
+#play::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: inset 0 0 0 0 var(--danger);
+}
+#play.flash::after { animation: flash 460ms ease-out; }
+
+/* --- Play: the lane ------------------------------------------------------ */
+
+/* The lane sits low, right above the bags, so the eye barely travels between
+ * what's coming and where it goes. The room above is just room. */
+.lane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0 16px 4px;
+}
+.caption {
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.belt {
+  --item: 56px;
+  --reach: 42%;
+  position: relative;
+  height: calc(var(--item) + 44px);
+  border-radius: 16px;
+  background-color: var(--belt);
+  background-image: repeating-linear-gradient(90deg, transparent 0 40px, var(--belt-stripe) 40px 48px);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+.belt-reach {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: var(--reach);
+  right: 0;
+  background: var(--belt-reach);
+  border-left: 2px dashed var(--border);
+}
+.belt-end {
+  position: absolute;
+  top: 0; bottom: 0; right: 0;
+  width: 8px;
+  background: var(--belt-end);
+}
+.belt-items { position: absolute; inset: 0; }
+
+.item {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: var(--item);
+  height: var(--item);
+  margin-top: calc(var(--item) / -2);
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--item) * 0.72);
+  line-height: 1;
+  isolation: isolate;
+  will-change: transform;
+}
+/* The item within reach gets a plate under it — that's the one in your hand. */
+.item::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  z-index: -1;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity var(--fast) var(--ease), transform var(--fast) var(--ease);
+}
+.item.is-front::before { opacity: 1; transform: scale(1); }
+
+.divider {
+  position: absolute;
+  top: 14px; bottom: 14px;
+  left: 0;
+  width: 8px;
+  border-radius: 4px;
+  background: var(--text-secondary);
+  opacity: 0.55;
+  will-change: transform;
+}
+
+.toast {
+  align-self: center;
+  min-height: 32px;
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
+  background: var(--text);
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity var(--fast) var(--ease), transform var(--fast) var(--ease);
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: none; }
+
+/* --- Play: bags ---------------------------------------------------------- */
+
+.bags {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 8px 16px calc(20px + env(safe-area-inset-bottom));
+}
+
+.bag {
+  position: relative;
+  padding: 26px 0 0;              /* room for a fragile item peeking over the rim */
+  background: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  outline: none;
+}
+.bag:focus-visible .bag-body { box-shadow: 0 0 0 3px var(--accent); }
+
+.bag-body {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 0.82;
+  border-radius: 8px 8px 18px 18px;
+  background: var(--paper);
+  border: 2px solid var(--paper-edge);
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  place-items: center;
+  padding: 16px 6px 8px;
+  transition: transform var(--fast) var(--ease), border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+}
+.bag-body::before {
+  content: '';
+  position: absolute;
+  left: -2px; right: -2px; top: -2px;
+  height: 12px;
+  border-radius: 8px 8px 0 0;
+  background: var(--paper-fold);
+}
+.bag-item {
+  font-size: clamp(22px, 7vw, 30px);
+  line-height: 1;
+  transition: opacity var(--fast) var(--ease);
+}
+.bag-lid {
+  position: absolute;
+  top: -24px;
+  left: 0; right: 0;
+  text-align: center;
+  font-size: clamp(24px, 8vw, 34px);
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.18));
+  pointer-events: none;
+}
+.landing { opacity: 0; }
+
+.bag-label {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+
+.bag[data-cat="cold"] { --bag-ink: var(--cold); }
+.bag[data-cat="dry"]  { --bag-ink: var(--dry); }
+.bag[data-cat="home"] { --bag-ink: var(--home); }
+
+.bag:not(.is-empty) .bag-body { border-color: var(--bag-ink); }
+.bag:not(.is-empty) .bag-label { background: var(--bag-ink); color: #fff; }
+
+.bag.is-done .bag-body { transform: translateY(-8px); box-shadow: var(--shadow-md); }
+.bag.is-done .bag-label { background: var(--text); color: var(--bg); }
+
+.bag:active .bag-body { transform: scale(0.96); }
+.bag.is-done:active .bag-body { transform: translateY(-8px) scale(0.96); }
+
+.bag.shake .bag-body { animation: shake 360ms var(--ease); }
+.bag.is-fresh .bag-body { animation: pop 320ms var(--ease); }
+
+.float {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--success);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: float 900ms var(--ease) forwards;
+}
+
+/* Things in flight: an item on its way into a bag, a bag on its way to the
+ * cart, an item on its way to the floor. Fixed-position clones, removed on
+ * landing. */
+.fly {
+  position: fixed;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.fly-bag {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* --- Overlays ------------------------------------------------------------ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  animation: fade var(--normal) var(--ease);
+}
+.card {
+  width: min(340px, 100%);
+  padding: 32px 24px 16px;
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: rise var(--normal) var(--ease);
+}
+.card h2 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+.card .big {
+  margin-top: 8px;
+  font-size: 76px;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.card .sub { margin: 0; color: var(--text-secondary); font-size: 15px; }
+.card .sub:empty { display: none; }
+.card .btn-primary { width: 100%; margin-top: 16px; }
+
+/* --- Motion -------------------------------------------------------------- */
+
+@keyframes bump  { 0% { transform: scale(1); } 35% { transform: scale(1.28); } 100% { transform: scale(1); } }
+@keyframes pop   { 0% { transform: scale(0.85); } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(3px); }
+}
+@keyframes flash {
+  0%   { opacity: 1; box-shadow: inset 0 0 0 6px var(--danger); }
+  100% { opacity: 0; box-shadow: inset 0 0 60px 6px var(--danger); }
+}
+@keyframes float {
+  0%   { opacity: 0; transform: translate(-50%, 10px); }
+  25%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -30px); }
+}
+@keyframes fade { from { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(12px) scale(0.98); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-score span.bump, .hud-strikes i.hit, .bag.shake .bag-body, .bag.is-fresh .bag-body, #play.flash::after {
+    animation: none;
+  }
+  .float { animation-duration: 600ms; }
+}

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>bagger</title>
+<meta name="description" content="Bag groceries. Cold with cold, household apart, fragile on top. Keep up with the belt." />
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="bagger" />
+<link rel="icon" href="./icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="./icon.svg" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="stylesheet" href="../lib/tokens.css" />
+<link rel="stylesheet" href="./styles.css" />
+<script src="../lib/pwa.js" defer></script>
+<script src="../lib/sys.js" defer></script>
+<script src="./app.js" defer></script>
+</head>
+<body>
+<main id="app">
+
+  <!-- Home -->
+  <section id="home" class="screen is-active">
+    <header class="home-head">
+      <h1 class="wordmark">bagger</h1>
+      <p class="tagline">Keep up with the belt.</p>
+    </header>
+
+    <ul class="rules" aria-label="The rules">
+      <li><span class="rule-emoji" aria-hidden="true">🥛</span><span>Cold with cold</span></li>
+      <li><span class="rule-emoji" aria-hidden="true">🧴</span><span>Household apart</span></li>
+      <li><span class="rule-emoji" aria-hidden="true">🥚</span><span>Fragile on top</span></li>
+    </ul>
+
+    <p class="hint">Tap a bag to fill it. When it’s full, or something fragile is on top, tap it again to hand it off.</p>
+
+    <div class="home-foot">
+      <p class="best" id="home-best" hidden>Best <strong id="home-best-n">0</strong> customers</p>
+      <button class="btn-primary" id="btn-start" type="button">Clock in</button>
+    </div>
+  </section>
+
+  <!-- Play -->
+  <section id="play" class="screen">
+    <header class="hud">
+      <div class="hud-score" aria-live="off">
+        <span id="hud-served">0</span><small>served</small>
+      </div>
+      <div class="hud-strikes" id="hud-strikes" role="img" aria-label="Strikes"><i></i><i></i><i></i></div>
+      <button class="hud-btn" id="btn-pause" type="button" aria-label="Pause">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+          <rect x="3" y="2" width="4" height="12" rx="1.5" fill="currentColor"/>
+          <rect x="9" y="2" width="4" height="12" rx="1.5" fill="currentColor"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="lane">
+      <p class="caption" id="caption">Customer 1</p>
+      <div class="belt" id="belt" aria-hidden="true">
+        <div class="belt-reach"></div>
+        <div class="belt-items" id="belt-items"></div>
+        <div class="belt-end"></div>
+      </div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <div class="bags" id="bags"></div>
+  </section>
+
+  <!-- Pause -->
+  <div class="overlay" id="pause-overlay" hidden>
+    <div class="card" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <h2 id="pause-title">On break</h2>
+      <p class="sub">The belt’s stopped. Take your time.</p>
+      <button class="btn-primary" id="btn-resume" type="button">Back to it</button>
+      <button class="btn-ghost" id="btn-quit" type="button">Clock out</button>
+    </div>
+  </div>
+
+  <!-- Game over -->
+  <div class="overlay" id="over-overlay" hidden>
+    <div class="card" role="dialog" aria-modal="true" aria-labelledby="over-title">
+      <h2 id="over-title">Clocked out.</h2>
+      <div class="big" id="over-n">0</div>
+      <p class="sub">customers served</p>
+      <p class="sub" id="over-sub"></p>
+      <button class="btn-primary" id="btn-again" type="button">Clock in again</button>
+      <button class="btn-ghost" id="btn-over-home" type="button">Home</button>
+    </div>
+  </div>
+
+</main>
+</body>
+</html>
