@@ -44,6 +44,7 @@
     { id: 'hn-feed',    name: 'HN Feed Builder',     color: '#0e0e0e' },
     { id: 'horsemen',   name: 'Four Horsemen',       color: '#f6f0e6', desc: 'Reframe a task you’re avoiding into a do-it-now prompt.' },
     { id: 'ketchapp',   name: 'Ketchapp',            color: '#c92a2a', desc: 'The dumbest pomodoro. 25/5.' },
+    { id: 'matchday',   name: 'Matchday',            color: '#6cabdd', desc: 'Spoiler-safe Premier League: Man City, Haaland, and how to catch every match.' },
     { id: 'not-to-do',  name: 'Not-Todo List',       color: '#f5f5f5', desc: 'What not to do.' },
     { id: 'nutty',      name: 'nutty',               color: '#f6f3ec', desc: 'Food cache and trustworthy totals. Calories, macros, import/export.' },
     { id: 'rest',       name: 'rest.',               color: '#141210', desc: 'Rest timer.' },

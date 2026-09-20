@@ -1,0 +1,20 @@
+{
+  "name": "Matchday",
+  "short_name": "Matchday",
+  "description": "Spoiler-safe Premier League companion — Man City everything, Haaland, and how to catch every match.",
+  "scope": "/apps/matchday/",
+  "start_url": "/apps/matchday/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#6cabdd",
+  "background_color": "#6cabdd",
+  "categories": ["sports", "entertainment"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

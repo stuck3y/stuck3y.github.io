@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Matchday</title>
+<meta name="description" content="A spoiler-safe Premier League companion — Man City everything, Haaland, the title race, and how to catch every match." />
+<meta name="theme-color" content="#6cabdd" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Matchday" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="stylesheet" href="../lib/tokens.css" />
+<link rel="stylesheet" href="./styles.css" />
+<script src="../lib/pwa.js" defer></script>
+<script src="../lib/sys.js" defer></script>
+<script src="../lib/river.js" defer></script>
+<script src="./app.js" defer></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="bar">
+    <h1>Matchday<span class="sub" id="sub">Premier League</span></h1>
+    <button class="nospoil on" id="nospoil" role="switch" aria-checked="true" aria-label="No-spoil mode">
+      <span class="lbl">No-spoil</span><span class="switch"></span>
+    </button>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" data-tab="week" aria-selected="true">Matchweek</button>
+    <button class="tab" role="tab" data-tab="plan" aria-selected="false">Plan</button>
+    <button class="tab" role="tab" data-tab="city" aria-selected="false">City</button>
+    <button class="tab" role="tab" data-tab="players" aria-selected="false">Players</button>
+  </nav>
+  <div class="status" id="status"><span class="dot"></span><span id="statusText">loading…</span></div>
+</header>
+
+<main class="wrap">
+  <section id="view-week" role="tabpanel" aria-label="Matchweek"></section>
+  <section id="view-plan" role="tabpanel" aria-label="Plan" hidden></section>
+  <section id="view-city" role="tabpanel" aria-label="City" hidden></section>
+  <section id="view-players" role="tabpanel" aria-label="Players" hidden></section>
+  <p class="note" id="note"></p>
+</main>
+
+</body>
+</html>
