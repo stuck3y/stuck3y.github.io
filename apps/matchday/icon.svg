@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Matchday">
+  <rect width="512" height="512" rx="112" ry="112" fill="#6cabdd"/>
+  <circle cx="256" cy="256" r="150" fill="#fbfbfd"/>
+  <g fill="#1c2c5b">
+    <polygon points="256,196 313,237 291,304 221,304 199,237"/>
+    <polygon points="256,106 300,120 282,164 230,164 212,120"/>
+    <polygon points="392,214 404,258 366,286 336,248 352,206"/>
+    <polygon points="120,214 160,206 176,248 146,286 108,258"/>
+    <polygon points="336,376 352,338 300,320 274,364 300,402"/>
+    <polygon points="176,376 160,338 212,320 238,364 212,402"/>
+  </g>
+</svg>
