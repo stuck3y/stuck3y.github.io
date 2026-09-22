@@ -1,5 +1,7 @@
 // bagger — bag groceries, keep up with the belt.
 //
+// The packages themselves are drawn in art.js; this file is the game.
+//
 // One input: tap a bag. The item nearest the end of the belt goes in. A bag
 // takes the category of its first item and won't take anything else; a bag
 // that's full, or has something fragile on top, is done — tap it to hand it
@@ -17,21 +19,24 @@
     home: { label: 'Household' },
   };
 
+  // Each id is a package drawn in art.js.
   var ITEMS = [
-    // Cold: dairy, meat, frozen.
-    { e: '🥛', cat: 'cold' }, { e: '🧀', cat: 'cold' }, { e: '🧈', cat: 'cold' }, { e: '🍦', cat: 'cold' },
-    { e: '🥩', cat: 'cold' }, { e: '🍗', cat: 'cold' }, { e: '🥓', cat: 'cold' }, { e: '🐟', cat: 'cold' },
-    { e: '🥚', cat: 'cold', fragile: true },
-    // Dry: pantry and produce.
-    { e: '🥫', cat: 'dry' }, { e: '🍝', cat: 'dry' }, { e: '🍚', cat: 'dry' }, { e: '🥣', cat: 'dry' },
-    { e: '🍪', cat: 'dry' }, { e: '🫙', cat: 'dry' }, { e: '🍯', cat: 'dry' }, { e: '🍫', cat: 'dry' },
-    { e: '🍎', cat: 'dry' }, { e: '🥑', cat: 'dry' }, { e: '🍅', cat: 'dry' }, { e: '🥕', cat: 'dry' },
-    { e: '🍞', cat: 'dry', fragile: true }, { e: '🥐', cat: 'dry', fragile: true },
-    { e: '🍌', cat: 'dry', fragile: true }, { e: '🍿', cat: 'dry', fragile: true },
+    // Cold: the dairy case, the meat counter, the freezer.
+    { id: 'milk', cat: 'cold' }, { id: 'juice', cat: 'cold' }, { id: 'cheese', cat: 'cold' }, { id: 'butter', cat: 'cold' },
+    { id: 'yogurt', cat: 'cold' }, { id: 'beef', cat: 'cold' }, { id: 'chicken', cat: 'cold' }, { id: 'bacon', cat: 'cold' },
+    { id: 'salmon', cat: 'cold' }, { id: 'icecream', cat: 'cold' }, { id: 'pizza', cat: 'cold' }, { id: 'peas', cat: 'cold' },
+    { id: 'eggs', cat: 'cold', fragile: true }, { id: 'cake', cat: 'cold', fragile: true },
+    // Dry: the pantry aisles.
+    { id: 'cereal', cat: 'dry' }, { id: 'pasta', cat: 'dry' }, { id: 'rice', cat: 'dry' }, { id: 'flour', cat: 'dry' },
+    { id: 'coffee', cat: 'dry' }, { id: 'soup', cat: 'dry' }, { id: 'beans', cat: 'dry' }, { id: 'corn', cat: 'dry' },
+    { id: 'tuna', cat: 'dry' }, { id: 'pb', cat: 'dry' }, { id: 'pickles', cat: 'dry' }, { id: 'sauce', cat: 'dry' },
+    { id: 'soda', cat: 'dry' }, { id: 'water', cat: 'dry' }, { id: 'ketchup', cat: 'dry' },
+    { id: 'chips', cat: 'dry', fragile: true }, { id: 'bread', cat: 'dry', fragile: true },
     // Household: never with the food.
-    { e: '🧴', cat: 'home' }, { e: '🧼', cat: 'home' }, { e: '🧽', cat: 'home' }, { e: '🫧', cat: 'home' },
-    { e: '🧻', cat: 'home' }, { e: '🪥', cat: 'home' }, { e: '🕯️', cat: 'home' },
-    { e: '💡', cat: 'home', fragile: true },
+    { id: 'laundry', cat: 'home' }, { id: 'bleach', cat: 'home' }, { id: 'dish', cat: 'home' }, { id: 'spray', cat: 'home' },
+    { id: 'shampoo', cat: 'home' }, { id: 'towels', cat: 'home' }, { id: 'tp', cat: 'home' }, { id: 'trash', cat: 'home' },
+    { id: 'sponges', cat: 'home' },
+    { id: 'bulbs', cat: 'home', fragile: true },
   ];
 
   // --- Tuning --------------------------------------------------------------
@@ -44,12 +49,12 @@
   var SPAWN_P = -0.1;       // items appear just off the left edge
   var REACH_P = 0.42;       // from here on, the front item is in your hand
   var DROP_P = 1.06;        // past the end: it's on the floor
-  var GAP_P = 0.21;         // spacing between items, in belt widths
+  var GAP_P = 0.25;         // spacing between items, in belt widths
 
-  // Seconds for an item to ride the whole belt. 5.5 for the first customer,
-  // 9% quicker with each one served, never faster than 2.0.
+  // Seconds for an item to ride the whole belt. 5.0 for the first customer,
+  // 9% quicker with each one served, never faster than 1.8.
   function travelSeconds(customer) {
-    return Math.max(2.0, 5.5 * Math.pow(0.91, customer - 1));
+    return Math.max(1.8, 5.0 * Math.pow(0.91, customer - 1));
   }
   function itemsFor(customer) {
     return Math.min(10, 4 + customer);
@@ -120,6 +125,9 @@
     again: $('#btn-again'), overHome: $('#btn-over-home'),
   };
   var bagEls = [];
+
+  // One package, as markup. art.js draws them; this just asks for one by id.
+  function art(id) { return window.BaggerArt ? BaggerArt.html(id) : ''; }
 
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function ms(n) { return reduceMotion ? 0 : n; }
@@ -257,7 +265,7 @@
   function spawn(def) {
     var el = document.createElement('div');
     el.className = def.divider ? 'divider' : 'item';
-    if (!def.divider) el.textContent = def.e;
+    if (!def.divider) { el.innerHTML = art(def.id); el.dataset.id = def.id; }
     dom.beltItems.appendChild(el);
 
     var thing = Object.assign({}, def, { p: SPAWN_P, el: el });
@@ -267,7 +275,7 @@
 
   function measure() {
     state.beltW = dom.belt.clientWidth || 360;
-    state.itemW = Math.round(Math.min(60, Math.max(44, state.beltW * 0.15)));
+    state.itemW = Math.round(Math.min(80, Math.max(56, state.beltW * 0.2)));
     dom.belt.style.setProperty('--item', state.itemW + 'px');
     dom.belt.style.setProperty('--reach', (REACH_P * 100) + '%');
   }
@@ -298,14 +306,14 @@
 
     if (isLastOfCustomer(front)) {
       // The item that finishes a customer goes straight to the cart with the bags.
-      flyAway(front.e, from);
+      flyAway(front.id, from);
       serveCustomer();
       return;
     }
 
     renderBag(i, true);
     var target = bagEls[i].querySelector('.landing');
-    flyTo(front.e, from, target.getBoundingClientRect(), function () {
+    flyTo(front.id, from, target.getBoundingClientRect(), function () {
       target.classList.remove('landing');
     });
     renderCaption();
@@ -331,7 +339,7 @@
     if (state.frontEl === item.el) state.frontEl = null;
     var from = item.el.getBoundingClientRect();
     item.el.remove();
-    fall(item.e, from);
+    fall(item.id, from);
     strike('That one hit the floor.', null);
     if (!state.playing) return;
     if (isLastOfCustomer(item)) serveCustomer(); else renderCaption();
@@ -410,15 +418,15 @@
     label.textContent = bag.done ? 'Hand off' : (bag.cat ? CATS[bag.cat].label : 'Empty');
 
     Array.prototype.slice.call(grid.querySelectorAll('.bag-item')).forEach(function (n) { n.remove(); });
-    lid.textContent = '';
+    lid.innerHTML = '';
     lid.classList.remove('landing');
 
     var slot = 0;
     bag.items.forEach(function (it) {
-      if (it.fragile) { lid.textContent = it.e; return; }
+      if (it.fragile) { lid.innerHTML = art(it.id); return; }
       var s = document.createElement('span');
       s.className = 'bag-item';
-      s.textContent = it.e;
+      s.innerHTML = art(it.id);
       s.style.gridArea = SLOTS[slot++];
       grid.appendChild(s);
     });
@@ -471,10 +479,10 @@
   // Fixed-position clones carry the motion, so the real DOM can update
   // immediately and the game never waits on an animation.
 
-  function flyTo(emoji, from, to, onLand) {
+  function flyTo(id, from, to, onLand) {
     var dur = ms(320);
     if (!dur) { onLand(); return; }
-    var c = makeFlyer(emoji, from);
+    var c = makeFlyer(id, from);
     var dx = (to.left + to.width / 2) - (from.left + from.width / 2);
     var dy = (to.top + to.height / 2) - (from.top + from.height / 2);
     var scale = Math.max(0.4, to.height / from.height);
@@ -485,10 +493,10 @@
     anim.onfinish = function () { c.remove(); onLand(); };
   }
 
-  function flyAway(emoji, from) {
+  function flyAway(id, from) {
     var dur = ms(420);
     if (!dur) return;
-    var c = makeFlyer(emoji, from);
+    var c = makeFlyer(id, from);
     var anim = c.animate(
       [{ transform: 'translateY(0) scale(1)', opacity: 1 }, { transform: 'translateY(-90px) scale(0.7)', opacity: 0 }],
       { duration: dur, easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)', fill: 'forwards' }
@@ -496,10 +504,10 @@
     anim.onfinish = function () { c.remove(); };
   }
 
-  function fall(emoji, from) {
+  function fall(id, from) {
     var dur = ms(480);
     if (!dur) return;
-    var c = makeFlyer(emoji, from);
+    var c = makeFlyer(id, from);
     var anim = c.animate(
       [{ transform: 'translate(0, 0) rotate(0deg)', opacity: 1 }, { transform: 'translate(28px, 120px) rotate(40deg)', opacity: 0 }],
       { duration: dur, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' }
@@ -529,15 +537,14 @@
     anim.onfinish = function () { c.remove(); };
   }
 
-  function makeFlyer(emoji, from) {
+  function makeFlyer(id, from) {
     var c = document.createElement('div');
     c.className = 'fly';
-    c.textContent = emoji;
+    c.innerHTML = art(id);
     c.style.left = from.left + 'px';
     c.style.top = from.top + 'px';
     c.style.width = from.width + 'px';
     c.style.height = from.height + 'px';
-    c.style.fontSize = Math.round(from.height * 0.72) + 'px';
     document.body.appendChild(c);
     return c;
   }
