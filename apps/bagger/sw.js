@@ -1,7 +1,7 @@
 // bagger — per-app service worker. Scope: /apps/bagger/
-const CACHE = 'app-bagger-v1';
+const CACHE = 'app-bagger-v2';
 const PREFIX = CACHE.slice(0, CACHE.lastIndexOf('-') + 1); // this app's caches only
-const SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.webmanifest', './icon.svg'];
+const SHELL = ['./', './index.html', './styles.css', './art.js', './app.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
