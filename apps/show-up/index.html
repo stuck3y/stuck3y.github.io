@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>Show Up</title>
+<meta name="description" content="Push-button workout. Hit start, do the next thing." />
+<meta name="theme-color" content="#1c7c4f" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Show Up" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="stylesheet" href="../lib/tokens.css" />
+<script src="../lib/pwa.js" defer></script>
+<script src="../lib/sys.js" defer></script>
+<script src="../lib/river.js" defer></script>
+<style>
+  /* The one color that is ours: "go" green. Everything else is tokens.css. */
+  :root { --go: #1c7c4f; --go-ink: #ffffff; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --go: #2a9a62; }
+  }
+  :root[data-theme="dark"] { --go: #2a9a62; }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+
+  #app {
+    height: 100%;
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: calc(env(safe-area-inset-top) + var(--space-3)) var(--space-6) calc(env(safe-area-inset-bottom) + var(--space-6));
+  }
+  .screen { height: 100%; display: flex; flex-direction: column; }
+  .screen[hidden] { display: none; }
+
+  /* Top bar: a quiet line of context. */
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 44px;
+    font-size: 15px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+  .brand { font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+  #clock { font-weight: 600; font-size: 17px; color: var(--text); }
+
+  /* Overall progress through the session. */
+  .track { height: 3px; border-radius: 2px; background: var(--surface-2); overflow: hidden; }
+  .track > i { display: block; height: 100%; width: 0; background: var(--go); transition: width var(--normal) var(--ease); }
+
+  /* Hero: the one thing to do right now. */
+  .hero {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-4) 0;
+  }
+  .hero.rise { animation: rise var(--normal) var(--ease); }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .eyebrow {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+  .count {
+    margin: 0;
+    font-size: clamp(120px, 36vw, 200px);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    line-height: 0.9;
+    font-variant-numeric: tabular-nums;
+  }
+  .big {
+    margin: 0;
+    font-size: clamp(34px, 9vw, 52px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+  .sub { margin: 0; font-size: 20px; line-height: 1.4; color: var(--text-secondary); }
+
+  /* Seven days, today on the right. */
+  .dots { display: flex; gap: var(--space-3); margin-bottom: var(--space-2); }
+  .dots i {
+    width: 14px; height: 14px;
+    border-radius: var(--radius-full);
+    background: var(--surface-2);
+    border: 1.5px solid var(--border);
+  }
+  .dots i.on { background: var(--go); border-color: var(--go); }
+  .dots i.today { box-shadow: 0 0 0 3px var(--bg), 0 0 0 4.5px var(--go); }
+
+  /* Actions: one big button, maybe one quiet one. */
+  .actions { display: flex; flex-direction: column; gap: var(--space-2); }
+  .primary {
+    min-height: 84px;
+    border: 0;
+    border-radius: var(--radius-lg);
+    background: var(--go);
+    color: var(--go-ink);
+    font: inherit;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--fast) var(--ease), filter var(--fast) var(--ease);
+  }
+  .primary:active { transform: scale(0.98); filter: brightness(0.94); }
+  .quiet {
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    border: 0;
+    background: none;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .quiet:active { color: var(--text); }
+  .top .quiet { margin-right: calc(-1 * var(--space-3)); }
+
+  /* A green blink across the room when a timer ends. */
+  .flash { position: fixed; inset: 0; background: var(--go); opacity: 0; pointer-events: none; }
+  .flash.on { animation: flash 700ms var(--ease); }
+  @keyframes flash { from { opacity: 0.85; } to { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .flash.on { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <section class="screen" id="ready">
+    <div class="top"><span class="brand">Show Up</span><span id="readyMeta"></span></div>
+    <div class="hero">
+      <div class="dots" id="dots" aria-label="The last seven days"></div>
+      <h1 class="big" id="readyLine">First one. Just start.</h1>
+      <p class="sub">Five-minute warmup, then six lifts. About 25 minutes. Nothing to set up.</p>
+    </div>
+    <div class="actions">
+      <button class="primary" id="startBtn" type="button">Start</button>
+    </div>
+  </section>
+
+  <section class="screen" id="live" hidden>
+    <div class="top">
+      <span id="clock">0:00</span>
+      <button class="quiet" id="stopBtn" type="button">Stop</button>
+    </div>
+    <div class="track"><i id="fill"></i></div>
+    <div class="hero" id="hero" aria-live="polite">
+      <div class="eyebrow" id="eyebrow"></div>
+      <div class="count" id="count" hidden></div>
+      <h1 class="big" id="title"></h1>
+      <p class="sub" id="sub"></p>
+    </div>
+    <div class="actions">
+      <button class="primary" id="doneBtn" type="button">Set done</button>
+      <button class="quiet" id="skipBtn" type="button">Skip</button>
+    </div>
+  </section>
+
+  <section class="screen" id="done" hidden>
+    <div class="top"><span class="brand">Show Up</span><span id="doneMeta"></span></div>
+    <div class="hero">
+      <div class="dots" id="dotsDone" aria-label="The last seven days"></div>
+      <h1 class="big">You showed up.</h1>
+      <p class="sub" id="doneLine"></p>
+    </div>
+    <div class="actions">
+      <button class="primary" id="closeBtn" type="button">Done</button>
+    </div>
+  </section>
+
+</div>
+<div class="flash" id="flash" aria-hidden="true"></div>
+
+<script>
+'use strict';
+(() => {
+  const APP = 'show-up';
+  const KIND = 'workout.showup';
+  const LABEL = 'Show up';
+
+  // ── The workout. Same one every time until the habit is back. ──────────
+  const WARMUP_SECONDS = 60;
+  const REST_SECONDS = 60;
+
+  const WARMUP = [
+    { name: 'Arm circles',                cue: '30 seconds forward, 30 backward. Start small, gradually increase.' },
+    { name: 'Shoulder blade squeezes',    cue: 'Pull your shoulder blades together, hold two seconds, release.' },
+    { name: 'Seated torso rotations',     cue: 'Rotate gently from side to side. Keep your hips stationary.' },
+    { name: 'Seated shadowboxing',        cue: 'Light, alternating punches. Gradually increase your pace.' },
+    { name: 'Light dumbbell bench press', cue: '10–15 controlled reps with very light weights.' },
+  ];
+
+  const LIFTS = [
+    { name: 'Dumbbell bench press',           sets: 2, reps: 10 },
+    { name: 'Chest-supported dumbbell rows',  sets: 2, reps: 10 },
+    { name: 'Seated shoulder press',          sets: 2, reps: 10 },
+    { name: 'Seated dumbbell curls',          sets: 2, reps: 12 },
+    { name: 'Lying triceps extensions',       sets: 2, reps: 12 },
+    { name: 'Gentle abdominal bracing',       sets: 2, reps: 10 },
+  ];
+
+  // Flatten the session into one ordered list. Timed steps (warmup, rest)
+  // advance themselves; work steps wait for the button.
+  const STEPS = [];
+  WARMUP.forEach((w, i) => STEPS.push({ kind: 'timed', seconds: WARMUP_SECONDS, n: i + 1, of: WARMUP.length, name: w.name, cue: w.cue }));
+  LIFTS.forEach((lift, i) => {
+    for (let set = 1; set <= lift.sets; set++) {
+      STEPS.push({ kind: 'work', n: i + 1, of: LIFTS.length, set, sets: lift.sets, reps: lift.reps, name: lift.name });
+      STEPS.push({ kind: 'rest', seconds: REST_SECONDS });
+    }
+  });
+  STEPS.pop(); // no rest after the final set
+
+  // ── State ──────────────────────────────────────────────────────────────
+  const KEY_SESSION = 'showup.session'; // { startedAt, index, endsAt } while live
+  const KEY_DAYS = 'showup.days';       // ['YYYY-MM-DD', ...] of days you showed up
+  const STALE_MS = 3 * 60 * 60 * 1000;  // a session older than this is abandoned, not resumed
+
+  let session = null;
+  let days = [];
+  let tickHandle = null;
+  let paintedIndex = -1;
+
+  const $ = (id) => document.getElementById(id);
+  const screens = { ready: $('ready'), live: $('live'), done: $('done') };
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+
+  function load() {
+    days = sys.storage.get(KEY_DAYS, []);
+    if (!Array.isArray(days)) days = [];
+    session = sys.storage.get(KEY_SESSION, null);
+  }
+  function save() {
+    if (session) sys.storage.set(KEY_SESSION, session); else sys.storage.remove(KEY_SESSION);
+    sys.storage.set(KEY_DAYS, days.slice(-365));
+  }
+
+  // ── Days + streak ──────────────────────────────────────────────────────
+  const pad = (n) => String(n).padStart(2, '0');
+  function dayKey(d = new Date()) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
+  function shiftDay(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function daysAgo(key) {
+    const [y, m, d] = key.split('-').map(Number);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return Math.round((today - new Date(y, m - 1, d)) / 86400000);
+  }
+
+  // Consecutive days ending today, or ending yesterday if today isn't done yet.
+  function streak() {
+    const set = new Set(days);
+    let d = new Date();
+    if (!set.has(dayKey(d))) d = shiftDay(d, -1);
+    let n = 0;
+    while (set.has(dayKey(d))) { n++; d = shiftDay(d, -1); }
+    return n;
+  }
+
+  function readyLine() {
+    if (!days.length) return 'First one. Just start.';
+    const n = streak();
+    if (days.includes(dayKey())) return n > 1 ? `Done today. ${n} in a row.` : 'Done today.';
+    if (n > 0) return `${n} in a row. Keep it going.`;
+    const gap = daysAgo(days.reduce((a, b) => (a > b ? a : b)));
+    return `Welcome back. It's been ${gap} days.`;
+  }
+
+  function paintDots(el) {
+    el.innerHTML = '';
+    const set = new Set(days);
+    for (let i = 6; i >= 0; i--) {
+      const d = shiftDay(new Date(), -i);
+      const dot = document.createElement('i');
+      if (set.has(dayKey(d))) dot.classList.add('on');
+      if (i === 0) dot.classList.add('today');
+      dot.title = d.toLocaleDateString(undefined, { weekday: 'short' });
+      el.appendChild(dot);
+    }
+  }
+
+  const weekday = () => new Date().toLocaleDateString(undefined, { weekday: 'long' });
+
+  // ── Screens ────────────────────────────────────────────────────────────
+  function show(name) {
+    Object.keys(screens).forEach((k) => { screens[k].hidden = k !== name; });
+    document.body.dataset.screen = name;
+  }
+
+  function paintReady() {
+    paintDots($('dots'));
+    $('readyLine').textContent = readyLine();
+    $('readyMeta').textContent = weekday();
+  }
+
+  function paintDone(durationMs) {
+    paintDots($('dotsDone'));
+    const mins = Math.max(1, Math.round(durationMs / 60000));
+    const n = streak();
+    $('doneLine').textContent = `${mins} min · ${n > 1 ? `${n} in a row.` : 'Day one.'}`;
+    $('doneMeta').textContent = weekday();
+  }
+
+  function fmt(ms) {
+    const s = Math.max(0, Math.floor(ms / 1000));
+    return `${Math.floor(s / 60)}:${pad(s % 60)}`;
+  }
+
+  function secondsLeft() { return Math.max(0, Math.ceil((session.endsAt - Date.now()) / 1000)); }
+
+  // Paint the current step. Only the step that is up right now, nothing else.
+  function paint() {
+    const i = session.index;
+    const step = STEPS[i];
+    const next = STEPS[i + 1];
+    const timed = !!step.seconds;
+
+    $('fill').style.width = `${(i / STEPS.length) * 100}%`;
+    $('count').hidden = !timed;
+    $('doneBtn').hidden = timed;
+    $('skipBtn').hidden = !timed;
+
+    if (step.kind === 'timed') {
+      $('eyebrow').textContent = `Warmup ${step.n} of ${step.of}`;
+      $('title').textContent = step.name;
+      $('sub').textContent = step.cue;
+      $('skipBtn').textContent = 'Skip';
+    } else if (step.kind === 'rest') {
+      $('eyebrow').textContent = 'Rest · up next';
+      $('title').textContent = next.name;
+      $('sub').textContent = `Set ${next.set} of ${next.sets} · ${next.reps} reps`;
+      $('skipBtn').textContent = 'Skip rest';
+    } else {
+      $('eyebrow').textContent = `Lift ${step.n} of ${step.of} · Set ${step.set} of ${step.sets}`;
+      $('title').textContent = step.name;
+      $('sub').textContent = `${step.reps} reps`;
+    }
+    if (timed) $('count').textContent = secondsLeft();
+
+    if (paintedIndex !== i) {
+      const hero = $('hero');
+      hero.classList.remove('rise');
+      void hero.offsetWidth;
+      hero.classList.add('rise');
+      paintedIndex = i;
+    }
+  }
+
+  // ── Session ────────────────────────────────────────────────────────────
+  function announce(type) { if (window.sys) sys.bus.emit(type, { app: APP, kind: KIND, label: LABEL }); }
+
+  function start() {
+    unlockAudio();
+    const now = Date.now();
+    session = { startedAt: now, index: 0, endsAt: 0 };
+    enter(0, now);
+    show('live');
+    $('clock').textContent = '0:00';
+    announce('session.start');
+    requestWakeLock();
+    ensureTick();
+  }
+
+  // Move to step i. A timed step's deadline is measured from `from`, so a chain
+  // of auto-advances stays on schedule even if the phone slept through one.
+  function enter(i, from) {
+    if (i >= STEPS.length) { finish(); return; }
+    const step = STEPS[i];
+    session.index = i;
+    session.endsAt = step.seconds ? from + step.seconds * 1000 : 0;
+    save();
+    paint();
+  }
+
+  function setDone() {
+    if (!session || STEPS[session.index].kind !== 'work') return;
+    enter(session.index + 1, Date.now());
+  }
+
+  function skip() {
+    if (!session || !STEPS[session.index].seconds) return;
+    enter(session.index + 1, Date.now());
+  }
+
+  function finish() {
+    const endedAt = Date.now();
+    const startedAt = session.startedAt;
+    const today = dayKey();
+    if (!days.includes(today)) days.push(today);
+    session = null;
+    save();
+    stopTick();
+    releaseWakeLock();
+    if (window.river && window.river.emit) {
+      window.river.emit({ app: APP, kind: KIND, startedAt, endedAt, durationMs: Math.max(0, endedAt - startedAt), label: LABEL });
+    }
+    announce('session.end');
+    paintDone(endedAt - startedAt);
+    show('done');
+    beep();
+  }
+
+  function abandon() {
+    session = null;
+    save();
+    stopTick();
+    releaseWakeLock();
+    announce('session.end');
+    $('stopBtn').textContent = 'Stop';
+    paintReady();
+    show('ready');
+  }
+
+  // ── Tick ───────────────────────────────────────────────────────────────
+  function tick() {
+    if (!session) { stopTick(); return; }
+    const now = Date.now();
+    $('clock').textContent = fmt(now - session.startedAt);
+
+    // Catch up on every timed step whose deadline has passed. Usually one;
+    // several if the screen slept. Deadlines chain, so the schedule holds.
+    let moved = false;
+    while (session && STEPS[session.index].seconds && now >= session.endsAt) {
+      moved = true;
+      enter(session.index + 1, session.endsAt);
+    }
+    if (!session) return;
+    if (moved) { beep(); flash(); }
+    if (STEPS[session.index].seconds) $('count').textContent = secondsLeft();
+  }
+  function ensureTick() { if (!tickHandle) tickHandle = setInterval(tick, 250); }
+  function stopTick() { if (tickHandle) { clearInterval(tickHandle); tickHandle = null; } }
+
+  // ── Signals: sound, haptic, flash ──────────────────────────────────────
+  let audioCtx = null;
+  // iOS only lets audio start inside a tap, so the Start button opens the gate.
+  function unlockAudio() {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (_) { audioCtx = null; }
+  }
+  function beep() {
+    try {
+      if (audioCtx) {
+        const t = audioCtx.currentTime;
+        [0, 0.18].forEach((dt) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.connect(g); g.connect(audioCtx.destination);
+          o.type = 'sine'; o.frequency.value = 880;
+          g.gain.setValueAtTime(0, t + dt);
+          g.gain.linearRampToValueAtTime(0.2, t + dt + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.001, t + dt + 0.16);
+          o.start(t + dt); o.stop(t + dt + 0.2);
+        });
+      }
+    } catch (_) {}
+    // Browsers refuse vibrate before the first tap (a resumed session can hit that).
+    const touched = !navigator.userActivation || navigator.userActivation.hasBeenActive;
+    try { if (navigator.vibrate && touched) navigator.vibrate([150, 80, 150]); } catch (_) {}
+  }
+  function flash() {
+    const el = $('flash');
+    el.classList.remove('on');
+    void el.offsetWidth;
+    el.classList.add('on');
+  }
+
+  // ── Wake lock: the screen stays on for the whole session ───────────────
+  let wakeLock = null;
+  async function requestWakeLock() {
+    if (!('wakeLock' in navigator)) return;
+    try { wakeLock = await navigator.wakeLock.request('screen'); } catch (_) {}
+  }
+  function releaseWakeLock() {
+    try { if (wakeLock) { wakeLock.release(); wakeLock = null; } } catch (_) {}
+  }
+
+  // ── Theme: follow the system, and tint the status bar to match ─────────
+  function syncThemeColor() {
+    requestAnimationFrame(() => {
+      const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+      if (bg) themeMeta.content = bg;
+    });
+  }
+
+  // ── Wiring ─────────────────────────────────────────────────────────────
+  $('startBtn').addEventListener('click', start);
+  $('doneBtn').addEventListener('click', setDone);
+  $('skipBtn').addEventListener('click', skip);
+  $('closeBtn').addEventListener('click', () => { paintReady(); show('ready'); });
+
+  // Stop is two taps within three seconds. No dialog, no accidental bail.
+  let stopArmedAt = 0;
+  $('stopBtn').addEventListener('click', () => {
+    if (Date.now() - stopArmedAt < 3000) { stopArmedAt = 0; abandon(); return; }
+    stopArmedAt = Date.now();
+    $('stopBtn').textContent = 'Tap again to stop';
+    setTimeout(() => { if (Date.now() - stopArmedAt >= 3000) $('stopBtn').textContent = 'Stop'; }, 3100);
+  });
+
+  // Desktop nicety: space or enter is the big button.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== ' ' && e.key !== 'Enter') return;
+    if (e.target && e.target.tagName === 'BUTTON') return;
+    e.preventDefault();
+    const screen = document.body.dataset.screen;
+    if (screen === 'ready') start();
+    else if (screen === 'live') setDone();
+    else if (screen === 'done') { paintReady(); show('ready'); }
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    if (session) { requestWakeLock(); tick(); }
+  });
+  addEventListener('pagehide', () => { if (session) announce('session.end'); });
+
+  // ── Init ───────────────────────────────────────────────────────────────
+  addEventListener('DOMContentLoaded', () => {
+    sys.theme.init();
+    syncThemeColor();
+    sys.bus.on('theme', syncThemeColor);
+    try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncThemeColor); } catch (_) {}
+
+    load();
+    const resumable = session
+      && Number.isInteger(session.index) && session.index >= 0 && session.index < STEPS.length
+      && Number.isFinite(session.startedAt) && Date.now() - session.startedAt < STALE_MS;
+
+    if (resumable) {
+      show('live');
+      paint();
+      tick();
+      ensureTick();
+      requestWakeLock();
+      announce('session.start');
+    } else {
+      session = null;
+      save();
+      paintReady();
+      show('ready');
+    }
+  });
+})();
+</script>
+</body>
+</html>

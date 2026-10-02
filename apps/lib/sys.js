@@ -52,6 +52,7 @@
     { id: 'sam',        name: 'sam',                 color: '#f6f3ec' },
     { id: 'saturday',   name: 'Saturday',            color: '#0c2340', desc: 'Spoiler-safe college football: Auburn, the SEC, and how to catch every game.' },
     { id: 'schooling',  name: 'Schooling One-Pager', color: '#faf8f4', desc: 'Schooling decision one-pager.' },
+    { id: 'show-up',    name: 'Show Up',             color: '#1c7c4f', desc: 'Push-button workout. Hit start, do the next thing.' },
     { id: 'slantboard', name: 'Slant Board Timer',   color: '#0b1020' },
     { id: 'spark',      name: 'Build Brief',         color: '#fafaf8', desc: 'Spark a build brief.' },
     { id: 'time',       name: 'you have time',       color: '#f6f3ec' },
