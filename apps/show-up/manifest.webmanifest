@@ -1,0 +1,20 @@
+{
+  "name": "Show Up",
+  "short_name": "Show Up",
+  "description": "Push-button workout. Hit start, the clock runs, and it shows the next thing to do.",
+  "scope": "/apps/show-up/",
+  "start_url": "/apps/show-up/?source=pwa",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1c7c4f",
+  "background_color": "#1c7c4f",
+  "categories": ["health", "fitness", "lifestyle"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
