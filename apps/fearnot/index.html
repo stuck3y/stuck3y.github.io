@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>fearnot</title>
+<meta name="description" content="One place Scripture says “do not be afraid,” every day of the year." />
+<meta name="theme-color" content="#f6f1e7" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<script src="../lib/pwa.js" defer></script>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="fearnot" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="./styles.css" />
+<script src="../lib/sys.js" defer></script>
+<script src="./verses.js" defer></script>
+<script src="./app.js" defer></script>
+</head>
+<body>
+<main class="page">
+  <header class="top">
+    <h1 class="mark">fear<em>not</em></h1>
+    <p class="date" id="date"></p>
+  </header>
+
+  <section class="reading" aria-live="polite">
+    <blockquote class="verse" id="verse"></blockquote>
+    <a class="ref" id="ref" href="#" target="_blank" rel="noopener" title="Read this verse in the ESV"></a>
+  </section>
+
+  <nav class="nav" aria-label="Browse days">
+    <button class="chev" id="prev" type="button" aria-label="Previous day">‹</button>
+    <button class="today" id="today" type="button" hidden>Today</button>
+    <button class="chev" id="next" type="button" aria-label="Next day">›</button>
+  </nav>
+
+  <footer class="foot">Berean Standard Bible · tap the reference to read it in the ESV</footer>
+</main>
+</body>
+</html>

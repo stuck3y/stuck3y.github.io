@@ -37,6 +37,7 @@
     { id: 'celebration',name: 'Celebration',         color: '#f4ede0', desc: '31-day devotional on security in Christ.' },
     { id: 'clean',      name: 'Cleaning Checklist',  color: '#f5f5f7', desc: 'Home cleaning checklist.' },
     { id: 'cup',        name: 'World Cup',            color: '#0b8a43', desc: 'Spoiler-safe World Cup companion: matches, key players, bracket.' },
+    { id: 'fearnot',    name: 'fearnot',             color: '#f6f1e7', desc: 'One “do not be afraid,” every day of the year.' },
     { id: 'floor',      name: 'floor',               color: '#1a1715', desc: 'Brutally simple PPL workout.' },
     { id: 'food',       name: 'What to Eat?',        color: '#fff7ed', desc: 'Food decision helper.' },
     { id: 'foundation', name: 'Foundation 12',       color: '#0b1020', desc: 'Foundation timer.' },
