@@ -1,0 +1,20 @@
+{
+  "name": "fearnot",
+  "short_name": "fearnot",
+  "description": "One place Scripture says “do not be afraid,” every day of the year.",
+  "scope": "/apps/fearnot/",
+  "start_url": "/apps/fearnot/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#f6f1e7",
+  "background_color": "#f6f1e7",
+  "categories": ["lifestyle", "education"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

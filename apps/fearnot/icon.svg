@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="fearnot">
+  <rect width="512" height="512" rx="112" ry="112" fill="#f6f1e7"/>
+  <g font-family="'New York', 'Iowan Old Style', Georgia, 'Times New Roman', serif" text-anchor="middle">
+    <text x="256" y="238" font-size="150" fill="#26211b">fear</text>
+    <text x="256" y="372" font-size="150" font-style="italic" fill="#9a5a2e">not</text>
+  </g>
+</svg>
