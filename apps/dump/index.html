@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>dump</title>
+<meta name="description" content="Get it all out of your head. Then clarify. Then bucket. One thing at a time." />
+<meta name="theme-color" content="#f7f5f0" />
+<link rel="icon" href="./icon.svg" type="image/svg+xml" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<script src="../lib/pwa.js" defer></script>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="dump" />
+<link rel="stylesheet" href="./styles.css" />
+<script src="../lib/sys.js" defer></script>
+<script src="../lib/river.js" defer></script>
+<script src="./app.js" defer></script>
+</head>
+<body>
+<main class="app">
+  <header class="top">
+    <a class="mark" href="#map">dump</a>
+    <button class="btn small" id="topAction" type="button" hidden></button>
+  </header>
+
+  <nav class="steps" id="steps" aria-label="Steps" hidden>
+    <button class="step" type="button" data-view="dump">Dump</button>
+    <button class="step" type="button" data-view="clarify">Clarify<span class="badge"></span></button>
+    <button class="step" type="button" data-view="bucket">Bucket<span class="badge"></span></button>
+  </nav>
+
+  <!-- 1 · Dump: get it out of your head -->
+  <section class="view" data-view="dump">
+    <h1 class="title">What’s on your mind?</h1>
+    <p class="lede">All of it. One thing at a time. Don’t sort it, don’t judge it.</p>
+
+    <form class="capture" id="capture" autocomplete="off">
+      <label class="sr-only" for="thought">A thought</label>
+      <textarea id="thought" rows="1" placeholder="Something…" autocapitalize="sentences" spellcheck="true"></textarea>
+      <button class="add" type="submit" aria-label="Add">↵</button>
+    </form>
+    <button class="nudge" id="nudge" type="button" aria-label="Another prompt"><span class="q"></span><span class="swap">↻</span></button>
+
+    <div class="pile" id="pile"></div>
+    <p class="count" id="pileCount" aria-live="polite"></p>
+
+    <div class="foot">
+      <button class="btn primary" id="dumpNext" type="button" hidden></button>
+    </div>
+  </section>
+
+  <!-- 2 · Clarify: what is this, really? -->
+  <section class="view" data-view="clarify">
+    <div class="work">
+      <h1 class="title">What is this, really?</h1>
+      <p class="lede">One at a time. Your first answer is the right one.</p>
+      <div class="stack">
+        <div class="card ghost g2" aria-hidden="true"></div>
+        <div class="card ghost g1" aria-hidden="true"></div>
+        <div class="card current"><span class="meta" hidden></span><span class="card-text"></span></div>
+      </div>
+      <div class="choices"></div>
+      <div class="under">
+        <button class="link quiet" type="button" data-act="undo">Undo</button>
+        <span class="remaining"></span>
+        <button class="link quiet" type="button" data-act="skip">Skip</button>
+      </div>
+    </div>
+    <div class="finish" hidden></div>
+  </section>
+
+  <!-- 3 · Bucket: which plate is this on? -->
+  <section class="view" data-view="bucket">
+    <div class="work">
+      <h1 class="title">Which plate is this on?</h1>
+      <p class="lede">Tap one. Add one if none fit.</p>
+      <div class="stack">
+        <div class="card ghost g2" aria-hidden="true"></div>
+        <div class="card ghost g1" aria-hidden="true"></div>
+        <div class="card current"><span class="meta" hidden></span><span class="card-text"></span></div>
+      </div>
+      <div class="chips choices"></div>
+      <div class="under">
+        <button class="link quiet" type="button" data-act="undo">Undo</button>
+        <span class="remaining"></span>
+        <button class="link quiet" type="button" data-act="skip">Skip</button>
+      </div>
+    </div>
+    <div class="finish" hidden></div>
+  </section>
+
+  <!-- Map: what’s going on -->
+  <section class="view" data-view="map">
+    <h1 class="title">What’s going on</h1>
+    <p class="lede" id="mapSummary"></p>
+    <div class="waiting" id="waiting"></div>
+    <div class="plates" id="plates"></div>
+    <section class="thoughts" id="thoughts"></section>
+    <div class="empty" id="mapEmpty" hidden>
+      <p class="empty-title">Your head is clear.</p>
+      <p>Nothing here is waiting on you.</p>
+      <button class="btn primary" type="button" data-go="dump">Dump something</button>
+    </div>
+    <footer class="map-foot">
+      <button class="link quiet" id="editPlates" type="button">Edit plates</button>
+      <p class="verse" id="verse"></p>
+    </footer>
+  </section>
+</main>
+
+<div class="backdrop" id="backdrop"></div>
+
+<div class="sheet" id="itemSheet" role="dialog" aria-modal="true" aria-label="Edit this">
+  <div class="grip"></div>
+  <textarea id="sheetText" rows="1" aria-label="Text"></textarea>
+  <div class="seg" id="sheetKind" role="radiogroup" aria-label="What is it"></div>
+  <div class="chips" id="sheetPlates"></div>
+  <div class="sheet-actions">
+    <button class="link danger" type="button" id="sheetDrop">Let it go</button>
+    <div class="sheet-right">
+      <button class="btn ghost small" type="button" data-close>Close</button>
+      <button class="btn primary small" type="button" id="sheetDone">Done ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="platesSheet" role="dialog" aria-modal="true" aria-label="Plates">
+  <div class="grip"></div>
+  <h2 class="sheet-title">Plates</h2>
+  <p class="sheet-sub">The things you keep spinning.</p>
+  <div class="plate-list" id="plateList"></div>
+  <form class="plate-add" id="plateAdd" autocomplete="off">
+    <input id="plateName" placeholder="New plate" aria-label="New plate name" />
+    <button class="btn primary small" type="submit">Add</button>
+  </form>
+  <div class="sheet-actions end"><button class="btn ghost small" type="button" data-close>Close</button></div>
+</div>
+
+<div class="toast" id="toast" role="status"><span class="toast-text"></span><button type="button" id="toastUndo">Undo</button></div>
+</body>
+</html>
