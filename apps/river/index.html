@@ -176,6 +176,22 @@
     gap: 0.5rem;
   }
   .section-h .total { color: var(--fg); font-variant-numeric: tabular-nums; letter-spacing: 0.05em; }
+  .section-h .actions { display: flex; align-items: baseline; gap: 0.85rem; }
+  .copy {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: lowercase;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.15s ease, color 0.15s ease;
+  }
+  .copy:hover { opacity: 1; }
+  .copy.did { color: var(--fg); opacity: 1; }
   .day-group { margin-bottom: 1.25rem; }
   .day-head {
     display: flex;
@@ -293,6 +309,8 @@
 
   // active filter for the clocked section — null or a label string
   let activeLabel = null;
+  // plain-text rendering of whatever the clocked section currently shows
+  let clockedCopyText = "";
 
   function loadReads() {
     try {
@@ -378,6 +396,68 @@
     if (dayKey(ts) === dayKey(yesterday.getTime())) return "yesterday";
     return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
   }
+  function formatDate(ts) {
+    return new Date(ts).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  }
+  function formatRange(a, b) {
+    const md  = ts => new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    const mdy = ts => new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    if (dayKey(a) === dayKey(b)) return mdy(a);
+    if (new Date(a).getFullYear() === new Date(b).getFullYear()) return `${md(a)} – ${md(b)}, ${new Date(b).getFullYear()}`;
+    return `${mdy(a)} – ${mdy(b)}`;
+  }
+
+  // The clocked section as plain text, oldest first — the order an invoice
+  // reads in. A header line carries the active label (if any), the total,
+  // the count and the date range; each day gets its total and its sessions.
+  function clockedText(sessions, groups, grandTotal) {
+    const n = sessions.length;
+    const first = Math.min(...sessions.map(s => s.startedAt || s.endedAt || 0));
+    const last  = Math.max(...sessions.map(s => s.endedAt || s.startedAt || 0));
+    const head = [
+      activeLabel,
+      formatDur(grandTotal),
+      `${n} ${n === 1 ? "session" : "sessions"}`,
+      formatRange(first, last),
+    ].filter(Boolean).join(" · ");
+
+    const days = groups.slice().reverse().map(g => {
+      const rows = g.items.slice().reverse().map(s => [
+        "  " + formatClock(s.startedAt),
+        formatDur(s.durationMs),
+        s.app,
+        (s.label && s.label !== activeLabel) ? s.label : null,
+      ].filter(Boolean).join(" · "));
+      return [`${formatDate(g.repTs)} · ${formatDur(g.totalMs)}`, ...rows].join("\n");
+    });
+
+    return [head, "", ...days].join("\n");
+  }
+
+  // Modern clipboard first; the textarea trick when that is refused.
+  // Resolves to true/false and never throws.
+  function writeClipboard(text) {
+    const fallback = () => {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        const ok = document.execCommand("copy");
+        ta.remove();
+        return ok;
+      } catch { return false; }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(() => true, () => fallback());
+    }
+    return Promise.resolve(fallback());
+  }
+
   function groupByDay(sessions) {
     const groups = new Map();
     for (const s of sessions) {
@@ -419,6 +499,11 @@
       ? "" // already shown in the filter bar
       : `<span class="total">${escapeHtml(formatDur(grandTotal))} · ${sessions.length}</span>`;
 
+    clockedCopyText = filtered.length ? clockedText(filtered, groups, grandTotal) : "";
+    const copyBtn = filtered.length
+      ? `<button class="copy" data-copy type="button" title="copy what's shown as plain text">copy</button>`
+      : "";
+
     const body = groups.length
       ? groups.map(g => {
           const rows = g.items.map(s => {
@@ -446,7 +531,7 @@
       : `<p class="ses-empty">no sessions match this filter.</p>`;
 
     return `<section class="section">
-      <div class="section-h"><span>clocked</span>${totalLabel}</div>
+      <div class="section-h"><span>clocked</span><span class="actions">${totalLabel}${copyBtn}</span></div>
       ${filterBar}
       ${body}
     </section>`;
@@ -543,6 +628,18 @@
     if (clearBtn) clearBtn.addEventListener("click", () => {
       activeLabel = null;
       render();
+    });
+    const copyBtn = content.querySelector("[data-copy]");
+    if (copyBtn) copyBtn.addEventListener("click", () => {
+      writeClipboard(clockedCopyText).then(ok => {
+        copyBtn.textContent = ok ? "copied" : "couldn’t copy";
+        copyBtn.classList.add("did");
+        clearTimeout(copyBtn._t);
+        copyBtn._t = setTimeout(() => {
+          copyBtn.textContent = "copy";
+          copyBtn.classList.remove("did");
+        }, 1400);
+      });
     });
   }
 

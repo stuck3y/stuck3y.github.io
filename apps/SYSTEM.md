@@ -127,7 +127,9 @@ belongs in the river instead.
 `lib/river.js` (`window.river.emit`) is an **append-only log** in `localStorage`
 under `river:sessions:v1`, pruned to 90 days. It's how apps record "I did a
 thing" for later review. The `river` app reads the log and shows it grouped by
-day, with a filterable label chip per entry.
+day, with a filterable label chip per entry, and a **copy** button that puts
+whatever is shown (so, one label's sessions when filtered) on the clipboard as
+plain text, oldest first, ready to paste into an invoice.
 
 Emit shape:
 
