@@ -1,5 +1,5 @@
 // big — per-app service worker. Scope: /apps/big/
-const CACHE = 'app-big-v3';
+const CACHE = 'app-big-v4';
 const PREFIX = CACHE.slice(0, CACHE.lastIndexOf('-') + 1); // this app's caches only
 const SHELL = ['./', './index.html'];
 
