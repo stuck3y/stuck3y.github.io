@@ -1,5 +1,5 @@
 // river — per-app service worker. Scope: /apps/river/
-const CACHE = 'app-river-v3';
+const CACHE = 'app-river-v4';
 const PREFIX = CACHE.slice(0, CACHE.lastIndexOf('-') + 1); // this app's caches only
 const SHELL = ['./', './index.html', './manifest.webmanifest'];
 
