@@ -128,6 +128,7 @@
     pointer-events: none;
     transition: color 700ms ease, opacity 320ms ease;
   }
+  .numerals.long { font-size: clamp(3.5rem, 14vmin, 7.5rem); }
   .numerals.idle { opacity: 0.42; }
   .numerals.armed { opacity: 0.85; }
   .numerals.paused { opacity: 0.62; }
@@ -201,6 +202,7 @@
   body.big-screen .stage { gap: 0; }
   body.big-screen .clock { width: min(96vmin, 96vh); }
   body.big-screen .numerals { font-size: clamp(5rem, 22vmin, 16rem); }
+  body.big-screen .numerals.long { font-size: clamp(4rem, 18vmin, 13rem); }
 
   .sheet {
     position: fixed;
@@ -282,7 +284,8 @@
   const taEl       = $('textarea');
 
   const ARC_RADIUS  = 90;
-  const MAX_MS      = 60 * 60 * 1000;
+  const FACE_MS     = 60 * 60 * 1000;      // one turn of the dial — the countdown range
+  const UP_MAX_MS   = 4 * 60 * 60 * 1000;  // count-up runs this long, then rests as done
   const QUICK_MARKS = [2, 10, 20, 50];
   const TICK_LABEL_RADIUS = 76;
   const STATE_KEY = 'big-state';
@@ -396,7 +399,7 @@
 
   function displayMs () {
     if (direction === 'down') return Math.max(0, targetMs - liveElapsed());
-    if (direction === 'up')   return Math.min(MAX_MS, liveElapsed());
+    if (direction === 'up')   return Math.min(UP_MAX_MS, liveElapsed());
     return 0;
   }
 
@@ -410,6 +413,7 @@
     }
 
     numeralsEl.classList.remove('idle','armed','paused','done');
+    numeralsEl.classList.toggle('long', displayMs() >= FACE_MS);
     arcEl.classList.toggle('done', mode === 'done');
 
     if (mode === 'idle')   numeralsEl.classList.add('idle');
@@ -419,10 +423,10 @@
 
     if (direction === 'down' && mode !== 'done') {
       let frac = 0;
-      if (mode === 'armed') frac = Math.min(1, targetMs / MAX_MS);
+      if (mode === 'armed') frac = Math.min(1, targetMs / FACE_MS);
       else if (mode === 'running' || mode === 'paused') {
         const remaining = Math.max(0, targetMs - liveElapsed());
-        frac = remaining / MAX_MS;
+        frac = remaining / FACE_MS;
       }
       arcEl.setAttribute('d', describeArc(frac));
     } else {
@@ -431,7 +435,7 @@
 
     if (mode === 'running') {
       if (direction === 'down' && liveElapsed() >= targetMs) enterDone();
-      else if (direction === 'up' && liveElapsed() >= MAX_MS) enterDone();
+      else if (direction === 'up' && liveElapsed() >= UP_MAX_MS) enterDone();
     }
   }
 
@@ -445,7 +449,7 @@
 
   function enterDone () {
     if (direction === 'down') elapsedMs = targetMs;
-    else                      elapsedMs = MAX_MS;
+    else                      elapsedMs = UP_MAX_MS;
     startedAt = 0;
     mode = 'done';
     stopTicking();
@@ -809,8 +813,8 @@
           startedAt = 0;
           mode = 'done';
           crossedToDone = true;
-        } else if (direction === 'up' && live >= MAX_MS) {
-          elapsedMs = MAX_MS;
+        } else if (direction === 'up' && live >= UP_MAX_MS) {
+          elapsedMs = UP_MAX_MS;
           startedAt = 0;
           mode = 'done';
           crossedToDone = true;
