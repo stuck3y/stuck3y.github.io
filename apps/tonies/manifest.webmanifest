@@ -1,0 +1,20 @@
+{
+  "name": "Tonie Rental",
+  "short_name": "Tonies",
+  "description": "Borrow a Tonie for two weeks. Catalog, your rental, and a front-desk admin.",
+  "scope": "/apps/tonies/",
+  "start_url": "/apps/tonies/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#d93d42",
+  "background_color": "#f5f5f7",
+  "categories": ["lifestyle", "kids"],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

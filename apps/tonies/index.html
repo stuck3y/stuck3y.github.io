@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Tonie Rental</title>
+  <meta name="description" content="Borrow a Tonie for two weeks. Catalog, your rental, and a front-desk admin." />
+  <meta name="theme-color" content="#d93d42" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="../icon.svg" />
+  <link rel="stylesheet" href="../lib/tokens.css" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="../lib/sys.js"></script>
+  <script src="../lib/pwa.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">🎧</span>
+      <div>
+        <h1>Tonie Rental</h1>
+        <p id="place"></p>
+      </div>
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#catalog" data-tab="catalog">Catalog</a>
+      <a href="#mine" data-tab="mine">My Rental</a>
+      <a href="#admin" data-tab="admin">Front Desk</a>
+    </nav>
+  </header>
+
+  <main id="view" aria-live="polite"></main>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

@@ -58,6 +58,7 @@
     { id: 'slantboard', name: 'Slant Board Timer',   color: '#0b1020' },
     { id: 'spark',      name: 'Build Brief',         color: '#fafaf8', desc: 'Spark a build brief.' },
     { id: 'time',       name: 'you have time',       color: '#f6f3ec' },
+    { id: 'tonies',     name: 'Tonie Rental',        color: '#d93d42', desc: 'Two-week Tonie rentals for a play place: catalog, my rental, front desk.' },
     { id: 'wellread',   name: 'Well Read',           color: '#f5f0eb' },
     { id: 'zen',        name: 'Zen Reader',          color: '#f5efe6' },
     { id: 'zen-code',   name: 'Zen Code Reader',     color: '#f5efe6' },
