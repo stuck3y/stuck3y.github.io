@@ -49,6 +49,7 @@
     { id: 'matchday',   name: 'Matchday',            color: '#6cabdd', desc: 'Spoiler-safe Premier League: Man City, Haaland, and how to catch every match.' },
     { id: 'not-to-do',  name: 'Not-Todo List',       color: '#f5f5f5', desc: 'What not to do.' },
     { id: 'nutty',      name: 'nutty',               color: '#f6f3ec', desc: 'Food cache and trustworthy totals. Calories, macros, import/export.' },
+    { id: 'rank',       name: 'rank',                color: '#f6f3ec', desc: 'Paste a list. Drag it into priority. Copy it out.' },
     { id: 'rest',       name: 'rest.',               color: '#141210', desc: 'Rest timer.' },
     { id: 'river',      name: 'river',               color: '#f5efe6', desc: 'Your stream of meaningful activity.' },
     { id: 'sam',        name: 'sam',                 color: '#f6f3ec' },

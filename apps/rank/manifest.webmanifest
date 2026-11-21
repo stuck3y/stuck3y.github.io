@@ -1,0 +1,20 @@
+{
+  "name": "Rank",
+  "short_name": "Rank",
+  "description": "Paste a list. Drag it into priority. Copy it out.",
+  "scope": "/apps/rank/",
+  "start_url": "/apps/rank/?source=pwa",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#f6f3ec",
+  "background_color": "#f6f3ec",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
