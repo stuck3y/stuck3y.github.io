@@ -1,0 +1,285 @@
+/* S-lang playground. Values come from ../lib/tokens.css; this file adds the
+   layout and the editor's syntax colors. */
+
+:root {
+  --code-size: 14px;
+  --code-line: 1.55;
+  --code-pad: var(--space-4);
+
+  /* Syntax */
+  --syn-kw: #9b2393;
+  --syn-str: #c41a16;
+  --syn-num: #1c00cf;
+  --syn-fn: #326d74;
+  --syn-com: #6e6e73;
+  --syn-bad: #ff3b30;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --syn-kw: #ff7ab2; --syn-str: #ff8170; --syn-num: #d9c97c;
+    --syn-fn: #78c2b3; --syn-com: #8e8e93; --syn-bad: #ff453a;
+  }
+}
+:root[data-theme="dark"] {
+  --syn-kw: #ff7ab2; --syn-str: #ff8170; --syn-num: #d9c97c;
+  --syn-fn: #78c2b3; --syn-com: #8e8e93; --syn-bad: #ff453a;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+}
+
+/* --- Top bar ------------------------------------------------------------- */
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.bar h1 {
+  margin: 0 auto 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.bar select,
+.manual,
+.run {
+  font: inherit;
+  font-size: 15px;
+  height: 36px;
+  border-radius: var(--radius-full);
+}
+
+.bar select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0 32px 0 var(--space-4);
+  color: var(--text);
+  border: 1px solid var(--border);
+  background: var(--surface)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238e8e93' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    no-repeat right 12px center;
+}
+
+.manual {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
+  text-decoration: none;
+}
+.manual:hover { text-decoration: underline; }
+
+.run {
+  min-width: 76px;
+  padding: 0 var(--space-5);
+  border: 0;
+  font-weight: 600;
+  color: var(--accent-text);
+  background: var(--accent);
+  cursor: pointer;
+  transition: background var(--fast) var(--ease), transform var(--fast) var(--ease);
+}
+.run:hover { background: var(--accent-hover); }
+.run:active { transform: scale(0.97); }
+.run.running { background: var(--danger); }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* --- Code / Output switch (phones only) ---------------------------------- */
+
+.views {
+  display: none;
+  margin: 0 var(--space-4) var(--space-3);
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.views button {
+  flex: 1;
+  height: 32px;
+  border: 0;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  background: transparent;
+  cursor: pointer;
+}
+.views button[aria-pressed="true"] {
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+/* --- Panes --------------------------------------------------------------- */
+
+main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  padding: 0 var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom));
+}
+
+.pane {
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.editor,
+.console,
+.stage {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* --- Editor: a transparent textarea over a painted copy of its text ------ */
+
+.editor {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: var(--surface);
+}
+
+.editor pre,
+.editor textarea {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  border: 0;
+  padding: var(--code-pad);
+  font-family: var(--font-mono);
+  font-size: var(--code-size);
+  line-height: var(--code-line);
+  letter-spacing: 0;
+  tab-size: 4;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+.editor pre {
+  overflow: hidden;
+  color: var(--text);
+  pointer-events: none;
+}
+
+.editor textarea {
+  width: 100%;
+  height: 100%;
+  resize: none;
+  outline: none;
+  overflow: auto;
+  color: transparent;
+  background: transparent;
+  caret-color: var(--text);
+  -webkit-text-fill-color: transparent;
+}
+.editor textarea::selection { background: color-mix(in srgb, var(--accent) 28%, transparent); }
+
+.kw { color: var(--syn-kw); font-weight: 600; }
+.str { color: var(--syn-str); }
+.num { color: var(--syn-num); }
+.fn { color: var(--syn-fn); }
+.com { color: var(--syn-com); font-style: italic; }
+.bad { color: var(--syn-bad); text-decoration: underline wavy; }
+
+/* --- Stage --------------------------------------------------------------- */
+
+.stage {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  background: #000;
+}
+.stage[hidden] { display: none; }
+
+.stage canvas {
+  display: block;
+  width: 100%;
+  max-height: 62dvh;
+  object-fit: contain;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  outline: none;
+}
+
+/* --- Console ------------------------------------------------------------- */
+
+.console {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--code-pad);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: var(--code-size);
+  line-height: var(--code-line);
+}
+
+.console[hidden] { display: none; }
+
+.console pre {
+  margin: 0;
+  font: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.empty {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--text-secondary);
+}
+
+#errors button {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  text-align: left;
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  cursor: pointer;
+}
+#errors button:hover { background: color-mix(in srgb, var(--danger) 16%, transparent); }
+#errors b { font-weight: 600; margin-right: var(--space-2); }
+
+/* --- Phones: one pane at a time ------------------------------------------ */
+
+@media (max-width: 760px) {
+  :root { --code-size: 16px; }   /* under 16px, iOS zooms the page on focus */
+
+  .bar { gap: var(--space-2); }
+  .bar select { max-width: 132px; }
+  .views { display: flex; }
+  main { grid-template-columns: minmax(0, 1fr); }
+
+  body[data-view="code"] .out,
+  body[data-view="out"] .code { display: none; }
+}
