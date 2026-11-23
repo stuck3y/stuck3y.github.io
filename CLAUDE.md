@@ -15,6 +15,7 @@ The repository follows a simple static website structure:
   - `/merrychat/`: Chat application
   - `/not-to-do/`: Task management app
   - `/pac/`, `/pac_pixi/`, `/pac_simple/`: Various Pac-Man game implementations
+  - `/slang/`: S-lang, a small programming language. `slang.js` is the whole compiler (also runs under Node); the app is its playground. Tests: `node apps/slang/test.js`. Language reference: `apps/slang/MANUAL.md`
 - **`/closet/`**: Gaming closet project tracker (SPA with local storage)
 - **`/barsnip/`**: Native macOS menu bar snippet app (Swift source + `build.sh`; compiled locally on the Mac, not a web app, not part of the `/apps/` shell)
 

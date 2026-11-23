@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+<title>S-lang</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="icon" href="./icon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="../lib/tokens.css" />
+<link rel="stylesheet" href="./styles.css" />
+<script src="../lib/pwa.js" defer></script>
+<script src="../lib/sys.js" defer></script>
+<script src="./slang.js" defer></script>
+<script src="./app.js" defer></script>
+</head>
+<body data-view="code">
+
+<header class="bar">
+  <h1>S-lang</h1>
+  <select id="examples" aria-label="Example"></select>
+  <a class="manual" href="https://github.com/stuck3y/stuck3y.github.io/blob/main/apps/slang/MANUAL.md" target="_blank" rel="noopener">Manual</a>
+  <button id="run" class="run" type="button" title="Run (⌘↵)">Run</button>
+</header>
+
+<nav class="views" aria-label="View">
+  <button type="button" data-show="code" aria-pressed="true">Code</button>
+  <button type="button" data-show="out" aria-pressed="false">Output</button>
+</nav>
+
+<main>
+  <section class="pane code" aria-label="Code">
+    <div class="editor">
+      <pre id="paint" aria-hidden="true"></pre>
+      <textarea id="src" aria-label="S-lang source" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea>
+    </div>
+  </section>
+
+  <section class="pane out" aria-label="Output">
+    <div id="stageWrap" class="stage" hidden>
+      <canvas id="stage" tabindex="0" aria-label="Stage"></canvas>
+    </div>
+    <div class="console" aria-live="polite">
+      <p id="empty" class="empty">Hit Run. Whatever you spit lands here.</p>
+      <pre id="log"></pre>
+      <div id="errors"></div>
+    </div>
+  </section>
+</main>
+
+</body>
+</html>
